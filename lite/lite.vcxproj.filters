@@ -237,5 +237,11 @@
     <ClInclude Include="WICTextureLoader.h">
       <Filter>Graphics\Direct3D\WIC Texture Loader</Filter>
     </ClInclude>
+    <ClInclude Include="Model.hpp">
+      <Filter>Core\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="FieldInfo.hpp">
+      <Filter>Reflection\Meta Info</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

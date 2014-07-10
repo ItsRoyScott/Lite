@@ -7,7 +7,7 @@ namespace lite
 {
   // Specialized timer for measuring frame length and 
   //  delta time between consecutive frames.
-  class FrameTimer
+  class FrameTimer : public LightSingleton<FrameTimer>
   {
   private: // data
 

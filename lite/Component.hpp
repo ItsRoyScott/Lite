@@ -54,13 +54,13 @@ namespace lite
     bool isActive = true;
     lite::GameObject* owner = nullptr;
 
-  public:
+  public: // properties
 
     // Whether the component is currently active and updating.
-    bool IsActive() const { return isActive; }
+    const bool& IsActive() const { return isActive; }
 
     // Game object that owns this component.
-    lite::GameObject* Owner() const { return owner; }
+    lite::GameObject* const& Owner() const { return owner; }
 
   public: // methods
 
@@ -73,7 +73,7 @@ namespace lite
     }
 
     // Returns the hash code of the component type name.
-    const size_t& GetTypeHashCode() const override
+    const size_t& GetTypeHash() const override
     {
       static size_t hash = GetType().hash_code();
       return hash;
@@ -109,6 +109,12 @@ namespace lite
 
   protected: // methods
 
+    // Called on SetActive(true).
+    void Activate() override {}
+
+    // Called on SetActive(false).
+    void Deactivate() override {}
+
     // Initializes the component after child objects have been
     //  initialized. No guarantees are made about initialization
     //  order between different objects in the world.
@@ -122,5 +128,32 @@ namespace lite
 
     // Updates the component.
     void Update() override {}
+  };
+
+  class ComponentManager : public Singleton<ComponentManager>
+  {
+  private: // data
+
+    unordered_map<string, function<unique_ptr<IComponent>()>> components;
+
+  public: // methods
+
+    // Creates a component by name.
+    unique_ptr<IComponent> Create(const string& name)
+    {
+      auto it = components.find(name);
+      if (it == components.end()) return nullptr;
+      return it->second();
+    }
+
+    // Registers a component with the manager.
+    template <class T>
+    void Register(string name = typeid(T).name())
+    {
+      // Make a generic 'create' function returning an IComponent pointer.
+      auto create = []() -> unique_ptr < IComponent > { return make_unique<T>(); };
+
+      components.emplace(move(name), move(create));
+    }
   };
 } // namespace lite

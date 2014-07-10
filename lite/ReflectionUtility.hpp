@@ -15,16 +15,25 @@ namespace lite // forward declarations
 
 namespace lite // functions
 {
-  // Converts a typed std::function to a typeless one.
-  template <class CallT>
-  function<void()> TypedToTypelessFunction(function<CallT> fn)
+  namespace detail
   {
-    return reinterpret_cast<function<void()>&&>(fn);
+    template <class CallT, class ResultCallT>
+    function<ResultCallT> CastFunction(function<CallT> fn)
+    {
+      return reinterpret_cast<function<ResultCallT>&&>(fn);
+    }
+  } // namespace detail
+
+  // Converts a typed std::function to a typeless one.
+  template <class CallT, class ResultCallT = void()>
+  function<ResultCallT> TypedToTypelessFunction(function<CallT> fn)
+  {
+    return reinterpret_cast<function<ResultCallT>&&>(fn);
   }
 
   // Converts a typeless std::function to typed one.
-  template <class CallT>
-  function<CallT> TypelessToTypedFunction(function<void()> fn)
+  template <class ResultCallT, class CallT = void()>
+  function<CallT> TypelessToTypedFunction(function<CallT> fn)
   {
     return reinterpret_cast<function<CallT>&&>(fn);
   }

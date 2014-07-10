@@ -106,6 +106,7 @@
     <ClInclude Include="EventHandler.hpp" />
     <ClInclude Include="EventInstance.hpp" />
     <ClInclude Include="EventSystem.hpp" />
+    <ClInclude Include="FieldInfo.hpp" />
     <ClInclude Include="FileTime.hpp" />
     <ClInclude Include="FmodInclude.hpp" />
     <ClInclude Include="FrameTimer.hpp" />
@@ -120,6 +121,7 @@
     <ClInclude Include="MaterialDescription.hpp" />
     <ClInclude Include="MeshData.hpp" />
     <ClInclude Include="MethodInfo.hpp" />
+    <ClInclude Include="Model.hpp" />
     <ClInclude Include="ModelInstance.hpp" />
     <ClInclude Include="MouseBuffer.hpp" />
     <ClInclude Include="PathInfo.hpp" />

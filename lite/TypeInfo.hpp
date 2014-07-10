@@ -1,9 +1,11 @@
 #pragma once
 
+#include "FieldInfo.hpp"
 #include "MethodInfo.hpp"
 
 namespace lite
 {
+  // Meta information regarding a type in C++.
   class TypeInfo
   {
   private: // data
@@ -17,28 +19,33 @@ namespace lite
   public: // properties
 
     // Array of this type's fields.
-    const vector<FieldInfo>& Fields() const { return fields; }
+    const vector<FieldInfo>& Fields = fields;
 
     // Whether this type represents a reference to a value-type.
-    bool IsReference() const { return isReference; }
+    const bool& IsReference = isReference;
 
     // Array of this type's methods.
-    const vector<MethodInfo>& Methods() const { return methods; }
+    const vector<MethodInfo>& Methods = methods;
 
     // Name of the type.
-    const string& Name() const { return name; }
+    const string& Name = name;
 
     // Returns the value-type if this type is a reference.
-    const TypeInfo* ValueType() const { return valueType; }
+    const TypeInfo* const& ValueType = valueType;
 
   public: // methods
 
     TypeInfo() = default;
+    TypeInfo(const TypeInfo&) = delete;
+    ~TypeInfo() = default;
+    TypeInfo& operator=(const TypeInfo&) = delete;
 
+    // Add base-case; does nothing.
     void Add()
     {
     }
 
+    // Adds a field given its name and pointer.
     template <class PointerT, class... Args>
     typename enable_if<IsField<PointerT>::value>::type
       Add(string name, PointerT ptr, Args&&... args)
@@ -47,6 +54,7 @@ namespace lite
       Add(forward<Args>(args)...);
     }
 
+    // Adds a function given its name and pointer.
     template <class PointerT, class... Args>
     typename enable_if<FunctionTraits<PointerT>::IsFunction>::type
       Add(string name, PointerT ptr, Args&&... args)
@@ -55,6 +63,7 @@ namespace lite
       Add(forward<Args>(args)...);
     }
 
+    // Initializes this type as a reference-type.
     template <class T>
     void InitializeReferenceType()
     {
@@ -62,6 +71,7 @@ namespace lite
       valueType = &TypeOf<T>();
     }
 
+    // Calls Add functions recursively to initialize the type.
     template <class... Args>
     void operator()(string typeName, Args&&... args)
     {
@@ -72,6 +82,7 @@ namespace lite
 
   namespace detail
   {
+    // Stores the static data for a type info.
     template <class T>
     TypeInfo& TypeOf()
     {
@@ -80,6 +91,7 @@ namespace lite
     }
   } // namespace detail
 
+  // Returns a TypeInfo given its C++ type.
   template <class T>
   const TypeInfo& TypeOf()
   {

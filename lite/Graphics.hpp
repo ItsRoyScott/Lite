@@ -2,16 +2,15 @@
 
 #include "CameraDefinition.hpp"
 #include "ComHandle.hpp"
+#include "D3DInfo.hpp"
 #include "EventHandler.hpp"
-#include "MeshData.hpp"
 #include "ModelInstance.hpp"
-#include "ShaderManager.hpp"
-#include "WICTextureLoader.h"
+#include <unordered_map>
 #include "Window.hpp"
 
 namespace lite
 {
-  class Graphics
+  class Graphics : public LightSingleton<Graphics>
   {
   private: // types
 
@@ -30,9 +29,11 @@ namespace lite
 
   private: // data
 
-    BufferHandle cbObject, cbScene;
+    BufferHandle cbScene;
     D3DInfo d3d;
     InputLayoutHandle inputLayout;
+    size_t modelCounter = 0;
+    unordered_map<size_t, shared_ptr<ModelInstance>> models;
 
   public: // data
 
@@ -121,16 +122,6 @@ namespace lite
       viewport.TopLeftY = 0;
       d3d.Context->RSSetViewports(1, &viewport);
 
-      // Create the object constant buffer.
-      {
-        D3D11_BUFFER_DESC bufferDesc;
-        ZeroMemory(&bufferDesc, sizeof(bufferDesc));
-        bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        bufferDesc.ByteWidth = sizeof(ObjectConstants);
-        bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-        DX(d3d.Device->CreateBuffer(&bufferDesc, nullptr, cbObject));
-      }
-
       // Create the scene constant buffer.
       {
         D3D11_BUFFER_DESC bufferDesc;
@@ -141,8 +132,9 @@ namespace lite
         DX(d3d.Device->CreateBuffer(&bufferDesc, nullptr, cbScene));
       }
 
-      Camera.Walk(-10);
       Camera.Climb(1);
+      Camera.SetLens(XM_PI / 3, float(window.Width) / float(window.Height), 0.01f, 1000);
+      Camera.Walk(-10);
 
       D3D11_SAMPLER_DESC samplerDesc;
       ZeroMemory(&samplerDesc, sizeof(samplerDesc));
@@ -155,16 +147,30 @@ namespace lite
       samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
       DX(d3d.Device->CreateSamplerState(&samplerDesc, d3d.LinearSampler));
     }
-    
-    void Update(float dt)
+
+    // Adds a new model instance.
+    shared_ptr<ModelInstance> AddModel()
     {
-      Render();
+      auto result = models.emplace(modelCounter++, make_shared<ModelInstance>());
+      auto it = result.first;
+      return it->second;
     }
 
-  private: // methods
-
-    void Render()
+    void Update(float dt)
     {
+      // Remove all models no longer being referenced.
+      for (auto it = models.begin(); it != models.end();)
+      {
+        if (it->second.unique())
+        {
+          it = models.erase(it);
+        }
+        else
+        {
+          ++it;
+        }
+      }
+
       if (!d3d.Context || !d3d.RenderTarget) return;
 
       // Clear the render target.
@@ -211,9 +217,9 @@ namespace lite
 
       // Store the view projection and light info in the constant buffer.
       XMStoreFloat4x4(
-        &sceneConstants.viewProjection, 
+        &sceneConstants.viewProjection,
         XMMatrixTranspose(
-          XMLoadFloat4x4(&Camera.ViewProjectionMatrix())));
+        XMLoadFloat4x4(&Camera.ViewProjectionMatrix())));
       sceneConstants.lightDirections = { lightDirections[0], lightDirections[1] };
       sceneConstants.lightColors = { lightColors[0], lightColors[1] };
 
@@ -221,21 +227,10 @@ namespace lite
       d3d.Context->VSSetConstantBuffers(0, 1, cbScene);
       d3d.Context->PSSetConstantBuffers(0, 1, cbScene);
 
-      static const float limit = 6;
-      static const float gap = 3;
-      for (float x = -limit; x <= limit; x += gap)
+      // Draw all models.
+      for (auto& modelPair : models)
       {
-        for (float y = -limit; y <= limit; y += gap)
-        {
-          for (float z = -limit; z <= limit; z += gap)
-          {
-            ModelInstance model;
-            model.Material = "Default";
-            model.Mesh = "spongebob.obj";
-            XMStoreFloat4x4(&model.Transform, XMMatrixTranslation(x, y, z));
-            model.Draw();
-          }
-        }
+        modelPair.second->Draw();
       }
 
       // Present the back buffer to the display.

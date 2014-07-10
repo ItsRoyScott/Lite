@@ -3,8 +3,10 @@
 #include "FrameTimer.hpp"
 #include "Graphics.hpp"
 #include "Input.hpp"
+#include "Model.hpp"
 #include "Reflection.hpp"
 #include "Scripting.hpp"
+#include "Transform.hpp"
 #include "Window.hpp"
 
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -15,6 +17,25 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   auto audio    = Audio();
   auto window   = Window("Lite Game Engine", 960, 540);
   auto graphics = Graphics(window);
+
+  // Set up the scene.
+  vector<shared_ptr<ModelInstance>> models;
+  static const float limit = 12;
+  static const float gap = 3;
+  for (float x = -limit; x <= limit; x += gap)
+  {
+    for (float y = -limit / 2; y <= limit / 2; y += gap)
+    {
+      for (float z = -limit; z <= limit; z += gap)
+      {
+        auto model = graphics.AddModel();
+        model->Material = "Default";
+        model->Mesh = "spongebob.obj";
+        XMStoreFloat4x4(&model->Transform, XMMatrixTranslation(x, y, z));
+        models.push_back(move(model));
+      }
+    }
+  }
 
   auto frameTimer = FrameTimer();
 

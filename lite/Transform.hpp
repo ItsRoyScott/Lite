@@ -5,7 +5,7 @@
 
 namespace lite
 {
-  class Transform
+  class Transform : public Component<Transform>
   {
   public: // properties
 
@@ -32,18 +32,19 @@ namespace lite
         XMLoadFloat3(&LocalPosition));  // translation
     }
 
-    // Transformation formed by this transform and all of its parents.
-    XMMATRIX GetWorldMatrix() const
-    {
-      // Multiply this local transform with the parent's world transform.
-      if (Parent)
-      {
-        return GetLocalMatrix() * Parent->GetWorldMatrix();
-      }
-
-      // No parents: return the local matrix.
-      return GetLocalMatrix();
-    }
+    // TODO
+    //// Transformation formed by this transform and all of its parents.
+    //XMMATRIX GetWorldMatrix() const
+    //{
+    //  // Multiply this local transform with the parent's world transform.
+    //  if (Owner())
+    //  {
+    //    return GetLocalMatrix() * Parent->GetWorldMatrix();
+    //  }
+    //
+    //  // No parents: return the local matrix.
+    //  return GetLocalMatrix();
+    //}
 
     // Rotate roll (z), then pitch (x), then yaw (y).
     void RotateBy(float3 eulerAngles)
@@ -73,11 +74,11 @@ namespace lite
     }
 
     // Sets local properties to construct the matrix.
-    void SetLocalMatrix(XMMATRIX matrix)
+    void SetLocalMatrix(float4x4 matrix)
     {
       // Decompoose the given matrix.
       XMVECTOR scale, quat, trans;
-      XMMatrixDecompose(&scale, &quat, &trans, matrix);
+      XMMatrixDecompose(&scale, &quat, &trans, XMLoadFloat4x4(&matrix));
 
       // Save the results.
       XMStoreFloat3(&LocalScale, scale);

@@ -5,6 +5,7 @@
 
 namespace lite
 {
+  // Meta information on a method in C++.
   class MethodInfo
   {
   private: // data
@@ -27,6 +28,7 @@ namespace lite
 
   public: // methods
 
+    // Constructs given the name and function pointer.
     template <class FuncPtr>
     MethodInfo(string name_, FuncPtr func_, bool isField = false)
     {
@@ -37,14 +39,12 @@ namespace lite
       name = move(name_);
       returnType = &TypeOf<Traits::ReturnType>();
 
-      if (!isField)
-      {
-        ReflectionPlugin::OnNewMethod(name, func_);
-      }
+      ReflectionPlugin::OnNewMethod(name, func_);
     }
 
+    // Retrieves the typed function object.
     template <class CallT>
-    function<CallT> Get() const
+    function<CallT> AsFunction() const
     {
       typedef FunctionTraits<CallT> Traits;
 
@@ -63,24 +63,6 @@ namespace lite
 
       // Reinterpret cast to the requested function type.
       return TypelessToTypedFunction<CallT>(func);
-    }
-  };
-
-  // A field is just a special type of method.
-  class FieldInfo : public MethodInfo
-  {
-  public: // methods
-
-    template <class FieldT>
-    FieldInfo(string name_, FieldT* fieldPtr) :
-      MethodInfo(move(name_), [=] { return fieldPtr; }, false)
-    {
-    }
-
-    template <class FieldT, class T>
-    FieldInfo(string name_, FieldT T::*fieldPtr) :
-      MethodInfo(move(name_), [=](T& self) -> FieldT { return (self.*fieldPtr); }, false)
-    {
     }
   };
 } // namespace lite
