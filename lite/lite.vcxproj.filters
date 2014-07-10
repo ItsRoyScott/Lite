@@ -1,0 +1,241 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="APIs">
+      <UniqueIdentifier>{1b2cc84c-6ec1-4fe1-adef-e266187bbad2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio">
+      <UniqueIdentifier>{7f7ab086-60cd-4c31-b40d-93469ed79c88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{8db3d523-031f-4cda-ae3d-884e8019dc02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generic">
+      <UniqueIdentifier>{0c1b4e11-87f9-4914-9fb9-94c360c916eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics">
+      <UniqueIdentifier>{e7c3ad90-694c-4a1b-a1a3-74e1de059207}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{c5a9c629-02aa-4f56-8eeb-43abf8d166e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{03f24cd2-4599-4850-804b-d497433512d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{e7392b09-5e3c-4b02-82a8-ef5f0d241a94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Precompiled">
+      <UniqueIdentifier>{c0e5a7de-0c5f-4636-9163-14e85f17fb49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Reflection">
+      <UniqueIdentifier>{bf89d1d2-7501-4311-809a-13c5fbeb5a54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting">
+      <UniqueIdentifier>{13b690a8-58e4-423e-800c-e0d73ea82cb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio\Events">
+      <UniqueIdentifier>{a59846a5-68ad-475a-9da1-7203cca5908a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio\Listener">
+      <UniqueIdentifier>{88ecf04d-15eb-463f-8504-1c627fbb248e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Audio\Sound Bank">
+      <UniqueIdentifier>{a2d4a931-eb0d-4197-ba20-7633d8b7f31c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Components">
+      <UniqueIdentifier>{9254eb49-f14b-4e0c-9687-ac53f1a1d280}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Timers">
+      <UniqueIdentifier>{c8ad5092-8d74-483e-a1fc-19e600f95d1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generic\Events">
+      <UniqueIdentifier>{171c9756-543a-4cc8-bf5f-f143df26ecd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Direct3D">
+      <UniqueIdentifier>{508ba48f-37a3-48f5-89c8-a6eecfe52c8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Resource Data">
+      <UniqueIdentifier>{3ea9509f-d5c1-479e-9c0d-5c349840349a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Scene Objects">
+      <UniqueIdentifier>{e816782e-b7d8-471f-a0b4-9029410a4ced}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input\Buffers">
+      <UniqueIdentifier>{d8c3a955-9de2-4c82-a8e7-bd989c9f2db7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Reflection\Utility">
+      <UniqueIdentifier>{dd99fd02-87d3-4fa5-8dbd-3702fe8084a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Reflection\Plugin">
+      <UniqueIdentifier>{71d92b46-2c7b-4d36-aa64-89145bd46ba3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Reflection\Meta Info">
+      <UniqueIdentifier>{000df082-b0d5-4f06-bb10-449f31b23f35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Direct3D\WIC Texture Loader">
+      <UniqueIdentifier>{cf09c4b8-0790-4530-b725-81e6ed97ab9d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Precompiled.cpp">
+      <Filter>Precompiled</Filter>
+    </ClCompile>
+    <ClCompile Include="WICTextureLoader.cpp">
+      <Filter>Graphics\Direct3D\WIC Texture Loader</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AssimpInclude.hpp">
+      <Filter>APIs</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DInclude.hpp">
+      <Filter>APIs</Filter>
+    </ClInclude>
+    <ClInclude Include="FmodInclude.hpp">
+      <Filter>APIs</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaBridgeInclude.hpp">
+      <Filter>APIs</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsInclude.h">
+      <Filter>APIs</Filter>
+    </ClInclude>
+    <ClInclude Include="Audio.hpp">
+      <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="EventDescription.hpp">
+      <Filter>Audio\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="EventInstance.hpp">
+      <Filter>Audio\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="ListenerDescription.hpp">
+      <Filter>Audio\Listener</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundBank.hpp">
+      <Filter>Audio\Sound Bank</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.hpp">
+      <Filter>Core\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.hpp">
+      <Filter>Core\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameTimer.hpp">
+      <Filter>Core\Timers</Filter>
+    </ClInclude>
+    <ClInclude Include="EventData.hpp">
+      <Filter>Generic\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="EventHandler.hpp">
+      <Filter>Generic\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="EventSystem.hpp">
+      <Filter>Generic\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicIO.hpp">
+      <Filter>Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.hpp">
+      <Filter>Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="Essentials.hpp">
+      <Filter>Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="Variant.hpp">
+      <Filter>Generic</Filter>
+    </ClInclude>
+    <ClInclude Include="ComHandle.hpp">
+      <Filter>Graphics\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DInfo.hpp">
+      <Filter>Graphics\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsResourceManager.hpp">
+      <Filter>Graphics\Resource Data</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialDescription.hpp">
+      <Filter>Graphics\Resource Data</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshData.hpp">
+      <Filter>Graphics\Resource Data</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderData.hpp">
+      <Filter>Graphics\Resource Data</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderManager.hpp">
+      <Filter>Graphics\Resource Data</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureData.hpp">
+      <Filter>Graphics\Resource Data</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraDefinition.hpp">
+      <Filter>Graphics\Scene Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelInstance.hpp">
+      <Filter>Graphics\Scene Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyboardBuffer.hpp">
+      <Filter>Input\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseBuffer.hpp">
+      <Filter>Input\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.hpp">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Scripting.hpp">
+      <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics.hpp">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="MethodInfo.hpp">
+      <Filter>Reflection\Meta Info</Filter>
+    </ClInclude>
+    <ClInclude Include="TypeInfo.hpp">
+      <Filter>Reflection\Meta Info</Filter>
+    </ClInclude>
+    <ClInclude Include="ReflectionPlugin.hpp">
+      <Filter>Reflection\Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="ReflectionUtility.hpp">
+      <Filter>Reflection\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection.hpp">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Precompiled.hpp">
+      <Filter>Precompiled</Filter>
+    </ClInclude>
+    <ClInclude Include="chrono.hpp">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Console.hpp">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="FileTime.hpp">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Logging.hpp">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="PathInfo.hpp">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.hpp">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.hpp">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="WICTextureLoader.h">
+      <Filter>Graphics\Direct3D\WIC Texture Loader</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

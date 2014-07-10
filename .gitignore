@@ -19,3 +19,8 @@
 *.exe
 *.out
 *.app
+*.exp
+*.tlog
+*.sdf
+*.opensdf
+*.ipch
