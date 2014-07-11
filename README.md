@@ -1,4 +1,8 @@
-# Goals
+# Introduction
+
+I built this library as an instructive example game engine for Game Engine Architecture at DigiPen. The engine is simple: it is single threaded and the game loop exists in Main.cpp.
+
+## Goals
 
 1. To be simple and minimalistic.
 
@@ -6,7 +10,7 @@
 
 3. To be instructive on a wide range of features typically found in a 3D game engine.
 
-# Ideas for improvement
+## Ideas for improvement
 
 - Separate thread for rendering, i.e. "Render Thread".
 
@@ -21,3 +25,33 @@
 - Xbox or Wii controller input.
 
 - Action mappings for input: "Jump" maps to VK_SPACE, etc.
+
+# Topics
+
+## Reference member initialization
+
+Some objects in Lite use member initialization (C++11 feature) to initialize a reference to a private member as const for public access.
+
+```C++
+class TypeInfo {
+private: // data
+  string name;
+public: // properties
+  const string& Name = name;
+};
+```
+
+The problem with this approach to properties or attributes is that the compiler cannot generate a default copy constructor or assignment operator. 
+
+What we want to have happen is for the reference member initialization to be left alone on construction and assignment. Since the reference is effectively a pointer to a field of the same object, we do not want to copy the pointer to the next object.
+
+```C++
+class TypeInfo { 
+// Same As Above
+public: // methods
+  TypeInfo(const TypeInfo&) {}
+  TypeInfo& operator=(const TypeInfo&) { return *this; }
+};
+```
+
+This leaves a little more work for the programmer if the copy constructor and assignment were not needed. It's up to you if the benefit of simply saying `typeInfo.Name` is more desirable than `typeInfo.Name()`.
