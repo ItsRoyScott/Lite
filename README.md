@@ -30,7 +30,7 @@ I built this library as an instructive example game engine for Game Engine Archi
 
 ## Reference member initialization
 
-Some objects in Lite use member initialization (C++11 feature) to initialize a reference to a private member as const for public access.
+Some objects in Lite use member initialization at the declaration (C++11 feature) to initialize a reference to a private member for public access.
 
 ```C++
 class TypeInfo {
