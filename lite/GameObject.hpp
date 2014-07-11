@@ -3,7 +3,6 @@
 #include "Component.hpp"
 #include "Essentials.hpp"
 #include "EventHandler.hpp"
-#include "Metadata.hpp"
 #include "Transform.hpp"
 
 namespace lite
@@ -13,51 +12,109 @@ namespace lite
   private: // data
 
     vector<unique_ptr<GameObject>> children;
-    vector<unique_ptr<Component>> components;
+    vector<unique_ptr<IComponent>> components;
     bool  destroyFlag = false;
     uint64_t identifier = GenerateIdentifier();
-    bool initializeFlag = false;
     string name;
     GameObject* parent = nullptr;
     vector<GameObject*> toDestroy;
-    vector<GameObject*> toInitialize;
 
   public: // properties
 
     // Children game objects attached to this game object.
-    const vector<unique_ptr<GameObject>>& Children() const { return children; }
+    const vector<unique_ptr<GameObject>>& Children = children;
 
     // Whether this object will be destroyed at the end of the frame.
-    const bool& DestroyFlag() const { return destroyFlag; }
+    const bool& DestroyFlag = destroyFlag;
 
     // Unique identifer of this game object.
-    const uint64_t& Identifier() const { return identifier; }
+    const uint64_t& Identifier =  identifier;
 
     // Name of this game object. (May be empty)
     const string& Name() const { return name; }
+    void Name(string name_) { name = move(name_); }
 
     // Pointer to the parent game object. (May be null)
-    GameObject* const& Parent() const { return parent; }
+    GameObject* const& Parent = parent;
 
   public: // methods
 
-    explicit GameObject(
-      vector<unique_ptr<Component>> components_ = vector<unique_ptr<Component>>(),
-      GameObject* parent_ = nullptr,
-      vector<unique_ptr<GameObject>> children_ = vector<unique_ptr<GameObject>>()) :
-        components(move(components_)),
-        parent(parent_),
-        children(move(children_))
+    GameObject() = default;
+
+    GameObject(GameObject&& b) :
+      children(move(b.children)),
+      components(move(b.components)),
+      destroyFlag(b.destroyFlag),
+      identifier(b.identifier),
+      name(move(b.name)),
+      parent(b.parent),
+      toDestroy(move(b.toDestroy))
+    {}
+
+    GameObject(const GameObject& b) :
+      name(b.name)
     {
+      CopyChildren(b.children);
+      CopyComponents(b.components);
     }
 
-    virtual ~GameObject() {}
+    virtual ~GameObject() 
+    {
+      Clear();
+    }
+
+    GameObject& operator=(GameObject&& b)
+    {
+      children = move(b.children);
+      components = move(b.components);
+      destroyFlag = b.destroyFlag;
+      identifier = b.identifier;
+      name = move(b.name);
+      parent = b.parent;
+      toDestroy = move(b.toDestroy);
+
+      return *this;
+    }
+
+    GameObject& operator=(const GameObject& b)
+    {
+      Clear();
+
+      name = b.name;
+      CopyChildren(b.children);
+      CopyComponents(b.components);
+
+      return *this;
+    }
 
     // Adds a new child object by prefab.
-    GameObject& AddChild(const GameObject& prefab)
+    GameObject& AddChild(const GameObject& prefab, bool initialize = true)
     {
-      children.push_back(make_unique<GameObject>(prefab));
-      return *children.back();
+      GameObject& object = StoreChild(make_unique<GameObject>(prefab));
+      if (initialize)
+      {
+        object.Initialize();
+      }
+      return object;
+    }
+
+    // Adds a new component by type.
+    template <class T>
+    T& AddComponent(bool initialize = true)
+    {
+      return static_cast<T&>(AddComponent(typeid(T).name(), initialize));
+    }
+
+    // Adds a new component by name.
+    IComponent& AddComponent(const string& name, bool initialize = true)
+    {
+      // Call on the component manager to create the component.
+      IComponent& component = StoreComponent(ComponentManager::Instance().Create(name));
+      if (initialize)
+      {
+        component.Initialize();
+      }
+      return component;
     }
 
     // Destroys this object along with all of its children.
@@ -108,7 +165,7 @@ namespace lite
     // Finds a child by its name. (May return null)
     GameObject* GetChild(const string& name)
     {
-      return FindChild([&](GameObject& object) { return object.Name == name; });
+      return FindChild([&](GameObject& object) { return object.Name() == name; });
     }
 
     // Finds a child by identifier. (May return null)
@@ -134,7 +191,8 @@ namespace lite
     template <class T>
     T* GetComponent()
     {
-      return FindComponent([](IComponent& component) { return component.GetType() == typeid(T); });
+      IComponent* component =  FindComponent([](IComponent& component) { return component.GetType() == typeid(T); });
+      return static_cast<T*>(component);
     }
 
     // Returns a component by its type name. (May return null)
@@ -143,26 +201,22 @@ namespace lite
       return FindComponent([&](IComponent& component) { return component.GetTypeName() == typeName; });
     }
 
-    // Initializes child objects, then components of this object.
+    // Initializes components, then child objects.
+    //  This is meant to be called after a level load so
+    //  component initialization can depend on another.
     void Initialize()
     {
-      // Initialize all child objects.
-      for (auto& child : children)
-      {
-        child->Initialize();
-      }
-
       // Then initialize all components.
       for (auto& component : components)
       {
         component->Initialize();
       }
-    }
 
-    // Changes the name of this object.
-    void SetName(string name_)
-    {
-      name = move(name_);
+      // Initialize all child objects.
+      for (auto& child : children)
+      {
+        child->Initialize();
+      }
     }
 
     // Updates child objects, then the components of this object.
@@ -187,18 +241,46 @@ namespace lite
       toDestroy.erase(toDestroy.begin(), toDestroy.begin() + objectsToDestroy);
     }
 
-  private: // methods
-
-    // Adds a child object directly into the current list of objects.
-    void AddChild(unique_ptr<GameObject> object)
+    // Easy component access. Adds the component if it doesn't exist.
+    template <class T>
+    T& operator[](const T* ptr)
     {
-      children.push_back(move(object));
+      auto component = GetComponent<T>();
+      if (component == nullptr)
+      {
+        component = &AddComponent<T>();
+      }
+      return *component;
     }
 
-    // Adds a component directly into the current list of components.
-    void AddComponent(unique_ptr<Component> component)
+  private: // methods
+
+    // Destroys all components and children.
+    void Clear()
     {
-      components.push_back(move(component));
+      children.clear();
+      components.clear();
+      toDestroy.clear();
+      destroyFlag = false;
+      name.clear();
+    }
+
+    // Copies all child game objects from an array.
+    void CopyChildren(const vector<unique_ptr<GameObject>>& objects)
+    {
+      for (auto& object : objects)
+      {
+        StoreChild(make_unique<GameObject>(*object));
+      }
+    }
+
+    // Copies all components from an array.
+    void CopyComponents(const vector<unique_ptr<IComponent>>& components)
+    {
+      for (auto& component : components)
+      {
+        StoreComponent(component->Clone());
+      }
     }
 
     // Generates a new unique identifier for the game object.
@@ -207,6 +289,19 @@ namespace lite
       static uint64_t id = 0;
       return id++;
     }
-  };
 
+    // Adds a child object directly into the current list of objects.
+    GameObject& StoreChild(unique_ptr<GameObject> object)
+    {
+      children.push_back(move(object));
+      return *children.back();
+    }
+
+    // Adds a component directly into the current list of components.
+    IComponent& StoreComponent(unique_ptr<IComponent> component)
+    {
+      components.push_back(move(component));
+      return *components.back();
+    }
+  };
 } // namespace lite

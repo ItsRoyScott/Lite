@@ -81,7 +81,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Main.cpp">
+      <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ShowIncludes>
+      <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ShowIncludes>
+    </ClCompile>
     <ClCompile Include="Precompiled.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -89,6 +92,7 @@
     <ClCompile Include="WICTextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AllComponents.hpp" />
     <ClInclude Include="AssimpInclude.hpp" />
     <ClInclude Include="Audio.hpp" />
     <ClInclude Include="BasicIO.hpp" />
@@ -117,6 +121,7 @@
     <ClInclude Include="KeyboardBuffer.hpp" />
     <ClInclude Include="ListenerDescription.hpp" />
     <ClInclude Include="Logging.hpp" />
+    <ClInclude Include="LogicTimer.hpp" />
     <ClInclude Include="LuaBridgeInclude.hpp" />
     <ClInclude Include="MaterialDescription.hpp" />
     <ClInclude Include="MeshData.hpp" />

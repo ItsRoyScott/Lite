@@ -6,11 +6,15 @@ namespace lite
 {
   class GameObject;
 
+  // Interface all components must inherit from.
   class IComponent
   {
   public: // methods
 
     virtual ~IComponent() {}
+
+    // Creates a copy of this component.
+    virtual unique_ptr<IComponent> Clone() const = 0;
 
     // Returns the type info for this component (using typeid).
     virtual const type_info& GetType() const = 0;
@@ -65,6 +69,12 @@ namespace lite
   public: // methods
 
     ~Component() override {}
+
+    // Creates a copy of this component.
+    unique_ptr<IComponent> Clone() const override
+    {
+      return make_unique<T>(*static_cast<const T*>(this));
+    }
 
     // Returns the type info for this component (using typeid).
     const type_info& GetType() const override

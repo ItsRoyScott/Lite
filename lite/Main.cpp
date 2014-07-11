@@ -1,12 +1,12 @@
 #include "Precompiled.hpp"
+#include "AllComponents.hpp"
 #include "Audio.hpp"
 #include "FrameTimer.hpp"
+#include "GameObject.hpp"
 #include "Graphics.hpp"
 #include "Input.hpp"
-#include "Model.hpp"
 #include "Reflection.hpp"
 #include "Scripting.hpp"
-#include "Transform.hpp"
 #include "Window.hpp"
 
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)

@@ -243,5 +243,11 @@
     <ClInclude Include="FieldInfo.hpp">
       <Filter>Reflection\Meta Info</Filter>
     </ClInclude>
+    <ClInclude Include="LogicTimer.hpp">
+      <Filter>Core\Timers</Filter>
+    </ClInclude>
+    <ClInclude Include="AllComponents.hpp">
+      <Filter>Core\Components</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

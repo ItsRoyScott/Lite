@@ -78,7 +78,7 @@ namespace lite
     ~BindBase()
     {
       &autoBind;
-      ReflectionPlugin::OnTypeEnd<T>(TypeOf<T>().Name());
+      ReflectionPlugin::OnTypeEnd<T>(TypeOf<T>().Name);
     }
 
   };
