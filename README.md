@@ -26,7 +26,7 @@ I built this library as an instructive example game engine for Game Engine Archi
 
 - Action mappings for input: "Jump" maps to VK_SPACE, etc.
 
-- Separate thread or threadpool for Physics.
+- Separate thread or threadpool for physics.
 
 # Topics
 
