@@ -18,6 +18,7 @@ namespace lite
     bool  lockFramerate = true;
     bool  stepMode = false;
     high_resolution_timer timer;
+    float totalTime = 0;
 
   public: // properties
 
@@ -41,6 +42,8 @@ namespace lite
     const bool& LockFramerate() const { return lockFramerate; }
     void LockFramerate(bool value) { lockFramerate = value; }
 
+    const float& TotalTime() const { return totalTime; }
+
   public: // methods
 
     // Called at the start of a frame; saves frame dt.
@@ -57,6 +60,8 @@ namespace lite
         // Debugger has been detected. Use the ideal dt.
         deltaTime = 1.0f / idealFramerate;
       }
+
+      totalTime += deltaTime;
 
       timer.start();
     }

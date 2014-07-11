@@ -1,44 +1,41 @@
 #pragma once
 
-#include "WindowsInclude.h"
+#include "FrameTimer.hpp"
 
 namespace lite
 {
-  // Fast timer recommended for game logic because timeGetTime
-  //  performs significantly better than QueryPerformanceCounter.
+  // Fast timer recommended for game logic because it
+  //  takes measurements from the engine's FrameTimer.
   class LogicTimer
   {
   private: // data
 
-    DWORD startTime;
+    float startTime;
 
   public: // methods
 
     // Starts the timer.
-    LogicTimer(bool start = true)
+    LogicTimer()
     {
-      if (start)
-      {
-        Start();
-      }
+      Start();
     }
 
     // Returns milliseconds since the last call to start.
     float ElapsedMilliseconds()
     {
-      return float(timeGetTime() - startTime);
+      return ElapsedSeconds() * 1000.0f;
     }
 
     // Returns seconds since the last call to start.
     float ElapsedSeconds()
     {
-      return ElapsedMilliseconds() / 1000.0f;
+      return FrameTimer::CurrentInstance()->TotalTime() - startTime;
     }
 
     // Starts or restarts the timer.
     void Start()
     {
-      startTime = timeGetTime();
+      startTime = FrameTimer::CurrentInstance()->TotalTime();
     }
   };
 } // namespace lite
