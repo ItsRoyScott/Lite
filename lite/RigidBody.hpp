@@ -28,6 +28,12 @@ namespace lite
       body = Physics::CurrentInstance()->AddRigidBody();
     }
 
+    void Initialize() override
+    {
+      Transform& tfm = OwnerReference()[Transform_];
+      body->Initialize(tfm.LocalPosition, tfm.LocalRotation);
+    }
+
   private: // methods
 
     void PullFromSystems() override

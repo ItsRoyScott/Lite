@@ -173,7 +173,11 @@ namespace lite
     unique_ptr<IComponent> Create(const string& name)
     {
       auto it = components.find(name);
-      if (it == components.end()) return nullptr;
+      if (it == components.end())
+      {
+        Warn("Failed to find create component " << name);
+        return nullptr;
+      }
       return it->second();
     }
 
@@ -187,4 +191,10 @@ namespace lite
       components.emplace(move(name), move(create));
     }
   };
+
+  template <class T>
+  void RegisterComponent(string name = typeid(T).name())
+  {
+    return ComponentManager::Instance().Register<T>(move(name));
+  }
 } // namespace lite

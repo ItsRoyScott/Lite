@@ -3,7 +3,6 @@
 #include "Component.hpp"
 #include "Essentials.hpp"
 #include "EventHandler.hpp"
-#include "Transform.hpp"
 
 namespace lite
 {
@@ -36,6 +35,14 @@ namespace lite
 
     // Pointer to the parent game object. (May be null)
     GameObject* const& Parent() const { return parent; }
+
+    // Recommended way to access parent, because 
+    //  an assertion will check for null dereference.
+    GameObject& ParentReference() const
+    {
+      FatalIf(!parent, "Dereferencing null parent GameObject");
+      return *parent;
+    }
 
   public: // methods
 
@@ -94,7 +101,7 @@ namespace lite
     }
 
     // Adds a new child object by prefab.
-    GameObject& AddChild(const GameObject& prefab, bool initialize = true)
+    GameObject& AddChild(const GameObject& prefab = GameObject(), bool initialize = true)
     {
       GameObject& object = StoreChild(make_unique<GameObject>(prefab));
       if (initialize)
@@ -277,6 +284,38 @@ namespace lite
       }
     }
 
+    // Calls PullFromSystems function on all components recursively.
+    void PullFromSystems()
+    {
+      // Call on all components.
+      for (auto& component : components)
+      {
+        component->PullFromSystems();
+      }
+
+      // Call on all child objects.
+      for (auto& child : children)
+      {
+        child->PullFromSystems();
+      }
+    }
+
+    // Calls PullFromSystems function on all components recursively.
+    void PushToSystems()
+    {
+      // Call on all components.
+      for (auto& component : components)
+      {
+        component->PushToSystems();
+      }
+
+      // Call on all child objects.
+      for (auto& child : children)
+      {
+        child->PushToSystems();
+      }
+    }
+
     // Updates child objects, then the components of this object.
     void Update()
     {
@@ -359,13 +398,16 @@ namespace lite
     GameObject& StoreChild(unique_ptr<GameObject> object)
     {
       children.push_back(move(object));
+      children.back()->parent = this;
       return *children.back();
     }
 
     // Adds a component directly into the current list of components.
     IComponent& StoreComponent(unique_ptr<IComponent> component)
     {
+      FatalIf(!component, "Null component being stored in GameObject");
       components.push_back(move(component));
+      components.back()->SetOwner(*this);
       return *components.back();
     }
   };

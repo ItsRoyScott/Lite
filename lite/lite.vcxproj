@@ -92,7 +92,6 @@
     <ClCompile Include="WICTextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AllComponents.hpp" />
     <ClInclude Include="AssimpInclude.hpp" />
     <ClInclude Include="Audio.hpp" />
     <ClInclude Include="BasicIO.hpp" />

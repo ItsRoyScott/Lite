@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Component.hpp"
+#include "GameObject.hpp"
 #include "Graphics.hpp"
 #include "ModelInstance.hpp"
+#include "Transform.hpp"
 
 namespace lite
 {
@@ -27,6 +29,12 @@ namespace lite
     Model()
     {
       model = Graphics::CurrentInstance()->AddModel();
+    }
+
+    void PushToSystems() override
+    {
+      Transform& tfm = OwnerReference()[Transform_];
+      model->Transform = tfm.GetWorldMatrix();
     }
   };
 } // namespace lite

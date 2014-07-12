@@ -20,7 +20,7 @@ namespace lite
     string Mesh;
 
     // World transform matrix.
-    XMFLOAT4X4 Transform;
+    float4x4 Transform;
 
   public: // methods
 

@@ -1,5 +1,4 @@
 #include "Precompiled.hpp"
-#include "AllComponents.hpp"
 #include "Audio.hpp"
 #include "FrameTimer.hpp"
 #include "GameObject.hpp"
@@ -11,6 +10,10 @@
 #include "Scripting.hpp"
 #include "Window.hpp"
 
+#include "Model.hpp"
+#include "RigidBody.hpp"
+#include "Transform.hpp"
+
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
   using namespace lite;
@@ -21,9 +24,14 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   auto window   = Window("Lite Game Engine", 960, 540);
   auto graphics = Graphics(window);
 
+  RegisterComponent<Model>();
+  RegisterComponent<RigidBody>();
+  RegisterComponent<Transform>();
+
+  GameObject scene;
+
   // Set up the scene.
-  vector<shared_ptr<ModelInstance>> models;
-  static const float limit = 12;
+  static const float limit = 0;
   static const float gap = 4;
   for (float x = -limit; x <= limit; x += gap)
   {
@@ -31,18 +39,20 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
       for (float z = -limit; z <= limit; z += gap)
       {
-        auto model = graphics.AddModel();
-        model->Material = "Default";
-        model->Mesh = "spongebob.obj";
-        XMStoreFloat4x4(&model->Transform, XMMatrixTranslation(x, y, z));
-        models.push_back(move(model));
+        GameObject& child = scene.AddChild();
+
+        Transform& transform = child[Transform_];
+        transform.LocalPosition = { x, y, z };
+
+        Model& model = child[Model_];
+        model.Material("Default");
+        model.Mesh("spongebob.obj");
+
+        RigidBody& body = child[RigidBody_];
+        body.Mass(10);
       }
     }
   }
-
-  vector<shared_ptr<PhysicsRigidBody>> bodies;
-  bodies.push_back(physics.AddRigidBody());
-  bodies[0]->SetMass(10);
 
   auto frameTimer = FrameTimer();
 
@@ -61,15 +71,17 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     if (Input::IsHeld('R')) graphics.Camera.Climb(0.5f);
     if (Input::IsHeld('F')) graphics.Camera.Climb(-0.5f);
 
-    auto& model = models[models.size() / 2];
-    auto trans = XMMatrixTranslationFromVector(bodies[0]->Position().xm);
-    XMStoreFloat4x4(&model->Transform, trans);
+    scene.Update();
+
+    scene.PushToSystems();
 
     // Update all systems.
     audio.Update();
     physics.Update(frameTimer.DeltaTime());
     window.Update();
     graphics.Update(frameTimer.DeltaTime());
+
+    scene.PullFromSystems();
 
     frameTimer.EndFrame();
   }

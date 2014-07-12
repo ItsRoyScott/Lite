@@ -2,6 +2,7 @@
 
 #include "D3DInclude.hpp"
 #include "Essentials.hpp"
+#include "float4x4.hpp"
 #include "GameObject.hpp"
 
 namespace lite
@@ -14,7 +15,7 @@ namespace lite
     float3 LocalPosition = { 0, 0, 0 };
 
     // Rotation as a quaternion.
-    float4 LocalRotation = { 1, 0, 0, 0 };
+    float4 LocalRotation = { 0, 0, 0, 1 };
 
     // Scale factor.
     float3 LocalScale = { 1, 1, 1 };
@@ -41,9 +42,9 @@ namespace lite
       }
 
       // Multiply this local transform with the parent's offset.
-      if (Owner())
+      if (Owner() && Owner()->Parent())
       {
-        return GetLocalMatrix() * OwnerReference()[Transform_].GetOffsetFromParent(parent);
+        return OwnerReference().ParentReference()[Transform_].GetOffsetFromParent(parent) * GetLocalMatrix();
       }
 
       // No parents: return the local matrix.
@@ -54,9 +55,9 @@ namespace lite
     XMMATRIX GetWorldMatrix() const
     {
       // Multiply this local transform with the parent's world transform.
-      if (Owner())
+      if (Owner() && Owner()->Parent())
       {
-        return GetLocalMatrix() * OwnerReference()[Transform_].GetWorldMatrix();
+        return OwnerReference().ParentReference()[Transform_].GetWorldMatrix() * GetLocalMatrix();
       }
     
       // No parents: return the local matrix.
@@ -91,7 +92,7 @@ namespace lite
     }
 
     // Sets local properties to construct the matrix.
-    void SetLocalMatrix(float4x4 matrix)
+    void SetLocalMatrix(const float4x4& matrix)
     {
       // Decompoose the given matrix.
       XMVECTOR scale, quat, trans;

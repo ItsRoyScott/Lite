@@ -258,9 +258,6 @@
     <ClInclude Include="LogicTimer.hpp">
       <Filter>Core\Timers</Filter>
     </ClInclude>
-    <ClInclude Include="AllComponents.hpp">
-      <Filter>Core\Components</Filter>
-    </ClInclude>
     <ClInclude Include="Vector.hpp">
       <Filter>Math</Filter>
     </ClInclude>

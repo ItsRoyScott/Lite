@@ -170,6 +170,12 @@ namespace lite
       return inverseMass >= 0.0f;
     }
 
+    void Initialize(float3 position, float4 rotation)
+    {
+      this->position = position;
+      this->orientation = rotation;
+    }
+
     void SetMass(float m)
     {
       if (m <= 0)
