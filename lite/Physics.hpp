@@ -1,131 +1,280 @@
 #pragma once
 
+#include "CollisionDetection.hpp"
+#include "Contact.hpp"
 #include "D3DInclude.hpp"
 #include "Essentials.hpp"
+#include "PhysicsRigidBody.hpp"
+
+// =================================================================================================
+// This engine is an implementation of "Game Physics Engine Development" by Ian Millington using the
+//  XNA Math library (now replaced by DirectXMath).
+//
+// Amazon: http://www.amazon.com/Game-Physics-Engine-Development-Commercial-Grade/dp/0123819768
+// Cyclone Physics: https://github.com/idmillington/cyclone-physics
+// 
+// The amount of math going on in this engine can be overwhelming at first. I recommend getting the
+//  book or downloading the Cyclone engine and taking it piecemeal.
+// =================================================================================================
 
 namespace lite
 {
-  class Particle
+  class ContactResolver
   {
   private: // data
 
-    float3 acceleration = { 0, 0, 0 };
-    float3 accumulatedForces = { 0, 0, 0 };
-    float inverseMass = 1;
-    float mass = 1;
-    float3 position = { 0, 0, 0 };
-    float3 velocity = { 0, 0, 0 };
+    size_t positionIterationsUsed = 0;
+
+    size_t velocityIterationsUsed = 0;
 
   public: // data
 
-    // Functions which add in a force or otherwise act on the particle.
-    vector<function<void(Particle& particle, float dt)>> Actors;
+    float PositionEpsilon = 0.01f;
 
-    // Damping used to make velocity integration more realistic.
-    float Damping = 0.999f;
+    size_t PositionIterations = 0;
 
-  public: // properties
+    float VelocityEpsilon = 0.01f;
 
-    // Acceleration in meters per second squared.
-    const float3& Acceleration() const { return acceleration; }
+    size_t VelocityIterations = 0;
 
-    // Summation of forces currently acting on this object.
-    const float3& AccumulatedForces() const { return accumulatedForces; }
+  public: // methods
 
-    // 1 / Mass.
-    const float& InverseMass() const { return inverseMass; }
-
-    // Mass in kilograms.
-    const float& Mass() const { return mass; }
-
-    // Position in meters.
-    const float3& Position() const { return position; }
-
-    // Velocity in meters per second.
-    const float3& Velocity() const { return velocity; }
-
-  public:
-
-    void AddForce(float3 vector)
+    void ResolveContacts(vector<Contact>& contacts, float dt)
     {
-      XMVECTOR newForces = XMVectorAdd(XMLoadFloat3(&accumulatedForces), XMLoadFloat3(&vector));
-      XMStoreFloat3(&accumulatedForces, newForces);
-    }
+      // Make sure we have something to do.
+      if (contacts.size() == 0) return;
 
-    void Integrate(float dt)
-    {
-      // Early out for zero-mass objects.
-      if (inverseMass <= 0) return;
-
-      // Call on all actors.
-      for (auto& actor : Actors)
+      // Prepare the contacts for processing.
+      for (auto& contact : contacts)
       {
-        actor(*this, dt);
+        contact.CalculateInternals(dt);
       }
 
-      // Update position based on the current velocity.
-      XMVECTOR vt = XMVectorScale(XMLoadFloat3(&velocity), dt);
-      XMVECTOR newPosition = XMVectorAdd(XMLoadFloat3(&position), vt);
+      // Resolve the interpenetration problems with the contacts.
+      AdjustPositions(contacts, dt);
 
-      // Update acceleration based on the current forces acting on this object.
-      XMVECTOR fm = XMVectorScale(XMLoadFloat3(&accumulatedForces), inverseMass);
-      XMVECTOR newAcceleration = XMVectorAdd(XMLoadFloat3(&acceleration), fm);
-
-      // Update velocity based on the current acceleration of the object.
-      XMVECTOR at = XMVectorScale(newAcceleration, dt);
-      XMVECTOR newVelocity = XMVectorAdd(XMLoadFloat3(&velocity), at);
-
-      // Damp velocity.
-      newVelocity = XMVectorScale(newVelocity, pow(Damping, dt));
-
-      // Reset forces applied.
-      acceleration = 0;
+      // Resolve the velocity problems with the contacts.
+      AdjustVelocities(contacts, dt);
     }
 
-    void SetMass(float m)
+  private: // methods
+
+    void AdjustPositions(vector<Contact>& contacts, float dt)
     {
-      inverseMass = 1.0f / m;
-      mass = m;
+      unsigned i, index;
+      float3 linearChange[2], angularChange[2];
+      float max;
+      Vector deltaPosition;
+
+      // iteratively resolve interpenetrations in order of severity.
+      for (positionIterationsUsed = 0; positionIterationsUsed < PositionIterations; ++positionIterationsUsed)
+      {
+        // Find biggest penetration
+        max = PositionEpsilon;
+        index = contacts.size();
+        for (i = 0; i < contacts.size(); i++)
+        {
+          if (contacts[i].Penetration > max)
+          {
+            max = contacts[i].Penetration;
+            index = i;
+          }
+        }
+        if (index == contacts.size()) break;
+
+        // Match the awake state at the contact.
+        contacts[index].MatchAwakeState();
+
+        // Resolve the penetration.
+        contacts[index].ApplyPositionChange(linearChange, angularChange, max);
+
+        // Again this action may have changed the penetration of other
+        // bodies, so we update contacts.
+        for (i = 0; i < contacts.size(); i++)
+        {
+          // Check each body in the contact.
+          for (unsigned b = 0; b < 2; b++)
+          {
+            if (contacts[i].Body[b])
+            {
+              // Check for a match with each body in the newly resolved contact.
+              for (unsigned d = 0; d < 2; d++)
+              {
+                if (contacts[i].Body[b] == contacts[index].Body[d])
+                {
+                  deltaPosition = Vector(linearChange[d]) +
+                    Vector(angularChange[d]).Cross(contacts[i].RelativeContactPosition[b]);
+
+                  // The sign of the change is positive if we're dealing with 
+                  //   the second body in a contact and negative otherwise.
+                  //   (because we're subtracting the resolution)
+                  contacts[i].Penetration += 
+                    deltaPosition.Dot(contacts[i].ContactNormal) * (b ? 1 : -1);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    void AdjustVelocities(vector<Contact>& contacts, float dt)
+    {
+      float3 velocityChange[2], rotationChange[2];
+      Vector deltaVel;
+
+      // iteratively handle impacts in order of severity.
+      for (velocityIterationsUsed = 0; velocityIterationsUsed < VelocityIterations; ++velocityIterationsUsed)
+      {
+        // Find contact with maximum magnitude of probable velocity change.
+        float max = VelocityEpsilon;
+        unsigned index = contacts.size();
+        for (unsigned i = 0; i < contacts.size(); i++)
+        {
+          if (contacts[i].DesiredDeltaVelocity > max)
+          {
+            max = contacts[i].DesiredDeltaVelocity;
+            index = i;
+          }
+        }
+        if (index == contacts.size()) break;
+
+        // Match the awake state at the contact
+        contacts[index].MatchAwakeState();
+
+        // Do the resolution on the contact that came out top.
+        contacts[index].ApplyVelocityChange(velocityChange, rotationChange);
+
+        // With the change in velocity of the two bodies, the update of
+        // contact velocities means that some of the relative closing
+        // velocities need recomputing.
+        for (unsigned i = 0; i < contacts.size(); i++)
+        {
+          // Check each body in the contact
+          for (unsigned b = 0; b < 2; b++)
+          {
+            if (contacts[i].Body[b])
+            {
+              // Check for a match with each body in the newly
+              // resolved contact
+              for (unsigned d = 0; d < 2; d++)
+              {
+                if (contacts[i].Body[b] == contacts[index].Body[d])
+                {
+                  deltaVel = Vector(velocityChange[d]) + 
+                    Vector(rotationChange[d]).Cross(contacts[i].RelativeContactPosition[b]);
+
+                  // The sign of the change is negative if we're dealing
+                  // with the second body in a contact.
+                  contacts[i].ContactVelocity = Vector(contacts[i].ContactVelocity) +
+                    Vector(contacts[i].ContactToWorld.TransformTranspose(deltaVel))
+                    * (b ? -1.0f : 1.0f);
+                  contacts[i].CalculateDesiredDeltaVelocity(dt);
+                }
+              }
+            }
+          }
+        }
+      }
     }
   };
 
-  class Physics
+  class Physics : public LightSingleton<Physics>
   {
   private: // data
 
+    // Whether a gravity actor should be added to bodies by default.
     bool addDefaultGravity = true;
-    function<void(Particle&, float)> defaultGravityActor;
-    vector<unique_ptr<Particle>> particles;
+
+    // Array of rigid bodies.
+    vector<shared_ptr<PhysicsRigidBody>> bodies;
+
+    // Stores all contacts and basic properties for this frame.
+    CollisionData collisionData;
+
+    // Array of all collision primitives.
+    vector<shared_ptr<CollisionPrimitive>> collisionPrimitives;
+
+    // Actor attached to bodies by default.
+    function<void(PhysicsRigidBody&, float)> defaultGravityActor;
+
+    // Resolves collisions reported by the CollisionDetector.
+    ContactResolver resolver;
 
   public: // methods
 
     Physics(bool addGravity = true, float3 defaultGravityVector = { 0, -9.8f, 0 }) :
       addDefaultGravity(addGravity)
     {
-      defaultGravityActor = [=](Particle& p, float) { p.AddForce(defaultGravityVector); };
+      defaultGravityActor = [=](PhysicsRigidBody& p, float) { p.AddForce(defaultGravityVector); };
     }
 
-    Particle& AddParticle()
+    template <class T>
+    shared_ptr<T> AddCollisionPrimitive()
     {
-      // Create the new particle.
-      particles.push_back(make_unique<Particle>());
-      Particle& particle = *particles.back();
+      // Create the new primitive.
+      collisionPrimitives.push_back(make_shared<T>());
 
+      return collisionPrimitives.back();
+    }
+
+    shared_ptr<PhysicsRigidBody> AddRigidBody()
+    {
+      // Create the new body.
+      bodies.push_back(make_shared<PhysicsRigidBody>());
+      shared_ptr<PhysicsRigidBody>& body = bodies.back();
+      
       // Add default gravity actor if it was requested at startup.
       if (addDefaultGravity)
       {
-        particle.Actors.push_back(defaultGravityActor);
+        body->Actors.push_back(defaultGravityActor);
       }
 
-      return particle;
+      return body;
     }
 
     void Update(float dt)
     {
-      for (auto& particle : particles)
+      for (auto& body : bodies)
       {
-        particle->Integrate(dt);
+        body->ApplyActors(dt);
+        body->Integrate(dt);
       }
+
+      // Generate contacts.
+      size_t contacts = GenerateContacts();
+
+      // Resolve contacts.
+      ContactResolver resolver;
+      resolver.PositionIterations = contacts * 4;
+      resolver.VelocityIterations = contacts * 4;
+      resolver.ResolveContacts(collisionData.Contacts, dt);
+    }
+
+  private: // methods
+
+    size_t GenerateContacts()
+    {
+      // Set up the collision data.
+      collisionData.Clear();
+      collisionData.Friction = 0.8f;
+      collisionData.Restitution = 0.2f;
+      collisionData.Tolerance = 0.1f;
+
+      size_t total = 0;
+
+      // Collide all registered primitives.
+      for (size_t j = 0; j < collisionPrimitives.size(); ++j)
+      {
+        for (size_t i = j + 1; i < collisionPrimitives.size(); ++i)
+        {
+          CollisionPrimitive& a = *collisionPrimitives[i];
+          CollisionPrimitive& b = *collisionPrimitives[j];
+          total += CollisionDetector::Instance().Collide(a, b, collisionData);
+        }
+      }
+
+      return total;
     }
   };
 } // namespace lite

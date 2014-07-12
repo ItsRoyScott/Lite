@@ -78,6 +78,7 @@ namespace lite // types
   {
     static const size_t     ArgumentCount = tuple_size<tuple<Args...>>::value;
     typedef tuple<Args...>  ArgumentTuple;
+    typedef              R(*CFunctionType)(Args...);
     typedef void            ClassType;
     static const bool       IsConstMemberFunction = false;
     static const bool       IsFunction = true;
@@ -130,7 +131,7 @@ namespace lite // types
       };
 
       // Reinterpret cast the typed function to a typeless function.
-      return TypedToTypelessFunction<R(T&, Args...)>(lambda);
+      return detail::CastFunction<R(T&, Args...), void()>(lambda);
     }
   };
 

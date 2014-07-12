@@ -76,6 +76,24 @@
     <Filter Include="Graphics\Direct3D\WIC Texture Loader">
       <UniqueIdentifier>{cf09c4b8-0790-4530-b725-81e6ed97ab9d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Math">
+      <UniqueIdentifier>{05a92c31-c74e-4b21-a721-c0ec48122bb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Bodies">
+      <UniqueIdentifier>{6d1c9c28-128c-4848-8140-c40ab1988883}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Contacts">
+      <UniqueIdentifier>{10bef14f-59c7-4cc5-bca0-3f575c6d2cf6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Collision">
+      <UniqueIdentifier>{651a4e90-4690-4303-b001-27dbecf9b65c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\Debug Drawing">
+      <UniqueIdentifier>{70879fb3-cc9b-4196-8688-ab69de9fbdb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Utility">
+      <UniqueIdentifier>{2d129027-873b-46e0-9f58-29c31e75cb59}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
@@ -121,9 +139,6 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Component.hpp">
-      <Filter>Core\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform.hpp">
       <Filter>Core\Components</Filter>
     </ClInclude>
     <ClInclude Include="FrameTimer.hpp">
@@ -237,9 +252,6 @@
     <ClInclude Include="WICTextureLoader.h">
       <Filter>Graphics\Direct3D\WIC Texture Loader</Filter>
     </ClInclude>
-    <ClInclude Include="Model.hpp">
-      <Filter>Core\Components</Filter>
-    </ClInclude>
     <ClInclude Include="FieldInfo.hpp">
       <Filter>Reflection\Meta Info</Filter>
     </ClInclude>
@@ -247,6 +259,48 @@
       <Filter>Core\Timers</Filter>
     </ClInclude>
     <ClInclude Include="AllComponents.hpp">
+      <Filter>Core\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsRigidBody.hpp">
+      <Filter>Physics\Bodies</Filter>
+    </ClInclude>
+    <ClInclude Include="RigidBody.hpp">
+      <Filter>Core\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.hpp">
+      <Filter>Core\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.hpp">
+      <Filter>Core\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Contact.hpp">
+      <Filter>Physics\Contacts</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionDetection.hpp">
+      <Filter>Physics\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="ContactGenerator.hpp">
+      <Filter>Physics\Contacts</Filter>
+    </ClInclude>
+    <ClInclude Include="DebugDrawer.hpp">
+      <Filter>Graphics\Debug Drawing</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsUtility.hpp">
+      <Filter>Physics\Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="float4x4.hpp">
+      <Filter>Math</Filter>
+    </ClInclude>
+    <ClInclude Include="SphereCollision.hpp">
+      <Filter>Core\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentForward.hpp">
       <Filter>Core\Components</Filter>
     </ClInclude>
   </ItemGroup>

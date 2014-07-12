@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FrameTimer.hpp"
+#include "Reflection.hpp"
 
 namespace lite
 {
@@ -38,4 +39,9 @@ namespace lite
       startTime = FrameTimer::CurrentInstance()->TotalTime();
     }
   };
+
+  reflect(LogicTimer,
+    "ElapsedMilliseconds", &T::ElapsedMilliseconds,
+    "ElapsedSeconds", &T::ElapsedSeconds,
+    "Start", &T::Start);
 } // namespace lite

@@ -2,6 +2,7 @@
 
 #include "D3DInclude.hpp"
 #include "Essentials.hpp"
+#include "GameObject.hpp"
 
 namespace lite
 {
@@ -32,19 +33,35 @@ namespace lite
         XMLoadFloat3(&LocalPosition));  // translation
     }
 
-    // TODO
-    //// Transformation formed by this transform and all of its parents.
-    //XMMATRIX GetWorldMatrix() const
-    //{
-    //  // Multiply this local transform with the parent's world transform.
-    //  if (Owner())
-    //  {
-    //    return GetLocalMatrix() * Parent->GetWorldMatrix();
-    //  }
-    //
-    //  // No parents: return the local matrix.
-    //  return GetLocalMatrix();
-    //}
+    XMMATRIX GetOffsetFromParent(Transform& parent) const
+    {
+      if (&parent == this)
+      {
+        return XMMatrixIdentity();
+      }
+
+      // Multiply this local transform with the parent's offset.
+      if (Owner())
+      {
+        return GetLocalMatrix() * OwnerReference()[Transform_].GetOffsetFromParent(parent);
+      }
+
+      // No parents: return the local matrix.
+      return GetLocalMatrix();
+    }
+
+    // Transformation formed by this transform and all of its parents.
+    XMMATRIX GetWorldMatrix() const
+    {
+      // Multiply this local transform with the parent's world transform.
+      if (Owner())
+      {
+        return GetLocalMatrix() * OwnerReference()[Transform_].GetWorldMatrix();
+      }
+    
+      // No parents: return the local matrix.
+      return GetLocalMatrix();
+    }
 
     // Rotate roll (z), then pitch (x), then yaw (y).
     void RotateBy(float3 eulerAngles)

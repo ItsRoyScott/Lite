@@ -14,6 +14,7 @@ namespace lite
     struct ObjectConstants
     {
       float4x4 world;
+      float4 outputColor;
     };
 
     struct Vertex
@@ -61,16 +62,6 @@ namespace lite
   public: // methods
 
     MeshData() = default;
-
-    MeshData(MeshData&& b) :
-      constantBuffer(move(b.constantBuffer)),
-      indexBuffer(move(b.indexBuffer)),
-      indices(move(b.indices)),
-      name(move(b.name)),
-      vertexBuffer(move(b.vertexBuffer)),
-      vertices(move(b.vertices))
-    {
-    }
 
     MeshData(const string& name)
     {
@@ -152,17 +143,7 @@ namespace lite
       DX(d3d.Device->CreateBuffer(&cbDesc, nullptr, constantBuffer));
     }
 
-    MeshData& operator=(MeshData&& b)
-    {
-      constantBuffer = move(b.constantBuffer);
-      indexBuffer = move(b.indexBuffer);
-      indices = move(b.indices);
-      name = move(b.name);
-      vertexBuffer = move(b.vertexBuffer);
-      vertices = move(b.vertices);
-
-      return *this;
-    }
+    virtual ~MeshData() {}
 
     // Whether the mesh loaded successfully.
     bool IsLoaded() const

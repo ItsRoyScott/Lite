@@ -128,3 +128,25 @@ namespace lite
   reflect(unsigned long long);
   reflect(wchar_t);
 } // namespace lite
+
+namespace lite
+{
+  inline ostream& operator<<(ostream& os, const FieldInfo& f)
+  {
+    return os << f.type->Name << " " << f.Name;
+  }
+
+  inline ostream& operator<<(ostream& os, const MethodInfo& mi)
+  {
+    os << mi.returnType->Name << " " << mi.Name << "(";
+    if (mi.ArgumentTypes.size())
+    {
+      os << mi.ArgumentTypes[0]->Name;
+    }
+    for (size_t i = 1; i < mi.ArgumentTypes.size(); ++i)
+    {
+      os << ", " << mi.ArgumentTypes[i]->Name;
+    }
+    return os << ")";
+  }
+} // namespace lite

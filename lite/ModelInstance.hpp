@@ -1,5 +1,6 @@
 #pragma once
 
+#include "D3DInclude.hpp"
 #include "GraphicsResourceManager.hpp"
 #include "ShaderManager.hpp"
 
@@ -8,6 +9,9 @@ namespace lite
   class ModelInstance
   {
   public: // data
+
+    // Color of the model (optional).
+    float4 Color = { 1, 1, 1, 1 };
 
     // Name of the material used to draw the model.
     string Material;
@@ -33,13 +37,16 @@ namespace lite
       TextureData& texture = TextureManager::Instance()[material.Texture()];
       if (!vs.IsLoaded() || !ps.IsLoaded() || !texture.IsLoaded()) return;
 
+      // Initialize per-object constants to be sent into the shaders.
+      MeshData::ObjectConstants constants;
+      XMStoreFloat4x4(&constants.world, XMMatrixTranspose(XMLoadFloat4x4(&Transform)));
+      constants.outputColor = Color;
+
       D3DInfo& d3d = *D3DInfo::CurrentInstance();
       UINT vertexStride = sizeof(MeshData::Vertex);
       UINT vertexOffset = 0;
 
       // Draw.
-      MeshData::ObjectConstants constants;
-      XMStoreFloat4x4(&constants.world, XMMatrixTranspose(XMLoadFloat4x4(&Transform)));
       d3d.Context->UpdateSubresource(mesh.ConstantBuffer(), 0, nullptr, &constants, 0, 0);
       d3d.Context->IASetVertexBuffers(0, 1, mesh.VertexBuffer(), &vertexStride, &vertexOffset);
       d3d.Context->IASetIndexBuffer(mesh.IndexBuffer(), mesh.IndexFormat, 0);

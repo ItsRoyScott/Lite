@@ -4,7 +4,6 @@ SamplerState samLinear : register( s0 );
 cbuffer SceneConstants : register(b0)
 {
   matrix cbViewProjection;
-  float4 cbOutputColor;
   float4 cbLightDirections[2];
   float4 cbLightColors[2];
 }
@@ -12,6 +11,7 @@ cbuffer SceneConstants : register(b0)
 cbuffer ObjectConstants : register(b1)
 {
   matrix cbWorld;
+  float4 cbOutputColor;
 }
 
 struct VSInput

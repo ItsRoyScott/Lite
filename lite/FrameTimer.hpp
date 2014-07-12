@@ -42,6 +42,7 @@ namespace lite
     const bool& LockFramerate() const { return lockFramerate; }
     void LockFramerate(bool value) { lockFramerate = value; }
 
+    // Total accumulated time since the timer started.
     const float& TotalTime() const { return totalTime; }
 
   public: // methods

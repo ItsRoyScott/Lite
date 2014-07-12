@@ -37,13 +37,12 @@ namespace lite
 
     TypeInfo() = default;
     TypeInfo(const TypeInfo&) = delete;
-    ~TypeInfo() = default;
     TypeInfo& operator=(const TypeInfo&) = delete;
+    ~TypeInfo() = default;
 
     // Add base-case; does nothing.
     void Add()
-    {
-    }
+    {}
 
     // Adds a field given its name and pointer.
     template <class PointerT, class... Args>
@@ -77,6 +76,12 @@ namespace lite
     {
       name = move(typeName);
       Add(forward<Args>(args)...);
+    }
+
+    // Formats the type info into an ostream.
+    friend ostream& operator<<(ostream& os, const TypeInfo& ti)
+    {
+      os << ti.Name;
     }
   };
 

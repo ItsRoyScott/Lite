@@ -14,7 +14,7 @@ namespace lite
     vector<unique_ptr<GameObject>> children;
     vector<unique_ptr<IComponent>> components;
     bool  destroyFlag = false;
-    uint64_t identifier = GenerateIdentifier();
+    uint32_t identifier = GenerateIdentifier();
     string name;
     GameObject* parent = nullptr;
     vector<GameObject*> toDestroy;
@@ -22,24 +22,27 @@ namespace lite
   public: // properties
 
     // Children game objects attached to this game object.
-    const vector<unique_ptr<GameObject>>& Children = children;
+    const vector<unique_ptr<GameObject>>& Children() const { return children; }
 
     // Whether this object will be destroyed at the end of the frame.
-    const bool& DestroyFlag = destroyFlag;
+    const bool& DestroyFlag() const { return destroyFlag; }
 
     // Unique identifer of this game object.
-    const uint64_t& Identifier =  identifier;
+    const uint32_t& Identifier() const { return identifier; }
 
     // Name of this game object. (May be empty)
     const string& Name() const { return name; }
     void Name(string name_) { name = move(name_); }
 
     // Pointer to the parent game object. (May be null)
-    GameObject* const& Parent = parent;
+    GameObject* const& Parent() const { return parent; }
 
   public: // methods
 
-    GameObject() = default;
+    GameObject()
+    {
+      Instances()[identifier] = this;
+    }
 
     GameObject(GameObject&& b) :
       children(move(b.children)),
@@ -49,11 +52,14 @@ namespace lite
       name(move(b.name)),
       parent(b.parent),
       toDestroy(move(b.toDestroy))
-    {}
+    {
+      Instances()[identifier] = this;
+    }
 
     GameObject(const GameObject& b) :
       name(b.name)
     {
+      Instances()[identifier] = this;
       CopyChildren(b.children);
       CopyComponents(b.components);
     }
@@ -61,6 +67,7 @@ namespace lite
     virtual ~GameObject() 
     {
       Clear();
+      Instances().erase(identifier);
     }
 
     GameObject& operator=(GameObject&& b)
@@ -68,7 +75,6 @@ namespace lite
       children = move(b.children);
       components = move(b.components);
       destroyFlag = b.destroyFlag;
-      identifier = b.identifier;
       name = move(b.name);
       parent = b.parent;
       toDestroy = move(b.toDestroy);
@@ -132,10 +138,18 @@ namespace lite
       parent->toDestroy.push_back(this);
     }
 
+    // Finds a game object by its identifier. (May return null)
+    static GameObject* FindByIdentifier(uint32_t id)
+    {
+      auto it = Instances().find(id);
+      if (it == Instances().end()) return nullptr;
+      return it->second;
+    }
+
     // Finds a game object given a predicate condition. (May return null)
     //  Signature of the predicate is bool(GameObject&).
     template <class Predicate>
-    GameObject* FindChild(Predicate pred)
+    GameObject* FindChildBy(Predicate pred)
     {
       for (auto& child : children)
       {
@@ -150,7 +164,7 @@ namespace lite
     // Finds a component given a predicate condition. (May return null)
     //  Signature of the predicate is bool(IComponent&).
     template <class Predicate>
-    IComponent* FindComponent(Predicate pred)
+    IComponent* FindComponentBy(Predicate pred)
     {
       for (auto& component : components)
       {
@@ -162,16 +176,32 @@ namespace lite
       return nullptr;
     }
 
+    // Finds a component by searching recursively through owner objects.
+    //  Signature of the predicate is bool(IComponent&).
+    template <class Predicate>
+    IComponent* FindComponentUpwardsBy(Predicate pred)
+    {
+      for (GameObject* owner = this; owner != nullptr; owner = owner->Parent())
+      {
+        IComponent* component = FindComponentBy(pred);
+        if (component)
+        {
+          return component;
+        }
+      }
+      return nullptr;
+    }
+
     // Finds a child by its name. (May return null)
     GameObject* GetChild(const string& name)
     {
-      return FindChild([&](GameObject& object) { return object.Name() == name; });
+      return FindChildBy([&](GameObject& object) { return object.Name() == name; });
     }
 
     // Finds a child by identifier. (May return null)
     GameObject* GetChild(uint64_t id)
     {
-      return FindChild([&](GameObject& object) { return object.Identifier == id; });
+      return FindChildBy([&](GameObject& object) { return object.Identifier() == id; });
     }
 
     // Returns the index of a child object. (May return numeric_limits<size_t>::max)
@@ -191,14 +221,42 @@ namespace lite
     template <class T>
     T* GetComponent()
     {
-      IComponent* component =  FindComponent([](IComponent& component) { return component.GetType() == typeid(T); });
+      IComponent* component =  FindComponentBy([](IComponent& component) 
+      { 
+        return component.GetType() == typeid(T); 
+      });
       return static_cast<T*>(component);
     }
 
     // Returns a component by its type name. (May return null)
     IComponent* GetComponent(const string& typeName)
     {
-      return FindComponent([&](IComponent& component) { return component.GetTypeName() == typeName; });
+      return FindComponentBy([&](IComponent& component) 
+      { 
+        return component.GetTypeName() == typeName; 
+      });
+    }
+
+    // Returns a component from type by searching recursively
+    //  through owner objects. (May return null)
+    template <class T>
+    T* GetComponentUpwards()
+    {
+      IComponent* component = FindComponentUpwardsBy([](IComponent& component) 
+      { 
+        return component.GetType() == typeid(T); 
+      });
+      return static_cast<T*>(component);
+    }
+
+    // Returns a component from name by searching recursively
+    //  through owner objects. (May return null)
+    IComponent* GetComponentUpwards(const string& typeName)
+    {
+      return FindComponentUpwardsBy([&](IComponent& component)
+      {
+        return component.GetTypeName() == typeName;
+      });
     }
 
     // Initializes components, then child objects.
@@ -284,10 +342,17 @@ namespace lite
     }
 
     // Generates a new unique identifier for the game object.
-    static uint64_t GenerateIdentifier()
+    static uint32_t GenerateIdentifier()
     {
-      static uint64_t id = 0;
+      static uint32_t id = 0;
       return id++;
+    }
+
+    // Stores a map of all GameObject instances by id.
+    static unordered_map<uint32_t, GameObject*>& Instances()
+    {
+      static unordered_map<uint32_t, GameObject*> instances;
+      return instances;
     }
 
     // Adds a child object directly into the current list of objects.
@@ -304,4 +369,45 @@ namespace lite
       return *components.back();
     }
   };
+
+  class GOId
+  {
+  private: // data
+
+    uint32_t id = (uint32_t)-1;
+
+  public: // methods
+
+    GOId() = default;
+
+    GOId(uint32_t id_) : 
+      id(id_)
+    {}
+
+    explicit operator bool() const
+    {
+      return GameObject::FindByIdentifier(id) != nullptr;
+    }
+
+    bool operator!() const
+    {
+      return !bool(*this);
+    }
+
+    operator GameObject*() const
+    {
+      return GameObject::FindByIdentifier(id);
+    }
+
+    bool operator==(const GOId& b) const
+    {
+      return id == b.id;
+    }
+
+    bool operator!=(const GOId& b) const
+    {
+      return !(*this == b);
+    }
+  };
+
 } // namespace lite

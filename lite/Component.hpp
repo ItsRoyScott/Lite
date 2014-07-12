@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ComponentForward.hpp"
 #include "Essentials.hpp"
 
 namespace lite
@@ -41,6 +42,12 @@ namespace lite
     //  order between different objects in the world.
     virtual void Initialize() = 0;
 
+    // Pulls updates from systems into components to prepare for game logic.
+    virtual void PullFromSystems() = 0;
+
+    // Pushes updates from game logic into systems to prepare for system update.
+    virtual void PushToSystems() = 0;
+
     // Called by the game object when a new owner is set for the component.
     virtual void SetOwner(GameObject& owner) = 0;
 
@@ -63,8 +70,16 @@ namespace lite
     // Whether the component is currently active and updating.
     const bool& IsActive() const { return isActive; }
 
-    // Game object that owns this component.
+    // Returns a pointer to the owning game object.
     lite::GameObject* const& Owner() const { return owner; }
+
+    // Recommended way to access an owner; this way the assertion
+    //  macro will catch you dereferencing null before you do.
+    lite::GameObject& OwnerReference() const 
+    {
+      FatalIf(!owner, "Dereferencing a null owner pointer");
+      return *owner; 
+    }
 
   public: // methods
 
@@ -129,6 +144,12 @@ namespace lite
     //  initialized. No guarantees are made about initialization
     //  order between different objects in the world.
     void Initialize() override {}
+
+    // Pulls updates from systems into components to prepare for game logic.
+    void PullFromSystems() override {}
+
+    // Pushes updates from game logic into systems to prepare for system update.
+    void PushToSystems() override {}
 
     // Called by the game object when a new owner is set for the component.
     void SetOwner(GameObject& owner) override

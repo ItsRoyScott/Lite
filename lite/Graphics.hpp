@@ -14,15 +14,9 @@ namespace lite
   {
   private: // types
 
-    struct ObjectConstants
-    {
-      float4x4 world;
-    };
-
     struct SceneConstants
     {
       float4x4 viewProjection;
-      float4 outputColor;
       array<float4, 2> lightDirections;
       array<float4, 2> lightColors;
     };
@@ -199,9 +193,7 @@ namespace lite
         { .5f, 0, 0, 1 }
       };
 
-      //ConstantBuffer cb;
       SceneConstants sceneConstants;
-      ObjectConstants objectConstants;
 
       // Update elapsed time.
       static float t = 0.0f;
