@@ -97,14 +97,14 @@
     <ClInclude Include="BasicIO.hpp" />
     <ClInclude Include="CameraDefinition.hpp" />
     <ClInclude Include="chrono.hpp" />
-    <ClInclude Include="CollisionDetection.hpp" />
+    <ClInclude Include="CollisionPrimitives.hpp" />
+    <ClInclude Include="CollisionDetector.hpp" />
     <ClInclude Include="ComHandle.hpp" />
     <ClInclude Include="Component.hpp" />
     <ClInclude Include="ComponentForward.hpp" />
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Console.hpp" />
     <ClInclude Include="Contact.hpp" />
-    <ClInclude Include="ContactGenerator.hpp" />
     <ClInclude Include="D3DInclude.hpp" />
     <ClInclude Include="D3DInfo.hpp" />
     <ClInclude Include="DebugDrawer.hpp" />
@@ -138,6 +138,7 @@
     <ClInclude Include="PathInfo.hpp" />
     <ClInclude Include="Physics.hpp" />
     <ClInclude Include="PhysicsUtility.hpp" />
+    <ClInclude Include="PlaneCollision.hpp" />
     <ClInclude Include="RigidBody.hpp" />
     <ClInclude Include="Precompiled.hpp" />
     <ClInclude Include="Reflection.hpp" />
@@ -148,7 +149,7 @@
     <ClInclude Include="ShaderData.hpp" />
     <ClInclude Include="ShaderManager.hpp" />
     <ClInclude Include="SoundBank.hpp" />
-    <ClInclude Include="SphereCollision.hpp" />
+    <ClInclude Include="CollisionComponents.hpp" />
     <ClInclude Include="TextureData.hpp" />
     <ClInclude Include="Transform.hpp" />
     <ClInclude Include="TypeInfo.hpp" />

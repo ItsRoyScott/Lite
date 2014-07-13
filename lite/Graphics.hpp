@@ -3,6 +3,7 @@
 #include "CameraDefinition.hpp"
 #include "ComHandle.hpp"
 #include "D3DInfo.hpp"
+#include "DebugDrawer.hpp"
 #include "EventHandler.hpp"
 #include "ModelInstance.hpp"
 #include <unordered_map>
@@ -176,8 +177,6 @@ namespace lite
 
       // Set the vertex layout for the input assembler stage.
       d3d.Context->IASetInputLayout(inputLayout);
-      // Set the primitive topology to triangle list.
-      d3d.Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
       // Set the render target to the depth-stencil view.
       d3d.Context->OMSetRenderTargets(1, d3d.RenderTarget, d3d.DSView);
 
@@ -224,6 +223,9 @@ namespace lite
       {
         modelPair.second->Draw();
       }
+
+      // Debug drawing.
+      DebugDrawer::Instance().Update();
 
       // Present the back buffer to the display.
       d3d.SwapChain->Present(0, 0);

@@ -11,8 +11,6 @@ namespace lite
   {
   private: // data
 
-    friend class SphereCollision;
-
     shared_ptr<PhysicsRigidBody> body;
 
   public: // data
@@ -28,13 +26,18 @@ namespace lite
       body = Physics::CurrentInstance()->AddRigidBody();
     }
 
+    void AttachToPrimitive(CollisionPrimitive& primitive)
+    {
+      primitive.Body = body.get();
+    }
+
+  private: // methods
+
     void Initialize() override
     {
       Transform& tfm = OwnerReference()[Transform_];
       body->Initialize(tfm.LocalPosition, tfm.LocalRotation);
     }
-
-  private: // methods
 
     void PullFromSystems() override
     {

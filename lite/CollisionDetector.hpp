@@ -1,99 +1,12 @@
 #pragma once
 
-#include "Contact.hpp"
+#include "CollisionPrimitives.hpp"
 #include "Essentials.hpp"
-#include "float4x4.hpp"
-#include "PhysicsRigidBody.hpp"
 #include <unordered_map>
 
 namespace lite
 {
-  class CollisionPrimitive
-  {
-  private: // data
-
-    float4x4 transform;
-
-  public: // data
-
-    PhysicsRigidBody* Body = nullptr;
-    float4x4 Offset;
-
-  public: // methods
-
-    virtual ~CollisionPrimitive() {}
-
-    void CalculateInternals()
-    {
-      transform = Body->Transform() * Offset;
-    }
-
-    float4 GetAxis(size_t idx) const
-    {
-      return Offset.GetAxisVector(idx);
-    }
-
-    const float4x4& GetTransform() const
-    {
-      return transform;
-    }
-
-    virtual const type_info& GetType() const = 0;
-  };
-
-  class CollisionPlane : public CollisionPrimitive
-  {
-  public: // data
-
-    float3 Direction;
-    float Offset;
-
-  public: // methods
-
-    const type_info& GetType() const override
-    {
-      return typeid(CollisionPlane);
-    }
-  };
-
-  class CollisionSphere : public CollisionPrimitive
-  {
-  public: // data
-
-    float Radius = 1;
-
-  public: // methods
-
-    const type_info& GetType() const override
-    {
-      return typeid(CollisionSphere);
-    }
-  };
-
-  class CollisionData
-  {
-  public: // data
-
-    vector<Contact> Contacts;
-    float Friction = 0;
-    float Restitution = 0;
-    float Tolerance = 0;
-
-  public: // methods
-
-    Contact& AddContact()
-    {
-      Contacts.emplace_back();
-      return Contacts.back();
-    }
-
-    void Clear()
-    {
-      *this = CollisionData();
-    }
-  };
-
-  class CollisionDetector : public Singleton<CollisionDetector>
+  class CollisionDetector : public Singleton < CollisionDetector >
   {
   public: // types
 
@@ -101,7 +14,8 @@ namespace lite
 
   private: // data
 
-    unordered_map<type_index, unordered_map<type_index, ContactGenerator>> generatorMap;
+    //unordered_map<type_index, unordered_map<type_index, ContactGenerator>> generatorMap;
+    ContactGenerator generatorMap[CollisionType::Count][CollisionType::Count];
 
   public: // methods
 
@@ -116,22 +30,27 @@ namespace lite
     template <class AB>
     void AddGenerator(function<size_t(const AB&, const AB&, CollisionData&)> fn)
     {
+      CollisionType type = AB().Type();
+
       ContactGenerator generator = reinterpret_cast<ContactGenerator&&>(fn);
-      generatorMap[typeid(AB)][typeid(AB)] = move(generator);
+      generatorMap[type][type] = move(generator);
     }
 
     // Adds a contact generator for colliding an object with another.
     template <class A, class B>
     void AddGenerator(function<size_t(const A&, const B&, CollisionData&)> fn)
     {
+      CollisionType aType = A().Type();
+      CollisionType bType = B().Type();
+
       ContactGenerator generator = reinterpret_cast<ContactGenerator&&>(fn);
-      generatorMap[typeid(A)][typeid(B)] = generator;
-      generatorMap[typeid(B)][typeid(A)] = generator;
+      generatorMap[aType][bType] = generator;
+      generatorMap[bType][aType] = generator;
     }
 
     size_t Collide(const CollisionPrimitive& a, const CollisionPrimitive& b, CollisionData& data)
     {
-      const ContactGenerator& generator = generatorMap[a.GetType()][b.GetType()];
+      const ContactGenerator& generator = generatorMap[a.Type()][b.Type()];
       if (generator)
       {
         return generator(a, b, data);
@@ -174,8 +93,8 @@ namespace lite
     }
 
     static size_t SphereAndSphere(
-      const CollisionSphere& one, 
-      const CollisionSphere& two, 
+      const CollisionSphere& one,
+      const CollisionSphere& two,
       CollisionData& data)
     {
       // Cache the sphere positions.

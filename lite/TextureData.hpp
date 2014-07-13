@@ -25,6 +25,11 @@ namespace lite
     TextureData(string name_) :
       name(move(name_))
     {
+      if (name.empty())
+      {
+        name = config::DefaultTexture;
+      }
+
       // Use the WIC texture loader.
       HRESULT hr = DirectX::CreateWICTextureFromFile(
         D3DInfo::CurrentInstance()->Device,

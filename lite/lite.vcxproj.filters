@@ -279,12 +279,6 @@
     <ClInclude Include="Contact.hpp">
       <Filter>Physics\Contacts</Filter>
     </ClInclude>
-    <ClInclude Include="CollisionDetection.hpp">
-      <Filter>Physics\Collision</Filter>
-    </ClInclude>
-    <ClInclude Include="ContactGenerator.hpp">
-      <Filter>Physics\Contacts</Filter>
-    </ClInclude>
     <ClInclude Include="DebugDrawer.hpp">
       <Filter>Graphics\Debug Drawing</Filter>
     </ClInclude>
@@ -294,11 +288,20 @@
     <ClInclude Include="float4x4.hpp">
       <Filter>Math</Filter>
     </ClInclude>
-    <ClInclude Include="SphereCollision.hpp">
-      <Filter>Core\Components</Filter>
-    </ClInclude>
     <ClInclude Include="ComponentForward.hpp">
       <Filter>Core\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="PlaneCollision.hpp">
+      <Filter>Core\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionComponents.hpp">
+      <Filter>Core\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionDetector.hpp">
+      <Filter>Physics\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionPrimitives.hpp">
+      <Filter>Physics\Collision</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

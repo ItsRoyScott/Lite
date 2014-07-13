@@ -161,7 +161,7 @@ namespace lite
     // Converts the given point from the body's local space to world space.
     float3 GetPointInWorldSpace(const float3& localPoint) const
     {
-      return transformMatrix.Transform(localPoint);
+      return Matrix(transformMatrix).Transform(localPoint);
     }
 
     // True if the mass of the body is not infinite.
@@ -180,7 +180,7 @@ namespace lite
     {
       if (m <= 0)
       {
-        inverseMass = -1;
+        SetMass(1000.0f * 1000.0f);
       }
       else
       {
@@ -221,11 +221,11 @@ namespace lite
     void CalculateDerivedData()
     {
       Vector orientationQuaternion;
-      orientationQuaternion = XMQuaternionNormalize(orientationQuaternion.xm);
+      orientationQuaternion = XMQuaternionNormalize(*orientationQuaternion.xm);
 
       // Calculate the transform matrix for the body.
-      Matrix rotation = XMMatrixRotationQuaternion(orientationQuaternion.xm);
-      Matrix translation = XMMatrixTranslationFromVector(Vector(position).xm);
+      Matrix rotation = XMMatrixRotationQuaternion(*orientationQuaternion.xm);
+      Matrix translation = XMMatrixTranslationFromVector(*Vector(position).xm);
       transformMatrix = rotation * translation;
 
       // Calculate the inertia tensor in world space.
@@ -249,7 +249,7 @@ namespace lite
       lastFrameAcceleration = Vector(lastFrameAcceleration).AddScaled(accumulatedForces, inverseMass);
 
       // Calculate angular acceleration from torque inputs.
-      float3 angularAcceleration = inverseInertiaTensorWorld.Transform(accumulatedTorque);
+      float3 angularAcceleration = Matrix(inverseInertiaTensorWorld).Transform(accumulatedTorque);
 
       // Update linear velocity from both acceleration and impulse.
       velocity = Vector(velocity).AddScaled(lastFrameAcceleration, dt);
@@ -299,7 +299,7 @@ namespace lite
 
     void SetOrientation(const Vector& q)
     {
-      XMStoreFloat4(&orientation, XMQuaternionNormalize(q.xm));
+      XMStoreFloat4(&orientation, XMQuaternionNormalize(*q.xm));
     }
 
     void SetPosition(const float3& position)

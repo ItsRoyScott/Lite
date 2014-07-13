@@ -19,6 +19,9 @@ namespace lite
     // Name of the mesh.
     string Mesh;
 
+    // Topology to use for rendering the vertex buffer.
+    D3D_PRIMITIVE_TOPOLOGY Topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
     // World transform matrix.
     float4x4 Transform;
 
@@ -48,8 +51,9 @@ namespace lite
 
       // Draw.
       d3d.Context->UpdateSubresource(mesh.ConstantBuffer(), 0, nullptr, &constants, 0, 0);
-      d3d.Context->IASetVertexBuffers(0, 1, mesh.VertexBuffer(), &vertexStride, &vertexOffset);
       d3d.Context->IASetIndexBuffer(mesh.IndexBuffer(), mesh.IndexFormat, 0);
+      d3d.Context->IASetPrimitiveTopology(Topology);
+      d3d.Context->IASetVertexBuffers(0, 1, mesh.VertexBuffer(), &vertexStride, &vertexOffset);
       d3d.Context->VSSetConstantBuffers(1, 1, mesh.ConstantBuffer());
       d3d.Context->VSSetShader(vs.GetVertexShader(), nullptr, 0);
       d3d.Context->PSSetConstantBuffers(1, 1, mesh.ConstantBuffer());

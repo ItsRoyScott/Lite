@@ -1,21 +1,22 @@
 #pragma once
 
-#include "CollisionDetection.hpp"
+#include "CollisionDetector.hpp"
+#include "CollisionPrimitives.hpp"
 #include "Contact.hpp"
 #include "D3DInclude.hpp"
 #include "Essentials.hpp"
 #include "PhysicsRigidBody.hpp"
 
-// =================================================================================================
-// This engine is an implementation of "Game Physics Engine Development" by Ian Millington using the
-//  XNA Math library (now replaced by DirectXMath).
-//
-// Amazon: http://www.amazon.com/Game-Physics-Engine-Development-Commercial-Grade/dp/0123819768
-// Cyclone Physics: https://github.com/idmillington/cyclone-physics
-// 
-// The amount of math going on in this engine can be overwhelming at first. I recommend getting the
-//  book or downloading the Cyclone engine and taking it piecemeal.
-// =================================================================================================
+//================================================================================================//
+// This engine is an implementation of "Game Physics Engine Development" by Ian Millington using  //
+//  the XNA Math library (now replaced by DirectXMath).                                           //
+//                                                                                                //
+// Amazon: http://www.amazon.com/Game-Physics-Engine-Development-Commercial-Grade/dp/0123819768   //
+// Cyclone Physics: https://github.com/idmillington/cyclone-physics                               //
+//                                                                                                //
+// The amount of math going on in this engine can be overwhelming at first. I recommend getting   //
+//  the book or downloading the Cyclone engine and taking it piecemeal.                           //
+//================================================================================================//
 
 namespace lite
 {
@@ -212,10 +213,12 @@ namespace lite
     template <class T>
     shared_ptr<T> AddCollisionPrimitive()
     {
-      // Create the new primitive.
-      collisionPrimitives.push_back(make_shared<T>());
+      shared_ptr<T> ptr = make_shared<T>();
 
-      return collisionPrimitives.back();
+      // Create the new primitive.
+      collisionPrimitives.push_back(ptr);
+
+      return move(ptr);
     }
 
     shared_ptr<PhysicsRigidBody> AddRigidBody()
@@ -255,6 +258,12 @@ namespace lite
 
     size_t GenerateContacts()
     {
+      // Initialize all primitives.
+      for (auto& primitive : collisionPrimitives)
+      {
+        primitive->CalculateInternals();
+      }
+
       // Set up the collision data.
       collisionData.Clear();
       collisionData.Friction = 0.8f;

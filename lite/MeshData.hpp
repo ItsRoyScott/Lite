@@ -80,15 +80,17 @@ namespace lite
       WarnIf(scene->mNumMeshes > 1, "Mesh " + name + " has more sub-meshes than are currently supported");
       
       // Verify mesh texture coordinates and tangents.
+      bool hasTexCoords = true;
       if (!mesh->HasTextureCoords(0))
       {
+        hasTexCoords = false;
         Warn("Mesh " + name + " doesn't have texture coordinates");
-        return;
       }
+      bool hasTangents = true;
       if (!mesh->HasTangentsAndBitangents())
       {
+        hasTangents = false;
         Warn("Mesh " + name + " doesn't have tangents/bitangents");
-        return;
       }
 
       // Copy all vertices.
@@ -97,9 +99,15 @@ namespace lite
       {
         vertices[i].position  = reinterpret_cast<const float3&>(mesh->mVertices[i]);
         vertices[i].normal    = reinterpret_cast<const float3&>(mesh->mNormals[i]);
-        vertices[i].tex = reinterpret_cast<const float2&>(mesh->mTextureCoords[0][i]);
-        vertices[i].tangent = reinterpret_cast<const float3&>(mesh->mTangents[i]);
-        vertices[i].bitangent = reinterpret_cast<const float3&>(mesh->mBitangents[i]);
+        if (hasTexCoords)
+        {
+          vertices[i].tex = reinterpret_cast<const float2&>(mesh->mTextureCoords[0][i]);
+        }
+        if (hasTangents)
+        {
+          vertices[i].tangent = reinterpret_cast<const float3&>(mesh->mTangents[i]);
+          vertices[i].bitangent = reinterpret_cast<const float3&>(mesh->mBitangents[i]);
+        }
       }
 
       // Copy all indices.

@@ -72,6 +72,15 @@ namespace lite // data
 
 namespace lite // functions
 {
+  // Aligns an object to a buffer given the desired alignment,
+  //  a pointer to the buffer, and amount of space in the buffer.
+  template <class T>
+  inline T* align(size_t alignment, void* p)
+  {
+    size_t offset = (size_t) ((uintptr_t) p & (alignment - 1));
+    return (T*)((char*)p + (0 < offset ? alignment - offset : offset));
+  }
+
   static const unsigned tabSize = 2;
 
   // Returns a tab count as a string.

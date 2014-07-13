@@ -16,6 +16,10 @@ namespace lite
 
   public: // properties
 
+    // Color of the model (ignored unless the shader uses it).
+    const float4& Color() const { return model->Color; }
+    void Color(const float4& c) { model->Color = c; }
+
     // Name of the material used to render the mesh.
     const string& Material() const { return model->Material; }
     void Material(string material) { model->Material = move(material); }

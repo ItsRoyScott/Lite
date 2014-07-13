@@ -58,7 +58,7 @@ namespace lite
     // Returns whether the material properly loaded.
     bool IsLoaded() const
     {
-      return pixelShader.size() != 0 && texture.size() != 0 && vertexShader.size() != 0;
+      return pixelShader.size() != 0 && vertexShader.size() != 0;
     }
 
   private: // methods

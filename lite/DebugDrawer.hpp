@@ -30,6 +30,7 @@ namespace lite
       Color = { color.x, color.y, color.z, 1 };
       Material = "SolidColor";
       Mesh = "sphere.obj";
+      Topology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
 
       XMMATRIX transMatrix = XMMatrixTranslation(position.x, position.y, position.z);
       XMMATRIX scaleMatrix = XMMatrixScaling(scale.x, scale.y, scale.z);

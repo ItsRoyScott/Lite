@@ -190,7 +190,7 @@ namespace lite
     {
       for (GameObject* owner = this; owner != nullptr; owner = owner->Parent())
       {
-        IComponent* component = FindComponentBy(pred);
+        IComponent* component = owner->FindComponentBy(pred);
         if (component)
         {
           return component;
@@ -446,9 +446,19 @@ namespace lite
       return id == b.id;
     }
 
+    bool operator==(uint32_t id) const
+    {
+      return this->id == id;
+    }
+
     bool operator!=(const GOId& b) const
     {
       return !(*this == b);
+    }
+
+    bool operator!=(uint32_t id) const
+    {
+      return !(*this == id);
     }
   };
 

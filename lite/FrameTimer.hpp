@@ -34,6 +34,9 @@ namespace lite
     // Time between BeginFrame() and EndFrame() calls for a frame.
     const float& FrameLength() const { return frameLength; }
 
+    // The ideal delta time between frames.
+    float IdealDeltaTime() const { return 1.0f / idealFramerate; }
+
     // What the ideal fps is. (used for locking the framerate)
     const float& IdealFramerate() const { return idealFramerate; }
     void IdealFramerate(float value) { idealFramerate = value; }
@@ -85,7 +88,7 @@ namespace lite
     void Lock()
     {
       float frameTime = frameLength;
-      float idealFrameTime = 1.0f / idealFramerate;
+      float idealFrameTime = IdealDeltaTime();
 
       // Sleep while this frame has plenty of time left.
       static const float twoMilliseconds = 0.002f;
