@@ -291,9 +291,6 @@
     <ClInclude Include="ComponentForward.hpp">
       <Filter>Core\Components</Filter>
     </ClInclude>
-    <ClInclude Include="PlaneCollision.hpp">
-      <Filter>Core\Components</Filter>
-    </ClInclude>
     <ClInclude Include="CollisionComponents.hpp">
       <Filter>Core\Components</Filter>
     </ClInclude>

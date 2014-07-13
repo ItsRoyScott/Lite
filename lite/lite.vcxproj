@@ -138,7 +138,6 @@
     <ClInclude Include="PathInfo.hpp" />
     <ClInclude Include="Physics.hpp" />
     <ClInclude Include="PhysicsUtility.hpp" />
-    <ClInclude Include="PlaneCollision.hpp" />
     <ClInclude Include="RigidBody.hpp" />
     <ClInclude Include="Precompiled.hpp" />
     <ClInclude Include="Reflection.hpp" />
