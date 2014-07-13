@@ -28,6 +28,10 @@ I built this library as an instructive example game engine for Game Engine Archi
 
 - Separate thread or threadpool for physics.
 
+## To-do
+
+- Remove deprecated tabs and ToString implementation; use operator<< instead.
+
 # Topics
 
 ## Reference member initialization
