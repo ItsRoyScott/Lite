@@ -64,7 +64,7 @@ namespace lite
   };
 
   reflect(Model,
-    "Model", Constructor<Model>,
+    "Model", Constructor<T>,
     "Color", Getter(&T::Color), Setter(&T::Color),
     "Material", Getter(&T::Material), Setter(&T::Material),
     "Mesh", Getter(&T::Mesh), Setter(&T::Mesh));

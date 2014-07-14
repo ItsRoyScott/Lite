@@ -81,6 +81,10 @@ namespace lite
       template <class FuncPtr>
       void NewMethod(const string& methodName, FuncPtr funcPtr)
       {
+        bindFunctions.push_back([=](LuaUserdata<T>& userdata)
+        {
+          userdata.Bind(methodName, funcPtr);
+        });
       }
 
       template <class GetterPtr, class SetterPtr>
@@ -99,7 +103,7 @@ namespace lite
         LuaUserdata<T> instance = Scripting::Instance().Lua.CreateUserdata<T>(new T);
 
         // Bind all members to the LuaUserdata.
-        for (auto& bindFunction : ObjectBuilder<T>::CurrentInstance()->bindFunctions)
+        for (auto& bindFunction : CurrentInstance()->bindFunctions)
         {
           bindFunction(instance);
         }
