@@ -83,9 +83,18 @@ namespace lite
       Add<T>(forward<Args>(args)...);
     }
 
+    // Adds a static function given its name and pointer.
+    template <class T, class RetT, class... FuncArgs, class... Args>
+    void Add(string name, RetT(*ptr)(FuncArgs...), Args&&... args)
+    {
+      NotifyPluginOnNewStaticFunction<T>(name, ptr);
+      methods.emplace_back(move(name), ptr);
+      Add<T>(forward<Args>(args)...);
+    }
+
     // Adds a member function given its name and pointer.
     template <class T, class ClassT, class RetT, class... FuncArgs, class... Args>
-     void Add(string name, RetT(ClassT::*ptr)(FuncArgs...), Args&&... args)
+    void Add(string name, RetT(ClassT::*ptr)(FuncArgs...), Args&&... args)
     {
       NotifyPluginOnNewMethod<T>(name, ptr);
       methods.emplace_back(move(name), ptr);
@@ -171,7 +180,14 @@ namespace lite
     template <class T, class PointerT>
     void NotifyPluginOnNewStaticFunction(const string& name, PointerT func)
     {
-      GetReflectionPluginObjectBuilder<T>().NewStaticFunction(name, func);
+      if (name == TypeOf<T>().Name)
+      {
+        GetReflectionPluginObjectBuilder<T>().NewConstructor(name, func);
+      }
+      else
+      {
+        GetReflectionPluginObjectBuilder<T>().NewStaticFunction(name, func);
+      }
     }
   };
 

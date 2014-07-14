@@ -2,7 +2,6 @@
 
 #include "Essentials.hpp"
 #include "FileTime.hpp"
-#include "LuaBridgeInclude.hpp"
 #include "BasicIO.hpp"
 
 #define LUA(call) SCOPE(int top = lua_gettop(L); call; PrintLuaErrors(L, top))
@@ -165,11 +164,11 @@ namespace lite
       luaState.reset();
     }
 
-    // Returns the global namespace for binding C++ types to Lua.
-    luabridge::Namespace GetGlobalNamespace()
-    {
-      return luabridge::getGlobalNamespace(luaState.get());
-    }
+    //// Returns the global namespace for binding C++ types to Lua.
+    //luabridge::Namespace GetGlobalNamespace()
+    //{
+    //  return luabridge::getGlobalNamespace(luaState.get());
+    //}
 
     lua_State* GetLuaState() const
     {
@@ -177,29 +176,29 @@ namespace lite
     }
   };
 
-  template <class T>
-  unique_ptr<Namespace::Class<T>>& getClass()
-  {
-    static unique_ptr<Namespace::Class<T>> cls;
-    return cls;
-  }
-
-  template <class T>
-  luabridge::Namespace::Class <T>& beginClass(char const* name)
-  {
-    unique_ptr<Namespace::Class<T>>& cls = getClass<T>();
-    if (!cls)
-    {
-      cls = make_unique<Namespace::Class<T>>(Scripting::Instance().GetGlobalNamespace().beginClass<T>(name));
-    }
-    return *cls;
-  }
-
-  template <class T>
-  void endClass()
-  {
-    unique_ptr<Namespace::Class<T>>& cls = getClass<T>();
-    cls->endClass();
-    cls.reset();
-  }
+  //template <class T>
+  //unique_ptr<Namespace::Class<T>>& getClass()
+  //{
+  //  static unique_ptr<Namespace::Class<T>> cls;
+  //  return cls;
+  //}
+  //
+  //template <class T>
+  //luabridge::Namespace::Class <T>& beginClass(char const* name)
+  //{
+  //  unique_ptr<Namespace::Class<T>>& cls = getClass<T>();
+  //  if (!cls)
+  //  {
+  //    cls = make_unique<Namespace::Class<T>>(Scripting::Instance().GetGlobalNamespace().beginClass<T>(name));
+  //  }
+  //  return *cls;
+  //}
+  //
+  //template <class T>
+  //void endClass()
+  //{
+  //  unique_ptr<Namespace::Class<T>>& cls = getClass<T>();
+  //  cls->endClass();
+  //  cls.reset();
+  //}
 } // namespace lite

@@ -8,6 +8,5 @@
 #include "Essentials.hpp"
 #include "FmodInclude.hpp"
 #include <fstream>
-#include "LuaBridgeInclude.hpp"
 #include <unordered_map>
 #include "WindowsInclude.h"

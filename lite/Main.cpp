@@ -15,8 +15,7 @@
 #include "RigidBody.hpp"
 #include "Transform.hpp"
 
-static void SetupScene();
-static void UpdateScene();
+#include "LuaCppInterfaceInclude.hpp"
 
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -33,6 +32,12 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   RegisterComponent<RigidBody>();
   RegisterComponent<SphereCollision>();
   RegisterComponent<Transform>();
+
+  string str = LuaInstance().RunScript("model = Model:new()");
+  if (str != "No errors")
+  {
+    Note(str);
+  }
 
   GameObject scene;
 

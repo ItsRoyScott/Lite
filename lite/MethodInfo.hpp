@@ -86,13 +86,8 @@ namespace lite
   };
 
   template <class T, class... Args>
-  MethodInfo Constructor(string name)
+  void Constructor(void* this_, Args... args)
   {
-    typedef void(*ConstructorType)(void*, Args...);
-    ConstructorType constructor = [](void* self, Args... args)
-    {
-      new (self) T(forward<Args>(args)...);
-    };
-    return MethodInfo(move(name), constructor);
+    new (this_) T(forward<Args>(args)...);
   }
 } // namespace lite

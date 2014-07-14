@@ -149,22 +149,22 @@ namespace lite
 namespace lite
 {
   // Reflect fundamental types.
-  reflect(bool);
-  reflect(char);
-  reflect(double);
-  reflect(float);
-  reflect(int);
-  reflect(long);
-  reflect(long long);
-  reflect(nullptr_t);
-  reflect(short);
-  reflect(signed char);
-  reflect(unsigned char);
-  reflect(unsigned short);
-  reflect(unsigned int);
-  reflect(unsigned long);
-  reflect(unsigned long long);
-  reflect(wchar_t);
+  //reflect(bool);
+  //reflect(char);
+  //reflect(double);
+  //reflect(float);
+  //reflect(int);
+  //reflect(long);
+  //reflect(long long);
+  //reflect(nullptr_t);
+  //reflect(short);
+  //reflect(signed char);
+  //reflect(unsigned char);
+  //reflect(unsigned short);
+  //reflect(unsigned int);
+  //reflect(unsigned long);
+  //reflect(unsigned long long);
+  //reflect(wchar_t);
 } // namespace lite
 
 namespace lite

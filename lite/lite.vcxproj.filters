@@ -300,5 +300,8 @@
     <ClInclude Include="CollisionPrimitives.hpp">
       <Filter>Physics\Collision</Filter>
     </ClInclude>
+    <ClInclude Include="LuaCppInterfaceInclude.hpp">
+      <Filter>APIs</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
