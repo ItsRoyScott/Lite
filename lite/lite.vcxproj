@@ -127,7 +127,6 @@
     <ClInclude Include="ListenerDescription.hpp" />
     <ClInclude Include="Logging.hpp" />
     <ClInclude Include="LogicTimer.hpp" />
-    <ClInclude Include="LuaBridgeInclude.hpp" />
     <ClInclude Include="LuaCppInterfaceInclude.hpp" />
     <ClInclude Include="MaterialDescription.hpp" />
     <ClInclude Include="Matrix.hpp" />

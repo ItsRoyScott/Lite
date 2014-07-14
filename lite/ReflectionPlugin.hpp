@@ -1,17 +1,10 @@
 #pragma once
 
 #include "LuaCppInterfaceInclude.hpp"
-#include "ReflectionUtility.hpp"
 #include "Scripting.hpp"
 
 namespace lite
 {
-  static Lua& LuaInstance()
-  {
-    static Lua lua;
-    return lua;
-  }
-
   // Hooks into the Reflection's binding process to automatically bind
   //  functions to Lua (using LuaBridge, for now).
   class ReflectionPlugin : public LightSingleton<ReflectionPlugin>
@@ -30,7 +23,7 @@ namespace lite
     public: // methods
 
       ObjectBuilder(ReflectionPlugin&) :
-        typeTable(LuaInstance().CreateTable())
+        typeTable(Scripting::Instance().Lua.CreateTable())
       {}
 
       // Called when an object type bind is starting:
@@ -51,7 +44,7 @@ namespace lite
       void EndClassType(const string&)
       {
         // Make the type accessible.
-        LuaInstance().GetGlobalEnvironment().Set(typeName, typeTable);
+        Scripting::Instance().Lua.GetGlobalEnvironment().Set(typeName, typeTable);
       }
 
       // Called when a non-object type (e.g. int, void*) bind is ending:
@@ -63,7 +56,7 @@ namespace lite
       {
         // Create a Lua function which wraps the constructor.
         LuaFunction<LuaUserdata<T>()> luaConstructor = 
-          LuaInstance().CreateFunction<LuaUserdata<T>()>(ConstructorFunction);
+          Scripting::Instance().Lua.CreateFunction<LuaUserdata<T>()>(ConstructorFunction);
 
         // Set the constructor to Lua's new function for this type.
         typeTable.Set("new", luaConstructor);
@@ -103,7 +96,7 @@ namespace lite
       static LuaUserdata<T> ConstructorFunction()
       {
         // Create the userdata instance.
-        LuaUserdata<T> instance = LuaInstance().CreateUserdata<T>(new T);
+        LuaUserdata<T> instance = Scripting::Instance().Lua.CreateUserdata<T>(new T);
 
         // Bind all members to the LuaUserdata.
         for (auto& bindFunction : ObjectBuilder<T>::CurrentInstance()->bindFunctions)
@@ -116,17 +109,4 @@ namespace lite
     };
   };
 
-  // Returns the global instance of the reflection plugin.
-  inline ReflectionPlugin& GetReflectionPlugin()
-  {
-    static ReflectionPlugin plugin;
-    return plugin;
-  }
-
-  template <class T>
-  inline ReflectionPlugin::ObjectBuilder<T>& GetReflectionPluginObjectBuilder()
-  {
-    static ReflectionPlugin::ObjectBuilder<T> class_(GetReflectionPlugin());
-    return class_;
-  }
 } // namespace lite

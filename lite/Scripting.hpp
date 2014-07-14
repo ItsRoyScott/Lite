@@ -145,60 +145,13 @@ namespace lite
 
   class Scripting : public Singleton<Scripting>
   {
-  private: // data
+  public: // data
 
-    // Manages Lua's current embedded state.
-    unique_ptr<lua_State, void(*)(lua_State*)> luaState;
+    ::Lua Lua;
 
   public: // methods
 
-    // Initializes Lua.
-    Scripting() :
-      luaState(luaL_newstate(), &lua_close)
-    {
-      luaL_openlibs(luaState.get());
-    }
-
-    void Clear()
-    {
-      luaState.reset();
-    }
-
-    //// Returns the global namespace for binding C++ types to Lua.
-    //luabridge::Namespace GetGlobalNamespace()
-    //{
-    //  return luabridge::getGlobalNamespace(luaState.get());
-    //}
-
-    lua_State* GetLuaState() const
-    {
-      return luaState.get();
-    }
+    Scripting()
+    {}
   };
-
-  //template <class T>
-  //unique_ptr<Namespace::Class<T>>& getClass()
-  //{
-  //  static unique_ptr<Namespace::Class<T>> cls;
-  //  return cls;
-  //}
-  //
-  //template <class T>
-  //luabridge::Namespace::Class <T>& beginClass(char const* name)
-  //{
-  //  unique_ptr<Namespace::Class<T>>& cls = getClass<T>();
-  //  if (!cls)
-  //  {
-  //    cls = make_unique<Namespace::Class<T>>(Scripting::Instance().GetGlobalNamespace().beginClass<T>(name));
-  //  }
-  //  return *cls;
-  //}
-  //
-  //template <class T>
-  //void endClass()
-  //{
-  //  unique_ptr<Namespace::Class<T>>& cls = getClass<T>();
-  //  cls->endClass();
-  //  cls.reset();
-  //}
 } // namespace lite

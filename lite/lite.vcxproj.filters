@@ -67,9 +67,6 @@
     <Filter Include="Reflection\Utility">
       <UniqueIdentifier>{dd99fd02-87d3-4fa5-8dbd-3702fe8084a6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Reflection\Plugin">
-      <UniqueIdentifier>{71d92b46-2c7b-4d36-aa64-89145bd46ba3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Reflection\Meta Info">
       <UniqueIdentifier>{000df082-b0d5-4f06-bb10-449f31b23f35}</UniqueIdentifier>
     </Filter>
@@ -94,6 +91,9 @@
     <Filter Include="Physics\Utility">
       <UniqueIdentifier>{2d129027-873b-46e0-9f58-29c31e75cb59}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripting\Reflection Plugin">
+      <UniqueIdentifier>{4d5fc00c-78ad-4b33-a58d-917d44b84feb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
@@ -112,9 +112,6 @@
       <Filter>APIs</Filter>
     </ClInclude>
     <ClInclude Include="FmodInclude.hpp">
-      <Filter>APIs</Filter>
-    </ClInclude>
-    <ClInclude Include="LuaBridgeInclude.hpp">
       <Filter>APIs</Filter>
     </ClInclude>
     <ClInclude Include="WindowsInclude.h">
@@ -216,9 +213,6 @@
     <ClInclude Include="TypeInfo.hpp">
       <Filter>Reflection\Meta Info</Filter>
     </ClInclude>
-    <ClInclude Include="ReflectionPlugin.hpp">
-      <Filter>Reflection\Plugin</Filter>
-    </ClInclude>
     <ClInclude Include="ReflectionUtility.hpp">
       <Filter>Reflection\Utility</Filter>
     </ClInclude>
@@ -302,6 +296,9 @@
     </ClInclude>
     <ClInclude Include="LuaCppInterfaceInclude.hpp">
       <Filter>APIs</Filter>
+    </ClInclude>
+    <ClInclude Include="ReflectionPlugin.hpp">
+      <Filter>Scripting\Reflection Plugin</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Essentials.hpp"
+#include "ReflectionPlugin.hpp"
 
 namespace lite // forward declarations
 {
@@ -26,6 +27,21 @@ namespace lite // functions
       return reinterpret_cast<function<ResultCallT>&&>(fn);
     }
   } // namespace detail
+
+  // Returns the global instance of the reflection plugin.
+  inline ReflectionPlugin& GetReflectionPlugin()
+  {
+    static ReflectionPlugin plugin;
+    return plugin;
+  }
+
+  // Returns the global instance of an object builder templatized to the object type.
+  template <class T>
+  inline ReflectionPlugin::ObjectBuilder<T>& GetReflectionPluginObjectBuilder()
+  {
+    static ReflectionPlugin::ObjectBuilder<T> class_(GetReflectionPlugin());
+    return class_;
+  }
 } // namespace lite
 
 namespace lite // types
