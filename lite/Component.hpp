@@ -124,14 +124,14 @@ namespace lite
       {
         if (!active)
         {
-          Activate();
+          Deactivate();
         }
       }
       else // !isActive
       {
         if (active)
         {
-          Deactivate();
+          Activate();
         }
       }
 

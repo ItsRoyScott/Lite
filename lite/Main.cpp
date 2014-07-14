@@ -56,7 +56,7 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   collision.Direction({0, 1, 0});
   collision.Offset(-2);
 
-  GameObject spongebobPrefab;
+  auto spongebobPrefab = GameObject(false);
   {
     spongebobPrefab[Transform_];
 

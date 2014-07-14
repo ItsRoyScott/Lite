@@ -14,11 +14,24 @@ namespace lite
     vector<unique_ptr<IComponent>> components;
     bool  destroyFlag = false;
     uint32_t identifier = GenerateIdentifier();
+    bool isActive = true;
     string name;
     GameObject* parent = nullptr;
     vector<GameObject*> toDestroy;
 
   public: // properties
+
+    // Whether the game object and its components are updating.
+    const bool& Active() const { return isActive; }
+    // Set whether the game object and its components should update.
+    void Active(bool isActive_) 
+    { 
+      isActive = isActive_;
+      for (auto& component : components)
+      {
+        component->SetActive(isActive);
+      }
+    }
 
     // Children game objects attached to this game object.
     const vector<unique_ptr<GameObject>>& Children() const { return children; }
@@ -31,6 +44,7 @@ namespace lite
 
     // Name of this game object. (May be empty)
     const string& Name() const { return name; }
+    // Changes the name of the game object.
     void Name(string name_) { name = move(name_); }
 
     // Pointer to the parent game object. (May be null)
@@ -46,7 +60,8 @@ namespace lite
 
   public: // methods
 
-    GameObject()
+    explicit GameObject(bool active = true) :
+      isActive(active)
     {
       Instances()[identifier] = this;
     }
@@ -56,6 +71,7 @@ namespace lite
       components(move(b.components)),
       destroyFlag(b.destroyFlag),
       identifier(b.identifier),
+      isActive(b.isActive),
       name(move(b.name)),
       parent(b.parent),
       toDestroy(move(b.toDestroy))
@@ -82,6 +98,7 @@ namespace lite
       children = move(b.children);
       components = move(b.components);
       destroyFlag = b.destroyFlag;
+      isActive = b.isActive;
       name = move(b.name);
       parent = b.parent;
       toDestroy = move(b.toDestroy);
@@ -123,10 +140,16 @@ namespace lite
     {
       // Call on the component manager to create the component.
       IComponent& component = StoreComponent(ComponentManager::Instance().Create(name));
+
+      // Initialize: 'initialize' will be false if we are loading a level.
       if (initialize)
       {
         component.Initialize();
+
+        // Propagate the active flag to the new component.
+        component.SetActive(isActive);
       }
+
       return component;
     }
 
@@ -287,6 +310,12 @@ namespace lite
     // Calls PullFromSystems function on all components recursively.
     void PullFromSystems()
     {
+      if (!isActive)
+      {
+        // Ensure components are notified that this object is inactive.
+        Active(false);
+      }
+
       // Call on all components.
       for (auto& component : components)
       {
@@ -303,6 +332,12 @@ namespace lite
     // Calls PullFromSystems function on all components recursively.
     void PushToSystems()
     {
+      if (!isActive)
+      {
+        // Ensure components are notified that this object is inactive.
+        Active(false);
+      }
+
       // Call on all components.
       for (auto& component : components)
       {
@@ -319,6 +354,12 @@ namespace lite
     // Updates child objects, then the components of this object.
     void Update()
     {
+      if (!isActive)
+      {
+        // Ensure components are notified that this object is inactive.
+        Active(false);
+      }
+
       // Remember the number of objects requested for destruction last frame.
       size_t objectsToDestroy = toDestroy.size();
 

@@ -46,6 +46,16 @@ namespace lite
 
   private: // methods
 
+    void Activate() override
+    {
+      model->IsVisible = true;
+    }
+
+    void Deactivate() override
+    {
+      model->IsVisible = false;
+    }
+
     void PushToSystems() override
     {
       Transform& tfm = OwnerReference()[Transform_];

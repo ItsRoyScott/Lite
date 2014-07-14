@@ -13,6 +13,9 @@ namespace lite
     // Color of the model (optional).
     float4 Color = { 1, 1, 1, 1 };
 
+    // Whether the model is drawn. 
+    bool IsVisible = true;
+
     // Name of the material used to draw the model.
     string Material;
 
@@ -29,6 +32,8 @@ namespace lite
 
     void Draw()
     {
+      if (!IsVisible) return;
+
       // Get the material and mesh data.
       MaterialDescription& material = MaterialManager::Instance()[Material];
       MeshData& mesh = MeshManager::Instance()[Mesh];
