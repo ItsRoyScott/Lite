@@ -64,4 +64,6 @@ namespace lite
       }
     }
   };
+
+  reflect(RigidBody);
 } // namespace lite

@@ -17,26 +17,15 @@ namespace lite // functions
 {
   namespace detail
   {
+    // Converts a std::function from one call-type to another.
+    //  This allows us to do some shady stuff, like converting a
+    //  function<void(T&, float)> to simply function<void()>.
     template <class CallT, class ResultCallT>
     function<ResultCallT> CastFunction(function<CallT> fn)
     {
       return reinterpret_cast<function<ResultCallT>&&>(fn);
     }
   } // namespace detail
-
-  // Converts a typed std::function to a typeless one.
-  template <class CallT, class ResultCallT = void()>
-  function<ResultCallT> TypedToTypelessFunction(function<CallT> fn)
-  {
-    return reinterpret_cast<function<ResultCallT>&&>(fn);
-  }
-
-  // Converts a typeless std::function to typed one.
-  template <class ResultCallT, class CallT = void()>
-  function<CallT> TypelessToTypedFunction(function<CallT> fn)
-  {
-    return reinterpret_cast<function<CallT>&&>(fn);
-  }
 } // namespace lite
 
 namespace lite // types
@@ -83,13 +72,14 @@ namespace lite // types
     static const bool       IsConstMemberFunction = false;
     static const bool       IsFunction = true;
     static const bool       IsMemberFunction = false;
+    typedef              R(*Pointer)(Args...);
     typedef R               ReturnType;
 
     // Returns the typeless version of the passed in function.
     static function<void()> GenerateTypelessFunction(R(*fn)(Args...))
     {
       // Reinterpret cast the typed function to a typeless function.
-      return TypedToTypelessFunction<R(Args...)>(fn);
+      return detail::CastFunction<R(Args...), void()>(fn);
     }
 
     // Returns an array of reflected argument types.
@@ -113,6 +103,13 @@ namespace lite // types
   {};
 
   // Stores nifty information on a function type:
+  //  for std::function.
+  template <class R, class... Args>
+  struct FunctionTraits < function<R(Args...)> > :
+    FunctionTraits < R(Args...) >
+  {};
+
+  // Stores nifty information on a function type:
   //  for the non-const member function, e.g. int(Foo::*)(float).
   template <class R, class T, class... Args>
   struct FunctionTraits < R(T::*)(Args...) > :
@@ -120,6 +117,7 @@ namespace lite // types
   {
     typedef T         ClassType;
     static const bool IsMemberFunction = true;
+    typedef     R(T::*Pointer)(Args...);
 
     // Returns the typeless version of the passed in function.
     static function<void()> GenerateTypelessFunction(R(T::*fn)(Args...))
@@ -144,6 +142,7 @@ namespace lite // types
     typedef T         ClassType;
     static const bool IsConstMemberFunction = true;
     static const bool IsMemberFunction = true;
+    typedef     R(T::*Pointer)(Args...) const;
 
     // Returns the typeless version of the passed in function.
     static function<void()> GenerateTypelessFunction(R(T::*fn)(Args...) const)
@@ -155,7 +154,7 @@ namespace lite // types
       };
 
       // Reinterpret cast the typed function to a typeless function.
-      return TypedToTypelessFunction<R(const T&, Args...)>(lambda);
+      return detail::CastFunction<R(const T&, Args...), void()>(lambda);
     }
   };
 

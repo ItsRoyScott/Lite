@@ -22,13 +22,13 @@ namespace lite
     }
 
     // Returns milliseconds since the last call to start.
-    float ElapsedMilliseconds()
+    float ElapsedMilliseconds() const
     {
       return ElapsedSeconds() * 1000.0f;
     }
 
     // Returns seconds since the last call to start.
-    float ElapsedSeconds()
+    float ElapsedSeconds() const
     {
       return FrameTimer::CurrentInstance()->TotalTime() - startTime;
     }

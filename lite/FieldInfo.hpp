@@ -10,10 +10,12 @@ namespace lite
   {
   private: // data
 
-    function<void*(void*)>    getFieldPointer;
-    string                    name;
-    const TypeInfo*           ownerType = nullptr;
-    const TypeInfo*           type = nullptr;
+    function<Variant(void*)>      getter;
+    function<void*(void*)>        getFieldPointer;
+    string                        name;
+    const TypeInfo*               ownerType = nullptr;
+    function<void(void*, void*)>  setter;
+    const TypeInfo*               type = nullptr;
 
   public: // properties
 
@@ -66,7 +68,37 @@ namespace lite
     {
       getFieldPointer = [=](void* this_) -> void*
       {
-        return &(reinterpret_cast<T*>(this_)->*fieldPtr);
+        FieldT& field = (reinterpret_cast<T*>(this_)->*fieldPtr);
+        return &field;
+      };
+    }
+
+    // Constructs a field info from a getter / setter pair.
+    //  These are typical getters and setters, the only restriction being
+    //  that the getter must be const.
+    template <class FieldT1, class FieldT2, class T1, class T2>
+    FieldInfo(string name_, FieldT1(T1::*getter)() const, void(T2::*setter)(FieldT2)) :
+      name(move(name_)),
+      ownerType(&TypeOf<T1>()),
+      type(&TypeOf<FieldT1>())
+    {
+      // Get the decayed types. std::decay removes references and const so a const T&
+      //  would be simply T.
+      typedef decay_t<T1> T1Value;
+      typedef decay_t<T2> T2Value;
+      typedef decay_t<FieldT1> FieldT1Value;
+      typedef decay_t<FieldT2> FieldT2Value;
+      static_assert(is_same<T1Value, T2Value>::value, "Class types for getters and setters must match");
+      static_assert(is_same<FieldT1Value, FieldT2Value>::value, "Field types for getters and setters must match");
+
+      this->getter = [=](void* this_) -> Variant
+      {
+        return (reinterpret_cast<T1Value*>(this_)->*getter)();
+      };
+
+      this->setter = [=](void* this_, void* value)
+      {
+        (reinterpret_cast<T2Value*>(this_)->*setter)(*reinterpret_cast<FieldT2Value*>(value));
       };
     }
 
@@ -94,4 +126,16 @@ namespace lite
     // Formats the field info into an ostream.
     friend ostream& operator<<(ostream& os, const FieldInfo& f);
   };
+
+  template <class GetClassT, class GetRetT>
+  auto Getter(GetRetT(GetClassT::*fn)() const) -> GetRetT(GetClassT::*)() const
+  {
+    return fn;
+  }
+
+  template <class SetClassT, class SetArgT>
+  auto Setter(void(SetClassT::*fn)(SetArgT)) -> void(SetClassT::*)(SetArgT)
+  {
+    return fn;
+  }
 } // namespace lite

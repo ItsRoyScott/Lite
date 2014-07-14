@@ -3,6 +3,7 @@
 #include "Essentials.hpp"
 #include "FileTime.hpp"
 #include "LuaBridgeInclude.hpp"
+#include "BasicIO.hpp"
 
 #define LUA(call) SCOPE(int top = lua_gettop(L); call; PrintLuaErrors(L, top))
 

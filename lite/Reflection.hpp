@@ -1,5 +1,6 @@
 #pragma once
 
+#include "FieldInfo.hpp"
 #include "MethodInfo.hpp"
 #include "ReflectionPlugin.hpp"
 #include "TypeInfo.hpp"
@@ -22,7 +23,7 @@ namespace lite
     {
       // Bind  void.
       TypeInfo& voidType = detail::TypeOf<void>();
-      voidType("void");
+      voidType.Bind<void>("void");
       types.push_back(&voidType);
     }
 
@@ -71,16 +72,49 @@ namespace lite
     // Calls the ReflectionPlugin's OnTypeBegin.
     BindBase(const string& name)
     {
-      ReflectionPlugin::OnTypeBegin<T>(name);
+      NotifyPluginOnBeginType<T>(name);
     }
 
     // Force a reference to the global object.
     ~BindBase()
     {
       &autoBind;
-      ReflectionPlugin::OnTypeEnd<T>(TypeOf<T>().Name);
+      NotifyPluginOnEndType<T>(TypeOf<T>().Name);
     }
 
+  private: // methods
+
+    // Notifies the plugin that we are starting to bind a class type.
+    template <class T>
+    typename enable_if<is_class<T>::value>::type
+      NotifyPluginOnBeginType(const string& name)
+    {
+      GetReflectionPluginObjectBuilder<T>().BeginClassType(name);
+    }
+
+    // Notifies the plugin that we are starting to bind a value type.
+    template <class T>
+    typename enable_if<!is_class<T>::value>::type
+      NotifyPluginOnBeginType(const string& name)
+    {
+      GetReflectionPluginObjectBuilder<T>().BeginValueType(name);
+    }
+
+    // Notifies the plugin that we are finishing a class type.
+    template <class T>
+    typename enable_if<is_class<T>::value>::type
+      NotifyPluginOnEndType(const string& name)
+    {
+      GetReflectionPluginObjectBuilder<T>().EndClassType(name);
+    }
+
+    // Notifies the plugin that we are finishing a value type.
+    template <class T>
+    typename enable_if<!is_class<T>::value>::type
+      NotifyPluginOnEndType(const string& name)
+    {
+      GetReflectionPluginObjectBuilder<T>().EndValueType(name);
+    }
   };
   template <class Type> typename BindBase<Type>::AutoBind BindBase<Type>::autoBind;
 
@@ -92,7 +126,7 @@ namespace lite
   {
     Bind(TypeInfo& type) : BindBase(typeid(T).name())
     {
-      type(typeid(T).name());
+      type.Bind<T>(typeid(T).name());
     }
   };
 } // namespace lite
@@ -104,7 +138,11 @@ namespace lite
   { \
     Bind(TypeInfo& type) : BindBase(#class_) \
     { \
-      type(#class_, __VA_ARGS__); \
+      type.Bind<T> \
+      ( \
+        #class_, \
+        __VA_ARGS__  \
+      ); \
     } \
   }
 

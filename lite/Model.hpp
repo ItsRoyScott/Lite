@@ -62,4 +62,9 @@ namespace lite
       model->Transform = tfm.GetWorldMatrix();
     }
   };
+
+  reflect(Model,
+    "Color", Getter(&T::Color), Setter(&T::Color),
+    "Material", Getter(&T::Material), Setter(&T::Material),
+    "Mesh", Getter(&T::Mesh), Setter(&T::Mesh));
 } // namespace lite

@@ -55,7 +55,7 @@ namespace lite
 
     // Constructs given the name and function pointer.
     template <class FuncPtr>
-    MethodInfo(string name_, FuncPtr func_, bool isField = false)
+    MethodInfo(string name_, FuncPtr func_)
     {
       typedef FunctionTraits<FuncPtr> Traits;
 
@@ -64,8 +64,6 @@ namespace lite
       func = Traits::GenerateTypelessFunction(func_);
       name = move(name_);
       returnType = &TypeOf<Traits::ReturnType>();
-
-      ReflectionPlugin::OnNewMethod(name, func_);
     }
 
     ~MethodInfo() = default;
@@ -86,4 +84,15 @@ namespace lite
     // Formats the MethodInfo into an ostream.
     friend ostream& operator<<(ostream& os, const MethodInfo& mi);
   };
+
+  template <class T, class... Args>
+  MethodInfo Constructor(string name)
+  {
+    typedef void(*ConstructorType)(void*, Args...);
+    ConstructorType constructor = [](void* self, Args... args)
+    {
+      new (self) T(forward<Args>(args)...);
+    };
+    return MethodInfo(move(name), constructor);
+  }
 } // namespace lite

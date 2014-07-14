@@ -132,11 +132,17 @@ namespace lite
     template <class T>
     T& AddComponent(bool initialize = true)
     {
-      return static_cast<T&>(AddComponent(typeid(T).name(), initialize));
+      return static_cast<T&>(AddComponent(TypeOf<T>().Name, initialize));
     }
 
     // Adds a new component by name.
-    IComponent& AddComponent(const string& name, bool initialize = true)
+    IComponent& AddComponent(const string& name)
+    {
+      return AddComponent(name, true);
+    }
+
+    // Adds a new component by name.
+    IComponent& AddComponent(const string& name, bool initialize)
     {
       // Call on the component manager to create the component.
       IComponent& component = StoreComponent(ComponentManager::Instance().Create(name));
@@ -452,6 +458,8 @@ namespace lite
       return *components.back();
     }
   };
+
+  reflect(GameObject);
 
   class GOId
   {

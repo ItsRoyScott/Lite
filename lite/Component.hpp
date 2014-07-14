@@ -2,6 +2,7 @@
 
 #include "ComponentForward.hpp"
 #include "Essentials.hpp"
+#include "Reflection.hpp"
 
 namespace lite
 {
@@ -182,7 +183,7 @@ namespace lite
       auto it = components.find(name);
       if (it == components.end())
       {
-        Warn("Failed to find create component " << name);
+        Fatal("Failed to find create function for component " << name << "\nCurrently registered components:\n" << *this);
         return nullptr;
       }
       return it->second();
@@ -190,7 +191,7 @@ namespace lite
 
     // Registers a component with the manager.
     template <class T>
-    void Register(string name = typeid(T).name())
+    void Register(string name = TypeOf<T>().Name)
     {
       // Make a generic 'create' function returning an IComponent pointer.
       auto create = []() -> unique_ptr<IComponent>
@@ -200,10 +201,19 @@ namespace lite
 
       components.emplace(move(name), move(create));
     }
+
+    friend ostream& operator<<(ostream& os, const ComponentManager& cm)
+    {
+      for (auto& createPair : cm.components)
+      {
+        os << createPair.first << "\n";
+      }
+      return os;
+    }
   };
 
   template <class T>
-  void RegisterComponent(string name = typeid(T).name())
+  void RegisterComponent(string name = TypeOf<T>().Name)
   {
     return ComponentManager::Instance().Register<T>(move(name));
   }

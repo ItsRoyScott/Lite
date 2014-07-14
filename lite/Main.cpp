@@ -71,6 +71,12 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     collision.Radius(0.5f);
   }
 
+  int top = lua_gettop(Scripting::Instance().GetLuaState());
+  luaL_dostring(Scripting::Instance().GetLuaState(), 
+R"_delim_(object = GameObject()
+object:AddComponent("Model"))_delim_");
+  PrintLuaErrors(Scripting::Instance().GetLuaState(), top);
+
   auto frameTimer = FrameTimer();
 
   // Game loop:

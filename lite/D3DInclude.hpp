@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Essentials.hpp"
 #include "WindowsInclude.h"
 
 #pragma warning(push)
@@ -18,6 +19,11 @@ namespace lite
   typedef XMFLOAT2 float2;
   typedef XMFLOAT3 float3;
   typedef XMFLOAT4 float4;
+
+  inline ostream& operator<<(ostream& os, const float4& f)
+  {
+    return os << f.x << "," << f.y << "," << f.z << "," << f.w;
+  }
 } // namespace lite
 
 // DirectX call macro which automatically checks the HRESULT for failure.

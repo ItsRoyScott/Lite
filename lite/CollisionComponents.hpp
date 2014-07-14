@@ -87,6 +87,8 @@ namespace lite
     void Offset(float f) { primitive->Offset = f; }
   };
 
+  reflect(PlaneCollision);
+
   class SphereCollision : public CollisionComponent < SphereCollision, CollisionSphere >
   {
   private: // data
@@ -107,4 +109,6 @@ namespace lite
       primitive->Radius = max(tfm.LocalScale.x, max(tfm.LocalScale.y, tfm.LocalScale.z)) * radius;
     }
   };
+
+  reflect(SphereCollision);
 } // namespace lite

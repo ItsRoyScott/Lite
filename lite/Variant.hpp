@@ -100,8 +100,20 @@ namespace lite
     template <class T>
     Variant& Assign(T&& object = T())
     {
-      // Get the decayed type (no reference).
+      // Get the decayed type (no const or reference).
       typedef decay_t<T> DecayedType;
+
+      // Verify that the class supports printing using the insertion operator.
+      //  is_same allows us to check that the types of the two template parameters match.
+      //  decltype gets the result of the given expression.
+      //  declval creates a fake value that can be used within the expression. Here I'm
+      //    using declval to pretend we already have a valid ostream&.
+      //  If the type doesn't support the << operator the expression will fail, causing
+      //    an error within the expression and then causing the static_assert 
+      //    message to print.
+      static_assert(
+        is_same<ostream&, decltype(declval<ostream&>() << object)>::value, 
+        "Objects wrapped in a Variant must support ostream printing using the insertion operator <<");
 
       // Copy the object if the types already match.
       if (data && type == typeid(T))
@@ -110,9 +122,9 @@ namespace lite
         return *this;
       }
 
-      // Get rid of types for clone and print functions using more lambdas.
-      clone = [](void* p) -> void* { return new DecayedType(*reinterpret_cast<DecayedType*>(p)); };
-      print = [](ostream& os, void* p) -> ostream& { return os << *reinterpret_cast<DecayedType*>(p); };
+      // Get rid of the types for clone and print functions.
+      clone = &CloneFunction<DecayedType>;
+      print = &PrintFunction<DecayedType>;
 
       // Define the deleter using a lambda. Deletes the object as a 'T'
       //  type rather than a 'void'.
@@ -131,6 +143,13 @@ namespace lite
       data = Pointer(nullptr, nullptr);
       print = nullptr;
       type = typeid(InvalidType);
+    }
+
+    // A C-style function which generically allocates a copy of a given type.
+    template <class T>
+    static void* CloneFunction(void* otherThis)
+    {
+      return new T(*reinterpret_cast<T*>(otherThis));
     }
 
     // Retrieves the object the variant is pointing to. 
@@ -155,6 +174,13 @@ namespace lite
       return bool(data);
     }
 
+    // A C-style function which is capable of printing a given type to an ostream.
+    template <class T>
+    static ostream& PrintFunction(ostream& os, void* this_)
+    {
+      return os << *reinterpret_cast<T*>(this_);
+    }
+
     // Returns a reference to the variant's object.
     template <class T>
     T& Ref() const
@@ -175,5 +201,6 @@ namespace lite
       if (!v.data) return os;
       return v.print(os, v.data.get());
     }
+
   };
 } // namespace lite
