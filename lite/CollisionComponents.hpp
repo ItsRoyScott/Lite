@@ -17,14 +17,17 @@ namespace lite
     GOId objectWithRigidBody;
     shared_ptr<Primitive> primitive;
 
-  public: // methods
+  protected: // methods
 
     CollisionComponent()
     {
       primitive = Physics::CurrentInstance()->AddCollisionPrimitive<Primitive>();
     }
 
-  protected: // methods
+    CollisionComponent(const CollisionComponent& b)
+    {
+      primitive = Physics::CurrentInstance()->AddCollisionPrimitive<Primitive>();
+    }
 
     void Initialize() override
     {
@@ -88,7 +91,6 @@ namespace lite
   {
   private: // data
 
-    bool debugDraw = false;
     float radius = 1;
 
   public: // properties

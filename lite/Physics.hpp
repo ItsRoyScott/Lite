@@ -238,27 +238,20 @@ namespace lite
 
     void Update(float dt)
     {
-      high_resolution_timer timer;
       for (auto& body : bodies)
       {
         body->ApplyActors(dt);
         body->Integrate(dt);
       }
-      Note(timer.elapsed_milliseconds() << "ms to integrate bodies");
 
-      timer.start();
       // Generate contacts.
       size_t contacts = GenerateContacts();
-      &contacts;
-      Note(timer.elapsed_milliseconds() << "ms to generate contacts");
 
-      timer.start();
       // Resolve contacts.
       ContactResolver resolver;
       resolver.PositionIterations = contacts * 2;
       resolver.VelocityIterations = contacts * 2;
       resolver.ResolveContacts(collisionData.Contacts, dt);
-      Note(timer.elapsed_milliseconds() << "ms to resolve bodies");
     }
 
   private: // methods

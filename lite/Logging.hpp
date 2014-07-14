@@ -17,5 +17,5 @@
 #define NoteIf(condition, ...)     DEBUG_ONLY(DO_IF(condition, Note(__VA_ARGS__)))
 
 // Log warnings in yellow font.
-#define Warn(...)                  DEBUG_ONLY(LogPrint(BrightYellow, __VA_ARGS__))
+#define Warn(...)                  DEBUG_ONLY(static int _count = 0; if (++_count <= 3) { LogPrint(BrightYellow, __VA_ARGS__); } )
 #define WarnIf(condition, ...)     DEBUG_ONLY(DO_IF(condition, Warn(__VA_ARGS__)))

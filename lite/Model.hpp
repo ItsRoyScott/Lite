@@ -35,6 +35,17 @@ namespace lite
       model = Graphics::CurrentInstance()->AddModel();
     }
 
+    Model(const Model& b)
+    {
+      model = Graphics::CurrentInstance()->AddModel();
+    
+      Color(b.Color());
+      Material(b.Material());
+      Mesh(b.Mesh());
+    }
+
+  private: // methods
+
     void PushToSystems() override
     {
       Transform& tfm = OwnerReference()[Transform_];

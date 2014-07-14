@@ -37,9 +37,10 @@ namespace lite
     // Called on SetActive(false).
     virtual void Deactivate() = 0;
 
-    // Initializes the component after child objects have been
-    //  initialized. No guarantees are made about initialization
-    //  order between different objects in the world.
+    // Initializes the component after all child objects
+    //  have been initialized and other components added
+    //  to the object. Or, at runtime it is called immediately
+    //  when one makes a call to GameObject::AddComponent.
     virtual void Initialize() = 0;
 
     // Pulls updates from systems into components to prepare for game logic.
@@ -54,7 +55,8 @@ namespace lite
     // Updates the component.
     virtual void Update() = 0;
 
-    friend GameObject;
+    // The GameObject can access various callbacks on components.
+    friend class GameObject;
   };
 
   template <class T>
@@ -83,11 +85,15 @@ namespace lite
 
   public: // methods
 
+    Component() = default;
+    Component(const Component& b) {}
     ~Component() override {}
+    Component& operator=(const Component&) = delete;
 
     // Creates a copy of this component.
     unique_ptr<IComponent> Clone() const override
     {
+      // Make a new component of type T.
       return make_unique<T>(*static_cast<const T*>(this));
     }
 
@@ -140,9 +146,10 @@ namespace lite
     // Called on SetActive(false).
     void Deactivate() override {}
 
-    // Initializes the component after child objects have been
-    //  initialized. No guarantees are made about initialization
-    //  order between different objects in the world.
+    // Initializes the component after all child objects
+    //  have been initialized and other components added
+    //  to the object. Or, at runtime it is called immediately
+    //  when one makes a call to GameObject::AddComponent.
     void Initialize() override {}
 
     // Pulls updates from systems into components to prepare for game logic.
@@ -186,7 +193,10 @@ namespace lite
     void Register(string name = typeid(T).name())
     {
       // Make a generic 'create' function returning an IComponent pointer.
-      auto create = []() -> unique_ptr < IComponent > { return make_unique<T>(); };
+      auto create = []() -> unique_ptr<IComponent>
+      { 
+        return make_unique<T>();
+      };
 
       components.emplace(move(name), move(create));
     }

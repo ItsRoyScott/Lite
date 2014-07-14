@@ -2,6 +2,7 @@
 
 #include <bitset>
 #include "Essentials.hpp"
+#include "Window.hpp"
 #include "WindowsInclude.h"
 
 namespace lite
@@ -111,6 +112,13 @@ namespace lite
 
       currentX = point.x;
       currentY = point.y;
+
+      // Ignore mouse delta if the cursor teleported.
+      if (abs(currentX - previousX) > 200 || abs(currentY - previousY) > 200)
+      {
+        previousX = currentX;
+        previousY = currentY;
+      }
     }
 
     // Processes mouse input events.

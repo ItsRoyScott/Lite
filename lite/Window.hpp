@@ -2,7 +2,6 @@
 
 #include "EventHandler.hpp"
 #include "Logging.hpp"
-#include "Scripting.hpp"
 #include "WindowsInclude.h"
 
 namespace lite
@@ -12,6 +11,7 @@ namespace lite
   {
   private: // data
 
+    bool cursorWasClipped = false;
     int height;
     string title;
     int width;
@@ -22,12 +22,32 @@ namespace lite
     // Event handler for when the WindowMessage event occurs.
     EventHandler onWindowMessage = { "WindowMessage", this, &Window::OnWindowMessage };
 
+  public: // data
+
+    // Whether the cursor will be wrapped within the window rectangle.
+    bool ClipCursor = true;
+
+    // Win32 window handle.
+    HWND Handle = nullptr;
+
+    // Height of the window.
+    const int& Height = height;
+
+    // Width of the window.
+    const int& Width = width;
+
   public: // properties
 
-    HWND Handle = nullptr;
-    const int& Height = height;
-    const string& Title = title;
-    const int& Width = width;
+    // Whether the cursor was clipped to the other side of the window this frame.
+    const bool& CursorWasClipped() const { return cursorWasClipped; }
+
+    // Title of the window.
+    const string& Title() const { return title; }
+    void Title(string title_) 
+    { 
+      title = move(title_); 
+      SetWindowTextA(Handle, title.c_str());
+    }
 
   public: // methods
 
@@ -75,7 +95,7 @@ namespace lite
       if (!Handle) throw runtime_error("Window could not be created");
 
       // Set a user data pointer so we can retrieve 'this' inside the WindowProc callback.
-      SetWindowLongPtr(Handle, GWL_USERDATA, (LONG)this);
+      SetWindowLongPtr(Handle, GWLP_USERDATA, (LONG_PTR)this);
 
       // Present the window to the user.
       ShowWindow(Handle, SW_SHOWDEFAULT);
@@ -88,6 +108,11 @@ namespace lite
       Handle(b.Handle)
     {
       b.Handle = nullptr;
+
+      if (Handle)
+      {
+        SetWindowLongPtr(Handle, GWLP_USERDATA, (LONG_PTR)this);
+      }
     }
 
     // Destroys the window.
@@ -111,6 +136,11 @@ namespace lite
 
       b.Handle = nullptr;
 
+      if (Handle)
+      {
+        SetWindowLongPtr(Handle, GWLP_USERDATA, (LONG_PTR)this);
+      }
+
       return *this;
     }
 
@@ -126,17 +156,17 @@ namespace lite
       return Handle != nullptr;
     }
 
-    // Sets the title of the window.
-    void SetTitle(string title_)
-    {
-      title = move(title_);
-      SetWindowTextA(Handle, title.c_str());
-    }
-
     // Updates the Windows message pump.
     void Update()
     {
+      // Broadcast a window-update event.
       InvokeEvent("WindowUpdate");
+
+      // Clip the cursor.
+      if (ClipCursor)
+      {
+        ClipCursorInWindow();
+      }
 
       // Process all messages in the process and window message pump.
       // This will call our WindowProc callback.
@@ -150,13 +180,49 @@ namespace lite
 
   private: // methods
 
+    void ClipCursorInWindow()
+    {
+      cursorWasClipped = false;
+
+      // Get the window rectangle and cursor position.
+      RECT windowRect;
+      GetWindowRect(Handle, &windowRect);
+      POINT cursorPos;
+      GetCursorPos(&cursorPos);
+
+      // If the cursor is within the window:
+      if (cursorPos.x >= windowRect.left &&
+        cursorPos.x <= windowRect.right &&
+        cursorPos.y >= windowRect.top &&
+        cursorPos.y <= windowRect.bottom)
+      {
+        windowRect.left += 8;
+        windowRect.right -= 8;
+        windowRect.top += 8;
+        windowRect.bottom -= 8;
+
+        // Clip the cursor position within the window.
+        POINT newCursorPos = cursorPos;
+        if (cursorPos.x < windowRect.left)        newCursorPos.x = windowRect.right;
+        else if (cursorPos.x > windowRect.right)  newCursorPos.x = windowRect.left;
+        if (cursorPos.y < windowRect.top)         newCursorPos.y = windowRect.bottom;
+        else if (cursorPos.y > windowRect.bottom) newCursorPos.y = windowRect.top;
+
+        if (newCursorPos.x != cursorPos.x || newCursorPos.y != cursorPos.y)
+        {
+          cursorWasClipped = true;
+          SetCursorPos(newCursorPos.x, newCursorPos.y);
+        }
+      }
+    }
+
     // Event handler called when a GetWindowInfo event is invoked.
     void OnWindowInfo(EventData& data)
     {
       data["Handle"] = Handle;
       data["Width"] = Width;
       data["Height"] = Height;
-      data["Title"] = Title;
+      data["Title"] = title;
     }
 
     // Event handler called when a WindowMessage event is invoked.
@@ -184,6 +250,10 @@ namespace lite
       }
 
       case WM_SYSKEYDOWN: // handle ALT press
+        if (data.Get<WPARAM>("wParam") == VK_F4)
+        {
+          DestroyWindow(Handle);
+        }
         data["handled"] = true;
         break;
       }

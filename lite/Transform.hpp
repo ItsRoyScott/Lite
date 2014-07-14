@@ -22,6 +22,14 @@ namespace lite
 
   public: // methods
 
+    Transform() = default;
+
+    Transform(const Transform& b) :
+      LocalPosition(b.LocalPosition),
+      LocalRotation(b.LocalRotation),
+      LocalScale(b.LocalScale)
+    {}
+
     // Transformation formed by this transform only (doesn't include parents).
     XMMATRIX GetLocalMatrix() const
     {

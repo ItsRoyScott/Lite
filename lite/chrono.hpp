@@ -87,9 +87,12 @@ namespace lite
   public: // methods
 
     // Constructs timer object; calls start().
-    explicit high_resolution_timer()
+    explicit high_resolution_timer(bool shouldStart = true)
     {
-      start();
+      if (shouldStart)
+      {
+        start();
+      }
     }
 
     // The current elapsed time as a duration object.

@@ -12,6 +12,7 @@ namespace lite
   private: // data
 
     shared_ptr<PhysicsRigidBody> body;
+    bool pushedInitialTransform = false;
 
   public: // data
 
@@ -26,6 +27,18 @@ namespace lite
       body = Physics::CurrentInstance()->AddRigidBody();
     }
 
+    RigidBody(const RigidBody& b)
+    {
+      body = Physics::CurrentInstance()->AddRigidBody();
+
+      Mass(b.Mass());
+    }
+
+    void AddForce(const float3& f) 
+    { 
+      body->AddForce(f); 
+    }
+
     void AttachToPrimitive(CollisionPrimitive& primitive)
     {
       primitive.Body = body.get();
@@ -33,18 +46,22 @@ namespace lite
 
   private: // methods
 
-    void Initialize() override
-    {
-      Transform& tfm = OwnerReference()[Transform_];
-      body->Initialize(tfm.LocalPosition, tfm.LocalRotation);
-    }
-
     void PullFromSystems() override
     {
       // Publish physics update to the Transform component.
       Transform& tfm = OwnerReference()[Transform_];
       tfm.LocalPosition = body->Position();
       tfm.LocalRotation = body->Orientation();
+    }
+
+    void PushToSystems() override
+    {
+      if (!pushedInitialTransform)
+      {
+        Transform& tfm = OwnerReference()[Transform_];
+        body->Initialize(tfm.LocalPosition, tfm.LocalRotation);
+        pushedInitialTransform = true;
+      }
     }
   };
 } // namespace lite

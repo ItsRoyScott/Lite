@@ -15,6 +15,9 @@
 #include "RigidBody.hpp"
 #include "Transform.hpp"
 
+static void SetupScene();
+static void UpdateScene();
+
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
   using namespace lite;
@@ -36,7 +39,7 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   GameObject& floor = scene.AddChild();
 
   Transform& transform = floor[Transform_];
-  transform.LocalPosition.y = -10;
+  transform.LocalPosition.y = -2;
   transform.LocalScale.x = 1000;
   transform.LocalScale.y = 0.01f;
   transform.LocalScale.z = 1000;
@@ -51,36 +54,21 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   PlaneCollision& collision = floor[PlaneCollision_];
   collision.Direction({0, 1, 0});
-  collision.Offset(-10);
+  collision.Offset(-2);
 
-  // Set up the scene.
-  static const float limit = 3;
-  static const float gap = 1;
-  for (float x = -limit; x <= limit; x += gap)
+  GameObject spongebobPrefab;
   {
-    for (float y = -limit / 2; y <= limit / 2; y += gap)
-    {
-      for (float z = -limit; z <= limit; z += gap)
-      {
-        GameObject& child = scene.AddChild();
+    spongebobPrefab[Transform_];
 
-        float shiftX = float(rand() % 5 + 1)/10 - 0.5f;
-        float shiftZ = float(rand() % 5 + 1)/10 - 0.5f;
+    Model& model = spongebobPrefab[Model_];
+    model.Material("Default");
+    model.Mesh("spongebob.obj");
 
-        Transform& transform = child[Transform_];
-        transform.LocalPosition = { x+shiftX, y, z+shiftZ };
+    RigidBody& body = spongebobPrefab[RigidBody_];
+    body.Mass(1);
 
-        Model& model = child[Model_];
-        model.Material("Default");
-        model.Mesh("spongebob.obj");
-
-        RigidBody& body = child[RigidBody_];
-        body.Mass(10);
-
-        SphereCollision& collision = child[SphereCollision_];
-        collision.Radius(0.5f);
-      }
-    }
+    SphereCollision& collision = spongebobPrefab[SphereCollision_];
+    collision.Radius(0.5f);
   }
 
   auto frameTimer = FrameTimer();
@@ -89,16 +77,24 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   while (window.IsOpen())
   {
     frameTimer.BeginFrame();
-    window.SetTitle(string("Lite - ") + to_string((int)frameTimer.FPS()) + " fps");
+    window.Title(string("Lite - ") + to_string((int)frameTimer.FPS()) + " fps");
 
     if (Input::IsHeld('W')) graphics.Camera.Walk(0.5f);
     if (Input::IsHeld('S')) graphics.Camera.Walk(-0.5f);
-    if (Input::IsHeld('Q')) graphics.Camera.Strafe(-0.5f);
-    if (Input::IsHeld('E')) graphics.Camera.Strafe(0.5f);
-    if (Input::IsHeld('A')) graphics.Camera.RotateY(-XM_PI / 45.0f);
-    if (Input::IsHeld('D')) graphics.Camera.RotateY(XM_PI / 45.0f);
-    if (Input::IsHeld('R')) graphics.Camera.Climb(0.5f);
-    if (Input::IsHeld('F')) graphics.Camera.Climb(-0.5f);
+    if (Input::IsHeld('A')) graphics.Camera.Strafe(-0.5f);
+    if (Input::IsHeld('D')) graphics.Camera.Strafe(0.5f);
+    if (Input::IsHeld('Q')) graphics.Camera.Climb(0.5f);
+    if (Input::IsHeld('E')) graphics.Camera.Climb(-0.5f);
+
+    if (Input::IsTriggered(VK_SPACE))
+    {
+      GameObject& child = scene.AddChild(spongebobPrefab);
+      child[Transform_].LocalPosition = graphics.Camera.Position();
+      child[RigidBody_].AddForce(Vector(graphics.Camera.Look()) * 1000);
+    }
+
+    graphics.Camera.RotateY((float) Input::GetMouseDeltaX() / 100);
+    graphics.Camera.Pitch((float) Input::GetMouseDeltaY() / 100);
 
     scene.Update();
 
@@ -106,7 +102,7 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
     // Update all systems.
     audio.Update();
-    physics.Update(frameTimer.DeltaTime());
+    physics.Update(frameTimer.IdealDeltaTime());
     window.Update();
     graphics.Update(frameTimer.DeltaTime());
 
