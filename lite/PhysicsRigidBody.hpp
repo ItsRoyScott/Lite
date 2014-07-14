@@ -9,16 +9,16 @@ namespace lite
   private: // data
 
     // Current acceleration of the rigid body.
-    float3 acceleration = { 0, 0, 0 };
+    Vector acceleration = { 0, 0, 0 };
 
     // Forces accumulated on the rigid body.
-    float3 accumulatedForces = { 0, 0, 0 };
+    Vector accumulatedForces = { 0, 0, 0 };
 
     // Accumulated torque to be applied at the next integration step.
-    float3 accumulatedTorque = { 0, 0, 0 };
+    Vector accumulatedTorque = { 0, 0, 0 };
 
     // Amount that the rigid body is rotating in world space.
-    float3 angularVelocity = { 0, 0, 0 };
+    Vector angularVelocity = { 0, 0, 0 };
 
     // Inverse of the body's inertia tensor. The inertia tensor provided must not
     //  degenerate (that would mean the body had zero inertia for spinning along
@@ -41,23 +41,23 @@ namespace lite
     bool isAwake = false;
 
     // Linear acceleration of the rigid body for the previous frame.
-    float3 lastFrameAcceleration = { 0, 0, 0 };
+    Vector lastFrameAcceleration = { 0, 0, 0 };
 
     // The amount of motion of the body. This is a recency weighted mean that
     //  can be used to put a body to sleep.
     float motion = 0;
 
     // Angular orientation of the rigid body in world space.
-    float4 orientation = { 0, 0, 0, 1 };
+    Vector orientation = { 0, 0, 0, 1 };
 
     // Position of the rigid body in world space.
-    float3 position = { 0, 0, 0 };
+    Vector position = { 0, 0, 0 };
 
     // Used for converting from local to world space and back.
     float4x4 transformMatrix;
 
     // Velocity of the rigid body in world space.
-    float3 velocity = { 0, 0, 0 };
+    Vector velocity = { 0, 0, 0 };
 
   public: // data
 
@@ -95,21 +95,21 @@ namespace lite
     const bool& IsAwake() const { return isAwake; }
 
     // Linear acceleration of the rigid body for the previous frame.
-    Vector LastFrameAcceleration() const { return lastFrameAcceleration; }
+    const Vector& LastFrameAcceleration() const { return lastFrameAcceleration; }
 
     // Mass in kilograms.
     float Mass() const { return inverseMass == 0 ? numeric_limits<float>::max() : 1.0f / inverseMass; }
 
-    Vector Orientation() const { return orientation; }
+    const Vector& Orientation() const { return orientation; }
 
     // Position in meters.
-    Vector Position() const { return position; }
+    const Vector& Position() const { return position; }
 
     // Orientation in world space.
     const float4x4& Transform() const { return transformMatrix; }
 
     // Velocity in meters per second.
-    Vector Velocity() const { return velocity; }
+    const Vector& Velocity() const { return velocity; }
 
   public:
 
@@ -238,8 +238,8 @@ namespace lite
 
     void ClearAccumulators()
     {
-      accumulatedForces = { 0, 0, 0 };
-      accumulatedTorque = { 0, 0, 0 };
+      accumulatedForces = Vector{ 0, 0, 0 };
+      accumulatedTorque = Vector{ 0, 0, 0 };
     }
 
     void Integrate(float dt)
@@ -287,8 +287,8 @@ namespace lite
       else
       {
         isAwake = false;
-        velocity = { 0, 0, 0 };
-        angularVelocity = { 0, 0, 0 };
+        velocity = Vector{ 0, 0, 0 };
+        angularVelocity = Vector{ 0, 0, 0 };
       }
     }
 
@@ -299,7 +299,7 @@ namespace lite
 
     void SetOrientation(const Vector& q)
     {
-      XMStoreFloat4(&orientation, XMQuaternionNormalize(*q.xm));
+      orientation = XMQuaternionNormalize(*q.xm);
     }
 
     void SetPosition(const float3& position)

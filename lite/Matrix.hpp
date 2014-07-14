@@ -25,6 +25,17 @@ namespace lite
       *xm = XMMatrixIdentity();
     }
 
+    Matrix(const Matrix& b)
+    {
+      *xm = *b.xm;
+    }
+
+    Matrix& operator=(const Matrix& b)
+    {
+      *xm = *b.xm;
+      return *this;
+    }
+
     Matrix(const float4x4& f)
     {
       *xm = XMLoadFloat4x4(&f);
@@ -82,9 +93,36 @@ namespace lite
       return XMVector3Transform(*vector.xm, *xm);
     }
 
+    Vector TransformTranspose(const Vector& vector) const
+    {
+      return XMVector3Transform(*vector.xm, XMMatrixTranspose(*xm));
+    }
+
+    Matrix Transpose() const
+    {
+      return XMMatrixTranspose(*xm);
+    }
+
     Matrix operator*(const Matrix& b) const
     {
       return XMMatrixMultiply(*xm, *b.xm);
+    }
+
+    Matrix& operator*=(const Matrix& b)
+    {
+      *xm = XMMatrixMultiply(*xm, *b.xm);
+      return *this;
+    }
+
+    Matrix& operator*=(float scalar)
+    {
+      float4x4 f;
+      XMStoreFloat4x4(&f, *xm);
+      f.m[0][0] *= scalar; f.m[0][1] *= scalar; f.m[0][2] *= scalar; f.m[0][3] *= scalar;
+      f.m[1][0] *= scalar; f.m[1][1] *= scalar; f.m[1][2] *= scalar; f.m[1][3] *= scalar;
+      f.m[2][0] *= scalar; f.m[2][1] *= scalar; f.m[2][2] *= scalar; f.m[2][3] *= scalar;
+      f.m[3][0] *= scalar; f.m[3][1] *= scalar; f.m[3][2] *= scalar; f.m[3][3] *= scalar;
+      return *this = f;
     }
 
     operator float4x4() const

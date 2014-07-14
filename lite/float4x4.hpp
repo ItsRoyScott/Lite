@@ -61,11 +61,6 @@ namespace lite
     // data[7] -> m[2][1]
     // data[8] -> m[2][2]
 
-    //Vector Transform(const Vector& vector) const
-    //{
-    //  return XMVector3Transform(vector.xm, XMLoadFloat4x4(this));
-    //}
-
     Vector TransformInverse(const Vector& vector) const
     {
       XMVECTOR det;
@@ -77,12 +72,12 @@ namespace lite
       return XMVector3Transform(*vector.xm, XMMatrixTranspose(XMLoadFloat4x4(this)));
     }
 
-    float4x4 Transpose() const
-    {
-      float4x4 f;
-      XMStoreFloat4x4(&f, XMMatrixTranspose(XMLoadFloat4x4(this)));
-      return f;
-    }
+    //float4x4 Transpose() const
+    //{
+    //  float4x4 f;
+    //  XMStoreFloat4x4(&f, XMMatrixTranspose(XMLoadFloat4x4(this)));
+    //  return f;
+    //}
 
     float4x4& operator+=(const float4x4& o)
     {

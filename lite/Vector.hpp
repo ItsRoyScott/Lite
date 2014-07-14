@@ -25,8 +25,16 @@ namespace lite
       *xm = XMVectorZero();
     }
 
-    Vector(const Vector&) = default;
-    Vector& operator=(const Vector&) = default;
+    Vector(const Vector& b)
+    {
+      *xm = *b.xm;
+    }
+    
+    Vector& operator=(const Vector& b)
+    {
+      *xm = *b.xm;
+      return *this;
+    }
 
     // Initialize from float3.
     Vector(const float3& f)

@@ -52,15 +52,15 @@ namespace lite
       }
 
       // Resolve the interpenetration problems with the contacts.
-      AdjustPositions(contacts, dt);
+      AdjustPositions(contacts.data(), contacts.size(), dt);
 
       // Resolve the velocity problems with the contacts.
-      AdjustVelocities(contacts, dt);
+      AdjustVelocities(contacts.data(), contacts.size(), dt);
     }
 
   private: // methods
 
-    void AdjustPositions(vector<Contact>& contacts, float dt)
+    void AdjustPositions(Contact* contacts, size_t numContacts, float dt)
     {
       unsigned i, index;
       float3 linearChange[2], angularChange[2];
@@ -72,8 +72,8 @@ namespace lite
       {
         // Find biggest penetration
         max = PositionEpsilon;
-        index = contacts.size();
-        for (i = 0; i < contacts.size(); i++)
+        index = numContacts;
+        for (i = 0; i < numContacts; i++)
         {
           if (contacts[i].Penetration > max)
           {
@@ -81,7 +81,7 @@ namespace lite
             index = i;
           }
         }
-        if (index == contacts.size()) break;
+        if (index == numContacts) break;
 
         // Match the awake state at the contact.
         contacts[index].MatchAwakeState();
@@ -91,7 +91,7 @@ namespace lite
 
         // Again this action may have changed the penetration of other
         // bodies, so we update contacts.
-        for (i = 0; i < contacts.size(); i++)
+        for (i = 0; i < numContacts; i++)
         {
           // Check each body in the contact.
           for (unsigned b = 0; b < 2; b++)
@@ -119,9 +119,9 @@ namespace lite
       }
     }
 
-    void AdjustVelocities(vector<Contact>& contacts, float dt)
+    void AdjustVelocities(Contact* contacts, size_t numContacts, float dt)
     {
-      float3 velocityChange[2], rotationChange[2];
+      Vector velocityChange[2], rotationChange[2];
       Vector deltaVel;
 
       // iteratively handle impacts in order of severity.
@@ -129,8 +129,8 @@ namespace lite
       {
         // Find contact with maximum magnitude of probable velocity change.
         float max = VelocityEpsilon;
-        unsigned index = contacts.size();
-        for (unsigned i = 0; i < contacts.size(); i++)
+        unsigned index = numContacts;
+        for (unsigned i = 0; i < numContacts; i++)
         {
           if (contacts[i].DesiredDeltaVelocity > max)
           {
@@ -138,7 +138,7 @@ namespace lite
             index = i;
           }
         }
-        if (index == contacts.size()) break;
+        if (index == numContacts) break;
 
         // Match the awake state at the contact
         contacts[index].MatchAwakeState();
@@ -149,7 +149,7 @@ namespace lite
         // With the change in velocity of the two bodies, the update of
         // contact velocities means that some of the relative closing
         // velocities need recomputing.
-        for (unsigned i = 0; i < contacts.size(); i++)
+        for (unsigned i = 0; i < numContacts; i++)
         {
           // Check each body in the contact
           for (unsigned b = 0; b < 2; b++)
@@ -162,13 +162,13 @@ namespace lite
               {
                 if (contacts[i].Body[b] == contacts[index].Body[d])
                 {
-                  deltaVel = Vector(velocityChange[d]) + 
-                    Vector(rotationChange[d]).Cross(contacts[i].RelativeContactPosition[b]);
+                  deltaVel = velocityChange[d] + 
+                    rotationChange[d].Cross(contacts[i].RelativeContactPosition[b]);
 
                   // The sign of the change is negative if we're dealing
                   // with the second body in a contact.
-                  contacts[i].ContactVelocity = Vector(contacts[i].ContactVelocity) +
-                    Vector(contacts[i].ContactToWorld.TransformTranspose(deltaVel))
+                  contacts[i].ContactVelocity = contacts[i].ContactVelocity +
+                    contacts[i].ContactToWorld.TransformTranspose(deltaVel)
                     * (b ? -1.0f : 1.0f);
                   contacts[i].CalculateDesiredDeltaVelocity(dt);
                 }
@@ -238,20 +238,27 @@ namespace lite
 
     void Update(float dt)
     {
+      high_resolution_timer timer;
       for (auto& body : bodies)
       {
         body->ApplyActors(dt);
         body->Integrate(dt);
       }
+      Note(timer.elapsed_milliseconds() << "ms to integrate bodies");
 
+      timer.start();
       // Generate contacts.
       size_t contacts = GenerateContacts();
+      &contacts;
+      Note(timer.elapsed_milliseconds() << "ms to generate contacts");
 
+      timer.start();
       // Resolve contacts.
       ContactResolver resolver;
-      resolver.PositionIterations = contacts * 4;
-      resolver.VelocityIterations = contacts * 4;
+      resolver.PositionIterations = contacts * 2;
+      resolver.VelocityIterations = contacts * 2;
       resolver.ResolveContacts(collisionData.Contacts, dt);
+      Note(timer.elapsed_milliseconds() << "ms to resolve bodies");
     }
 
   private: // methods

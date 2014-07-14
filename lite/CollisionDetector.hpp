@@ -10,7 +10,7 @@ namespace lite
   {
   public: // types
 
-    typedef function<size_t(const CollisionPrimitive&, const CollisionPrimitive&, CollisionData&)> ContactGenerator;
+    typedef size_t(*ContactGenerator)(const CollisionPrimitive&, const CollisionPrimitive&, CollisionData&);
 
   private: // data
 
@@ -21,6 +21,15 @@ namespace lite
 
     CollisionDetector()
     {
+      // Initialize function pointers to null.
+      for (int j = 0; j < CollisionType::Count; ++j)
+      {
+        for (int i = 0; i < CollisionType::Count; ++i)
+        {
+          generatorMap[i][j] = nullptr;
+        }
+      }
+
       // Add default generators.
       AddGenerator<CollisionSphere, CollisionPlane>(&SphereAndPlane);
       AddGenerator<CollisionSphere>(&SphereAndSphere);
@@ -28,7 +37,7 @@ namespace lite
 
     // Adds a contact generator for colliding an object with itself.
     template <class AB>
-    void AddGenerator(function<size_t(const AB&, const AB&, CollisionData&)> fn)
+    void AddGenerator(size_t(*fn)(const AB&, const AB&, CollisionData&))
     {
       CollisionType type = AB().Type();
 
@@ -38,7 +47,7 @@ namespace lite
 
     // Adds a contact generator for colliding an object with another.
     template <class A, class B>
-    void AddGenerator(function<size_t(const A&, const B&, CollisionData&)> fn)
+    void AddGenerator(size_t(*fn)(const A&, const B&, CollisionData&))
     {
       CollisionType aType = A().Type();
       CollisionType bType = B().Type();

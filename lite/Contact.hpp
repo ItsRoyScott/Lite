@@ -35,14 +35,14 @@ namespace lite
     PhysicsRigidBody* Body[2];
 
     // Direction of the contact in world coordinates.
-    float3 ContactNormal;
+    Vector ContactNormal;
 
     // Position of the contact in world coordinates.
-    float3 ContactPoint;
+    Vector ContactPoint;
 
-    float4x4 ContactToWorld;
+    Matrix ContactToWorld;
 
-    float3 ContactVelocity;
+    Vector ContactVelocity;
 
     float DesiredDeltaVelocity;
 
@@ -53,7 +53,7 @@ namespace lite
     //  between the interpenetrating points.
     float Penetration;
 
-    float3 RelativeContactPosition[2];
+    Vector RelativeContactPosition[2];
 
     float Restitution;
 
@@ -85,7 +85,7 @@ namespace lite
 
           // Use the same procedure as for calculating frictionless
           // velocity change to work out the angular inertia.
-          Vector angularInertiaWorld = Vector(RelativeContactPosition[i]).Cross(ContactNormal);
+          Vector angularInertiaWorld = RelativeContactPosition[i].Cross(ContactNormal);
           angularInertiaWorld = Matrix(inverseInertiaTensor).Transform(angularInertiaWorld);
           angularInertiaWorld = angularInertiaWorld.Cross(RelativeContactPosition[i]);
           angularInertia[i] = angularInertiaWorld.Dot(ContactNormal);
@@ -116,7 +116,7 @@ namespace lite
           // To avoid angular projections that are too great (when mass is large
           // but inertia tensor is small) limit the angular move.
           Vector projection = RelativeContactPosition[i];
-          projection.AddScaled(ContactNormal, (-Vector(RelativeContactPosition[i])).Dot(ContactNormal));
+          projection.AddScaled(ContactNormal, (-RelativeContactPosition[i]).Dot(ContactNormal));
 
           // Use the small angle approximation for the sine of the angle (i.e.
           // the magnitude would be sine(angularLimit) * projection.magnitude
@@ -146,7 +146,7 @@ namespace lite
           else
           {
             // Work out the direction we'd like to rotate in.
-            Vector targetAngularDirection = Vector(RelativeContactPosition[i]).Cross(ContactNormal);
+            Vector targetAngularDirection = RelativeContactPosition[i].Cross(ContactNormal);
 
             const float4x4& inverseInertiaTensor = Body[i]->InverseInertiaTensorWorld();
 
@@ -158,7 +158,7 @@ namespace lite
 
           // Velocity change is easier - it is just the linear movement
           // along the contact normal.
-          linearChange[i] = Vector(ContactNormal) * linearMove[i];
+          linearChange[i] = ContactNormal * linearMove[i];
 
           // Now we can start to apply the values we've calculated.
           // Apply the linear movement.
@@ -184,7 +184,7 @@ namespace lite
       }
     }
 
-    void ApplyVelocityChange(float3 velocityChange[2], float3 rotationChange[2])
+    void ApplyVelocityChange(Vector velocityChange[2], Vector rotationChange[2])
     {
       // Get hold of the inverse mass and inverse inertia tensor, both in
       // world coordinates.
@@ -214,10 +214,10 @@ namespace lite
       Vector impulse = Matrix(ContactToWorld).Transform(impulseContact);
 
       // Split in the impulse into linear and rotational components
-      Vector impulsiveTorque = Vector(RelativeContactPosition[0]).Cross(impulse);
+      Vector impulsiveTorque = RelativeContactPosition[0].Cross(impulse);
       rotationChange[0] = Matrix(inverseInertiaTensor[0]).Transform(impulsiveTorque);
-      velocityChange[0] = { 0, 0, 0 };
-      velocityChange[0] = Vector(velocityChange[0]).AddScaled(impulse, Body[0]->InverseMass());
+      velocityChange[0] = Vector();
+      velocityChange[0] = velocityChange[0].AddScaled(impulse, Body[0]->InverseMass());
 
       // Apply the changes
       Body[0]->AddVelocity(velocityChange[0]);
@@ -228,8 +228,8 @@ namespace lite
         // Work out body one's linear and angular changes
         Vector impulsiveTorque = impulse.Cross(RelativeContactPosition[1]);
         rotationChange[1] = Matrix(inverseInertiaTensor[1]).Transform(impulsiveTorque);
-        velocityChange[1] = { 0, 0, 0 };
-        velocityChange[1] = Vector(velocityChange[1]).AddScaled(impulse, -Body[1]->InverseMass());
+        velocityChange[1] = Vector();
+        velocityChange[1] = velocityChange[1].AddScaled(impulse, -Body[1]->InverseMass());
 
         // And apply them.
         Body[1]->AddVelocity(velocityChange[1]);
@@ -254,14 +254,15 @@ namespace lite
 
       // If the velocity is very slow, limit the restitution.
       float thisRestitution = Restitution;
-      if (abs(ContactVelocity.x) < velocityLimit)
+      float contactVelX = ContactVelocity.GetX();
+      if (abs(contactVelX) < velocityLimit)
       {
         thisRestitution = 0.0f;
       }
 
       // Combine the bounce velocity with the removed
       // acceleration velocity.
-      DesiredDeltaVelocity = -ContactVelocity.x - thisRestitution * (ContactVelocity.x - velocityFromAcc);
+      DesiredDeltaVelocity = -contactVelX - thisRestitution * (contactVelX - velocityFromAcc);
     }
 
     void CalculateInternals(float dt)
@@ -325,35 +326,35 @@ namespace lite
       float3 contactTangent[2];
 
       // Check whether the Z-axis is nearer to the X or Y axis
-      if (abs(ContactNormal.x) > abs(ContactNormal.y))
+      if (abs(ContactNormal.GetX()) > abs(ContactNormal.GetY()))
       {
         // Scaling factor to ensure the results are normalised
-        const float s = 1.0f / sqrt(ContactNormal.z*ContactNormal.z + ContactNormal.x*ContactNormal.x);
+        const float s = 1.0f / sqrt(ContactNormal.GetZ()*ContactNormal.GetZ() + ContactNormal.GetX()*ContactNormal.GetX());
 
         // The new X-axis is at right angles to the world Y-axis
-        contactTangent[0].x = ContactNormal.z*s;
+        contactTangent[0].x = ContactNormal.GetZ()*s;
         contactTangent[0].y = 0;
-        contactTangent[0].z = -ContactNormal.x*s;
+        contactTangent[0].z = -ContactNormal.GetX()*s;
 
         // The new Y-axis is at right angles to the new X- and Z- axes
-        contactTangent[1].x = ContactNormal.y*contactTangent[0].x;
-        contactTangent[1].y = ContactNormal.z*contactTangent[0].x - ContactNormal.x*contactTangent[0].z;
-        contactTangent[1].z = -ContactNormal.y*contactTangent[0].x;
+        contactTangent[1].x = ContactNormal.GetY()*contactTangent[0].x;
+        contactTangent[1].y = ContactNormal.GetZ()*contactTangent[0].x - ContactNormal.GetX()*contactTangent[0].z;
+        contactTangent[1].z = -ContactNormal.GetY()*contactTangent[0].x;
       }
       else
       {
         // Scaling factor to ensure the results are normalised
-        const float s = 1.0f / sqrt(ContactNormal.z*ContactNormal.z + ContactNormal.y*ContactNormal.y);
+        const float s = 1.0f / sqrt(ContactNormal.GetZ()*ContactNormal.GetZ() + ContactNormal.GetY()*ContactNormal.GetY());
 
         // The new X-axis is at right angles to the world X-axis
         contactTangent[0].x = 0;
-        contactTangent[0].y = -ContactNormal.z*s;
-        contactTangent[0].z = ContactNormal.y*s;
+        contactTangent[0].y = -ContactNormal.GetZ()*s;
+        contactTangent[0].z = ContactNormal.GetY()*s;
 
         // The new Y-axis is at right angles to the new X- and Z- axes
-        contactTangent[1].x = ContactNormal.y*contactTangent[0].z - ContactNormal.z*contactTangent[0].y;
-        contactTangent[1].y = -ContactNormal.x*contactTangent[0].z;
-        contactTangent[1].z = ContactNormal.x*contactTangent[0].y;
+        contactTangent[1].x = ContactNormal.GetY()*contactTangent[0].z - ContactNormal.GetZ()*contactTangent[0].y;
+        contactTangent[1].y = -ContactNormal.GetX()*contactTangent[0].z;
+        contactTangent[1].z = ContactNormal.GetX()*contactTangent[0].y;
       }
 
       // Make a matrix from the three vectors.
@@ -369,7 +370,8 @@ namespace lite
       // The equivalent of a cross product in matrices is multiplication
       // by a skew symmetric matrix - we build the matrix for converting
       // between linear and angular quantities.
-      float4x4 impulseToTorque = Matrix(impulseToTorque).SetSkewSymmetric(RelativeContactPosition[0]);
+      Matrix impulseToTorque; 
+      impulseToTorque.SetSkewSymmetric(RelativeContactPosition[0]);
 
       // Build the matrix to convert contact impulse to change in velocity
       // in world coordinates.
@@ -382,7 +384,7 @@ namespace lite
       if (Body[1])
       {
         // Set the cross product matrix
-        impulseToTorque = Matrix(impulseToTorque).SetSkewSymmetric(RelativeContactPosition[1]);
+        impulseToTorque.SetSkewSymmetric(RelativeContactPosition[1]);
 
         // Calculate the velocity change matrix
         float4x4 deltaVelWorld2 = impulseToTorque;
@@ -398,23 +400,25 @@ namespace lite
       }
 
       // Do a change of basis to convert into contact coordinates.
-      float4x4 deltaVelocity = ContactToWorld.Transpose();
+      Matrix deltaVelocity = ContactToWorld.Transpose();
       deltaVelocity *= deltaVelWorld;
       deltaVelocity *= ContactToWorld;
 
       // Add in the linear velocity change
-      deltaVelocity.m[0][0] += inverseMass;
-      deltaVelocity.m[1][1] += inverseMass;
-      deltaVelocity.m[2][2] += inverseMass;
+      float4x4 fDeltaVelocity = deltaVelocity;
+      fDeltaVelocity.m[0][0] += inverseMass;
+      fDeltaVelocity.m[1][1] += inverseMass;
+      fDeltaVelocity.m[2][2] += inverseMass;
+      deltaVelocity = fDeltaVelocity;
 
       // Invert to get the impulse needed per unit velocity
-      float4x4 impulseMatrix = Matrix(deltaVelocity).Inverse().first;
+      Matrix impulseMatrix = deltaVelocity.Inverse().first;
 
       // Find the target velocities to kill
-      float3 velKill(DesiredDeltaVelocity, -ContactVelocity.y, -ContactVelocity.z);
+      auto velKill = float3(DesiredDeltaVelocity, -ContactVelocity.GetY(), -ContactVelocity.GetZ());
 
       // Find the impulse to kill target velocities
-      impulseContact = Matrix(impulseMatrix).Transform(velKill);
+      impulseContact = impulseMatrix.Transform(velKill);
 
       // Check for exceeding friction
       float planarImpulse = sqrt(
@@ -426,9 +430,9 @@ namespace lite
         impulseContact.y /= planarImpulse;
         impulseContact.z /= planarImpulse;
 
-        impulseContact.x = deltaVelocity.m[0][0] +
-          deltaVelocity.m[0][1] * Friction*impulseContact.y +
-          deltaVelocity.m[0][2] * Friction*impulseContact.z;
+        impulseContact.x = fDeltaVelocity.m[0][0] +
+          fDeltaVelocity.m[0][1] * Friction*impulseContact.y +
+          fDeltaVelocity.m[0][2] * Friction*impulseContact.z;
         impulseContact.x = DesiredDeltaVelocity / impulseContact.x;
         impulseContact.y *= Friction * impulseContact.x;
         impulseContact.z *= Friction * impulseContact.x;
