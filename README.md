@@ -10,24 +10,6 @@ This library is made to be an instructive example of a 3D game engine built in C
 
 3. To be instructive on a wide range of features typically found in a 3D game engine.
 
-## Ideas for Improvement
-
-- Separate thread for rendering, i.e. "Render Thread".
-
-- Re-save converted models for faster loading.
-
-- Better logging mechanism: message box, log-to-file, filename / line, channels, in-game, etc.
-
-- A performance profiler.
-
-- A resource manager which handles all resource loading (possibly on a separate thread).
-
-- Xbox or Wii controller input.
-
-- Action mappings for input: "Jump" maps to VK_SPACE, etc.
-
-- Separate thread or threadpool for physics.
-
 # Tutorials
 
 ## Generic Utilities
@@ -159,3 +141,21 @@ public: // methods
 ```
 
 This leaves a little more work for the programmer if the copy constructor and assignment were not needed. It's up to you if the benefit of saying `typeInfo.Name` outweighs a simple member function `typeInfo.Name()`.
+
+## Ideas for Improvement
+
+- Separate thread for rendering, i.e. "Render Thread".
+
+- Re-save converted models for faster loading.
+
+- Better logging mechanism: message box, log-to-file, filename / line, channels, in-game, etc.
+
+- A performance profiler.
+
+- A resource manager which handles all resource loading (possibly on a separate thread).
+
+- Xbox or Wii controller input.
+
+- Action mappings for input: "Jump" maps to VK_SPACE, etc.
+
+- Separate thread or threadpool for physics.
