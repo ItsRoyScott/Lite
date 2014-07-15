@@ -70,7 +70,7 @@ Variant(T&& object) {
 
 Lambdas provide a convenient method of erasing the types by creating generic functions that only deal with void pointers.
 
-Let's make sure we're copying the internal object when the variant is copied.
+Copy the internal object when the variant is copied:
 
 ```C++
 Variant(const Variant& b) {
