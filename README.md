@@ -10,7 +10,7 @@ This library is made to be an instructive example of a 3D game engine built in C
 
 3. To be instructive on a wide range of features typically found in a 3D game engine.
 
-## Ideas for improvement
+## Ideas for Improvement
 
 - Separate thread for rendering, i.e. "Render Thread".
 
@@ -30,9 +30,9 @@ This library is made to be an instructive example of a 3D game engine built in C
 
 # Tutorials
 
-## Generic utilities
+## Generic Utilities
 
-### Rolling your own variant class
+### Rolling Your Own Variant Class
 
 A `variant`, also known as an `any`, can store any C++ object inside it. Its data members are a void pointer to the object data, a `clone` function pointer which copies the data, a deleter function which destroys the data, and type info used for error checking.
 
@@ -132,7 +132,7 @@ There's more we can do with Variant:
 
 # Miscellaneous
 
-## Reference member initialization
+## Reference Member Initialization
 
 Some objects in Lite use member initialization at the declaration (C++11 feature) to initialize a reference to a private member for public access.
 
