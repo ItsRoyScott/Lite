@@ -159,7 +159,3 @@ public: // methods
 ```
 
 This leaves a little more work for the programmer if the copy constructor and assignment were not needed. It's up to you if the benefit of saying `typeInfo.Name` outweighs a simple member function `typeInfo.Name()`.
-
-## To-do
-
-- Remove deprecated tabs and ToString implementation; use operator<< instead.
