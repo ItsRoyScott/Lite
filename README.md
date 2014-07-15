@@ -34,7 +34,7 @@ This library is made to be an instructive example of a 3D game engine built in C
 
 ### Writing a variant class
 
-A variant, also known as an any, can store any C++ type inside it. Its data members are a void pointer to the object data, a clone function pointer which copies the data, a deleter function which destroys the data, and type info used for error checking.
+A `variant`, also known as an `any`, can store any C++ object inside it. Its data members are a void pointer to the object data, a `clone` function pointer which copies the data, a deleter function which destroys the data, and type info used for error checking.
 
 ```C++
 #include <memory>
@@ -42,7 +42,7 @@ A variant, also known as an any, can store any C++ type inside it. Its data memb
 
 class Variant {
 private: // types
-  // Type which indicates an un-assigned variant.
+  // Type indicating an un-assigned variant.
   struct InvalidType {};
   // unique_ptr allows us to store the data and its deleter function.
   typedef unique_ptr<void, void(*)(void*)> Pointer;
@@ -124,10 +124,10 @@ T* Get() const {
 ```
 
 There's more we can do with Variant:
-- Store function pointers to generically format to an ostream or read from an istream.
-- Use a char buffer[] to avoid dynamic allocations for small objects.
+- Store function pointers to generically format to an `ostream` or read from an `istream`.
+- Use a `char buffer[]` to avoid dynamic allocations for small objects.
 - Interact with reflection to let the user explore fields and methods on the object.
-- Support implicit casts (like short -> int).
+- Support implicit casts (like `short` -> `int`).
 - Treat references and pointers specially so the user can get the underlying type.
 
 # Miscellaneous
