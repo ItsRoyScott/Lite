@@ -1,24 +1,17 @@
 #pragma once
 
+#include "Console.hpp"
 #include "EventDescription.hpp"
 #include "EventInstance.hpp"
 #include "FmodInclude.hpp"
 #include "ListenerDescription.hpp"
-#include "Logging.hpp"
 #include "PathInfo.hpp"
 #include "SoundBank.hpp" 
 
-namespace lite // declarations
-{
-  // ToString conversion for the sound bank map.
-  string ToString(const unordered_map<string, SoundBank>& soundBankMap, unsigned tabs = 0);
-
-  // ToString conversion for the event description map.
-  string ToString(const unordered_map<string, EventDescription>& eventDescriptionMap, unsigned tabs = 0);
-} // namespace lite
-
 namespace lite // types
 {
+  // Manages the FMOD Studio system and keeps track of 
+  //  event descriptions and sound banks.
   class Audio
   {
   private: // data
@@ -42,6 +35,7 @@ namespace lite // types
 
   public: // methods
 
+    // Initializes FMOD Studio and loads all sound banks.
     Audio() :
       Listener(system)
     {
@@ -85,11 +79,14 @@ namespace lite // types
 
     ~Audio()
     {
-      // Invoke the AudioShutdown event.
+      // Invoke the AudioShutdown event. This lets the EventListener objects
+      //  release so that they don't try to release after the FMOD Studio
+      //  system is released below.
       EventData eventData;
       eventData["Audio"] = this;
       InvokeEvent("AudioShutdown", eventData);
 
+      // Destroy the FMOD Studio system.
       FmodCall(system->release());
     }
 
@@ -123,15 +120,16 @@ namespace lite // types
       return true;
     }
 
-    // ToString conversion for the Audio system.
-    friend string ToString(const Audio& audio, unsigned tabs = 0)
+    // Formats the sound banks and events available in the audio system.
+    friend ostream& operator<<(ostream& os, const Audio& a)
     {
-      string str = Tabs(tabs) + "Audio:\n";
-      str += ToString(audio.eventDescriptionMap, tabs + 1) + "\n";
-      str += ToString(audio.soundBankMap, tabs + 1);
-      return move(str);
+      os << "Audio:\n";
+      Format(os, a.eventDescriptionMap) << "\n";
+      Format(os, a.soundBankMap);
+      return os;
     }
 
+    // Updates the FMOD Studio system.
     void Update()
     {
       // Invoke the AudioUpdate event to allow
@@ -144,28 +142,28 @@ namespace lite // types
       FmodCall(system->update());
     }
 
+  private: // methods
+
+    // Formatted output for the event description map.
+    static ostream& Format(ostream& os, const unordered_map<string, EventDescription>& eventDescriptionMap)
+    {
+      os << Tabs(1) << "Event descriptions:";
+      for (auto& eventPair : eventDescriptionMap)
+      {
+        os << "\n" << Tabs(1) << eventPair.second;
+      }
+      return os;
+    }
+
+    // Formatted output for the sound bank map.
+    static ostream& Format(ostream& os, const unordered_map<string, SoundBank>& soundBankMap)
+    {
+      os << Tabs(1) << "Sound banks:";
+      for (auto& bankPair : soundBankMap)
+      {
+        os << "\n" << Tabs(1) << bankPair.second;
+      }
+      return os;
+    }
   };
-} // namespace lite
-
-namespace lite // functions
-{
-  // ToString conversion for the event description map.
-  inline string ToString(const unordered_map<string, EventDescription>& eventDescriptionMap, unsigned tabs)
-  {
-    string str = Tabs(tabs) + "Event descriptions:\n";
-    for (auto& eventPair : eventDescriptionMap)
-      str += Tabs(tabs + 1) + ToString(eventPair.second) + "\n";
-    if (str.back() == '\n') str.pop_back();
-    return move(str);
-  }
-
-  // ToString conversion for the sound bank map.
-  inline string ToString(const unordered_map<string, SoundBank>& soundBankMap, unsigned tabs)
-  {
-    string str = Tabs(tabs) + "Sound banks:\n";
-    for (auto& bankPair : soundBankMap)
-      str += Tabs(tabs + 1) + ToString(bankPair.second) + "\n";
-    if (str.back() == '\n') str.pop_back();
-    return move(str);
-  }
 } // namespace lite

@@ -46,13 +46,9 @@ namespace lite
     {
       static_assert(is_object<T>::value, "Only object types can be bound to Reflection.");
 
-      // Bind the value type.
+      // Bind the type.
       TypeInfo& valueType = RegisterType<T>();
       Bind < T > { valueType };
-
-      //// Bind the reference type.
-      //TypeInfo& referenceType = RegisterType<T>();
-      //referenceType.InitializeReferenceType<T>();
     }
 
   private: // methods

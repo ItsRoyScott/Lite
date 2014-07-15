@@ -7,6 +7,7 @@ namespace lite
 {
   namespace detail
   {
+    // Reads an entire file into the given container.
     template <class Container>
     bool ReadEntireFile(ifstream& file, Container& vec)
     {

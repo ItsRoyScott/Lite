@@ -78,9 +78,9 @@ namespace lite
       return move(result);
     }
 
-    friend string ToString(const SoundBank& bank, unsigned tabs = 0)
+    friend ostream& operator<<(ostream& os, const SoundBank& bank)
     {
-      return bank.name;
+      return os << bank.name;
     }
   };
 } // namespace lite

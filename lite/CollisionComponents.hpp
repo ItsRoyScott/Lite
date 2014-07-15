@@ -9,31 +9,43 @@
 
 namespace lite
 {
+  // Base class for all components which provide a collision primitive to the object.
   template <class T, class Primitive>
   class CollisionComponent : public Component<T>
   {
   protected: // data
 
+    // The identifier of the object that holds the 
+    //  RigidBody associated with this collider.
     GOId objectWithRigidBody;
+
+    // Pointer to the collision primitive.
     shared_ptr<Primitive> primitive;
 
   protected: // methods
 
+    // Calls on Physics to create the collision primitive.
     CollisionComponent()
     {
       primitive = Physics::CurrentInstance()->AddCollisionPrimitive<Primitive>();
     }
 
+    // Calls on Physics to create the collision primitive.
+    //  Note that 'objectWithRigidBody' is left to default-initialize.
+    //  This forces the object to find its rigid body in Initialize.
     CollisionComponent(const CollisionComponent& b)
     {
       primitive = Physics::CurrentInstance()->AddCollisionPrimitive<Primitive>();
     }
 
+    // Searches the object hierarchy upwards for the closest RigidBody.
     void Initialize() override
     {
       UpdateOwningRigidBody();
     }
 
+    // Pushes the offset transform from the rigid body 
+    //  to the underlying collision primitive.
     void PushToSystems() override
     {
       RigidBody* rigidBody = UpdateOwningRigidBody();
@@ -46,6 +58,8 @@ namespace lite
       }
     }
 
+    // Searches upwards for the closest associated rigid body and attaches
+    //  this collision component to it.
     RigidBody* UpdateOwningRigidBody()
     {
       // Search upwards for the owning rigid body.
@@ -76,21 +90,28 @@ namespace lite
     }
   };
 
+  // Supports collisions with an infinite plane. Transform data is ignored
+  //  for this type of collision.
   class PlaneCollision : public CollisionComponent<PlaneCollision, CollisionPlane>
   {
   public: // properties
 
+    // Direction vector of the plane. Note that Transform orientation is ignored.
     const float3& Direction() const { return primitive->Direction; }
     void Direction(const float3& d) { primitive->Direction = d; }
 
+    // Offset multiplied with the direction vector to indicate the position of the
+    //  plane. Note the Transform position is ignored.
     const float& Offset() const { return primitive->Offset; }
     void Offset(float f) { primitive->Offset = f; }
   };
 
+  // Bind PlaneCollision to reflection.
   reflect(PlaneCollision,
     "Direction", Getter(&T::Direction), Setter(&T::Direction),
     "Offset", Getter(&T::Offset), Setter(&T::Offset));
 
+  // Supports sphere collisions.
   class SphereCollision : public CollisionComponent < SphereCollision, CollisionSphere >
   {
   private: // data
@@ -99,9 +120,14 @@ namespace lite
 
   public: // properties
 
+    // Determines the size of the sphere. This is multiplied
+    //  with the max component of the Transform component's scale.
     const float& Radius() const { return radius; }
     void Radius(float f) { radius = f; }
 
+  private: // methods
+
+    // Sends the true radius of the sphere to physics.
     void PushToSystems() override
     {
       CollisionComponent::PushToSystems();
@@ -112,6 +138,7 @@ namespace lite
     }
   };
 
+  // Bind SphereCollision to reflection.
   reflect(SphereCollision,
     "Radius", Getter(&T::Radius), Setter(&T::Radius));
 } // namespace lite

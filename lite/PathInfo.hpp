@@ -1,9 +1,8 @@
 #pragma once
 
-#include <algorithm>
+#include "Console.hpp"
 #include "Essentials.hpp"
 #include <iterator>
-#include "Logging.hpp"
 #include "WindowsInclude.h"
 
 namespace lite

@@ -18,6 +18,7 @@ namespace lite
 
     ComHandle() = default;
     ComHandle(const ComHandle&) = delete;
+    ComHandle& operator=(const ComHandle&) = delete;
 
     ComHandle(ComHandle&& b) :
       pointer(b.pointer)
@@ -25,18 +26,16 @@ namespace lite
       b.pointer = nullptr;
     }
 
-    ~ComHandle()
-    {
-      Reset();
-    }
-
-    ComHandle& operator=(const ComHandle&) = delete;
-
     ComHandle& operator=(ComHandle&& b)
     {
       pointer = b.pointer;
       b.pointer = nullptr;
       return *this;
+    }
+
+    ~ComHandle()
+    {
+      Reset();
     }
 
     // Returns a pointer to the interface* (interface**).
@@ -94,6 +93,7 @@ namespace lite
     }
   };
 
+  // COM handles to common Direct3D interfaces.
   typedef ComHandle<ID3D10Blob>                BlobHandle;
   typedef ComHandle<ID3D11Buffer>              BufferHandle;
   typedef ComHandle<ID3D11DepthStencilView>    DepthStencilViewHandle;

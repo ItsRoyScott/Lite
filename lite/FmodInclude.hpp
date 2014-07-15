@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Logging.hpp"
+#include "Console.hpp"
 #include "WindowsInclude.h"
 
 #include "FMOD/fmod_errors.h"

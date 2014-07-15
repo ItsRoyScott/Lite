@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Component.hpp"
+#include "ComponentManager.hpp"
 #include "Essentials.hpp"
 #include "EventHandler.hpp"
 

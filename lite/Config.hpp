@@ -2,6 +2,7 @@
 
 namespace lite
 {
+  // Stores some useful constants used by the rest of the engine.
   namespace config
   {
     static const string DefaultTexture  = "george-costanza.jpg";

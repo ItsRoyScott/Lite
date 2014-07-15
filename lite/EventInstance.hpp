@@ -109,7 +109,7 @@ namespace lite
   private: // methods
 
     // Releases EventInstance handles in case the user has
-    //  any lying around. Nice-guy lite game engine :)
+    //  any lying around. Good-guy game engine :)
     void OnAudioShutdown(EventData&)
     {
       Release();

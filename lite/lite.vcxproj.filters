@@ -231,9 +231,6 @@
     <ClInclude Include="FileTime.hpp">
       <Filter>Platform</Filter>
     </ClInclude>
-    <ClInclude Include="Logging.hpp">
-      <Filter>Platform</Filter>
-    </ClInclude>
     <ClInclude Include="PathInfo.hpp">
       <Filter>Platform</Filter>
     </ClInclude>
@@ -299,6 +296,9 @@
     </ClInclude>
     <ClInclude Include="ReflectionPlugin.hpp">
       <Filter>Scripting\Reflection Plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentManager.hpp">
+      <Filter>Core\Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

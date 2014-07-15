@@ -1,9 +1,9 @@
 #pragma once
 
 #include "AssimpInclude.hpp"
+#include "Console.hpp"
 #include "D3DInfo.hpp"
 #include <fstream>
-#include "Logging.hpp"
 
 namespace lite
 {

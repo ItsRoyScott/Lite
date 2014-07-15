@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Console.hpp"
 #include "EventHandler.hpp"
-#include "Logging.hpp"
 #include "WindowsInclude.h"
 
 namespace lite

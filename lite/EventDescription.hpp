@@ -38,9 +38,9 @@ namespace lite
       return instance;
     }
 
-    friend string ToString(const EventDescription& eventDescription, unsigned tabs = 0)
+    friend ostream& operator<<(ostream& os, const EventDescription& eventDescription)
     {
-      return eventDescription.path;
+      return os << eventDescription.path;
     }
   };
 } // namespace lite

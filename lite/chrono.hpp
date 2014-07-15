@@ -11,7 +11,7 @@ namespace lite
   using std::ratio;
   using std::chrono::time_point;
 
-  // Replacement for VC++ incorrect implementation.
+  // Replacement for VC++ incorrect implementation using QueryPerformanceCounter.
   class high_resolution_clock
   {
   public: // types
@@ -21,13 +21,18 @@ namespace lite
     typedef duration<rep, period>             duration;
     typedef time_point<high_resolution_clock> time_point;
 
-  public: // properties
+  public: // data
 
+    // Whether the clock is non-decreasing.
     static const bool is_monotonic = true;
+
+    // Whether the clock is monotonic and the time between clock ticks is constant.
+    //  (The time between ticks is retrieved using QueryPerformanceFrequency.)
     static const bool is_steady = true;
 
   public: // methods
 
+    // Samples the current time.
     static time_point now()
     {
       // Get the current performance counter ticks.
@@ -86,7 +91,7 @@ namespace lite
 
   public: // methods
 
-    // Constructs timer object; calls start().
+    // Constructs timer object; calls start() if 'shouldStart' is true.
     explicit high_resolution_timer(bool shouldStart = true)
     {
       if (shouldStart)

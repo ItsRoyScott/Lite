@@ -5,33 +5,53 @@
 
 namespace lite
 {
+  // Stores contact information relating to a collision.
   class CollisionData
   {
   public: // data
 
+    // Array of all contacts.
     vector<Contact> Contacts;
+
     float Friction = 0;
     float Restitution = 0;
     float Tolerance = 0;
 
   public: // methods
 
+    // Creates a new contact.
     Contact& AddContact()
     {
       Contacts.emplace_back();
       return Contacts.back();
     }
 
+    // Empties the array of contacts and clears all values.
     void Clear()
     {
       *this = CollisionData();
     }
   };
 
+  // A contact represents two bodies in contact. Resolving a
+  //  contact removes their interpenetration, and applies sufficient
+  //  impulse to keep them apart.Colliding bodies may also rebound.
+  //  Contacts can be used to represent positional joints, by making
+  //  the contact constraint keep the bodies in their correct
+  //  orientation.
+  // 
+  // It can be a good idea to create a contact object even when the
+  //  contact isn't violated. Because resolving one contact can violate
+  //  another, contacts that are close to being violated should be
+  //  sent to the resolver; that way if one resolution moves the body,
+  //  the contact may be violated, and can be resolved. If the contact
+  //  is not violated, it will not be resolved, so you only loose a
+  //  small amount of execution time.
   class Contact
   {
   public: // data
 
+    // The two bodies in contact.
     PhysicsRigidBody* Body[2];
 
     // Direction of the contact in world coordinates.
@@ -40,12 +60,16 @@ namespace lite
     // Position of the contact in world coordinates.
     Vector ContactPoint;
 
+    // Matrix converting contact-space to world-space.
     Matrix ContactToWorld;
 
+    // The closing velocity at the point of contact.
     Vector ContactVelocity;
 
+    // Required change in velocity for this contact to be resolved.
     float DesiredDeltaVelocity;
 
+    // The lateral friction coefficient at this contact.
     float Friction;
 
     // The depth of penetration at the contact point. If both bodies
@@ -53,8 +77,11 @@ namespace lite
     //  between the interpenetrating points.
     float Penetration;
 
+    // The world space position of the contact point relative to the center of
+    //  each body. This is set when the CalculateInternals function is run.
     Vector RelativeContactPosition[2];
 
+    // Normal restitution coefficient at this contact.
     float Restitution;
 
   public: // methods
@@ -65,6 +92,7 @@ namespace lite
       Body[1] = nullptr;
     }
 
+    // Performs an inertia-weighted penetration resolution of this contact alone.
     void ApplyPositionChange(float3 linearChange[2], float3 angularChange[2], float penetration)
     {
       static const float angularLimit = 0.2f;
@@ -184,6 +212,7 @@ namespace lite
       }
     }
 
+    // Performs an inertia-weighted impulse based resolution of this contact alone.
     void ApplyVelocityChange(Vector velocityChange[2], Vector rotationChange[2])
     {
       // Get hold of the inverse mass and inverse inertia tensor, both in
@@ -237,6 +266,7 @@ namespace lite
       }
     }
 
+    // Calculates and sets the internal value for the desired delta velocity.
     void CalculateDesiredDeltaVelocity(float dt)
     {
       static const float velocityLimit = 0.25f;
@@ -265,6 +295,7 @@ namespace lite
       DesiredDeltaVelocity = -contactVelX - thisRestitution * (contactVelX - velocityFromAcc);
     }
 
+    // Calculates internal data from state data. 
     void CalculateInternals(float dt)
     {
       // Check if the first object is null, and swap if it is.
@@ -295,6 +326,9 @@ namespace lite
       CalculateDesiredDeltaVelocity(dt);
     }
 
+    // Updates the awake state of rigid bodies that are taking place in the 
+    //  given contact. A body will be made awake if it is in contact with a
+    //  body that is awake.
     void MatchAwakeState()
     {
       // Collisions with the world never cause a body to wake up.
@@ -311,6 +345,7 @@ namespace lite
       }
     }
 
+    // Sets the data that doesn't normally depend on the position of the contact.
     void SetBodyData(PhysicsRigidBody* one, PhysicsRigidBody* two, float friction, float restitution)
     {
       Body[0] = one;
@@ -321,6 +356,9 @@ namespace lite
 
   private: // methods
 
+    // Calculates an orthonormal basis for the contact point, based on the
+    //  primary friction direction (for anisotropic friction) or a random
+    //  orientation (for isotropic friction).
     void CalculateContactBasis()
     {
       float3 contactTangent[2];
@@ -362,6 +400,10 @@ namespace lite
       ContactToWorld = Matrix(ContactToWorld).SetComponents(ContactNormal, contactTangent[0], contactTangent[1]);
     }
 
+    // Calculates the impulse needed to resolve this contact, given that the contact
+    //  has a non-zero coefficient of friction. A pair of inertia tensors - one for
+    //  each contact object - is specified to save calculation time; the calling 
+    //  function has access to these anyway.
     float3 CalculateFrictionImpulse(float4x4* inverseInertiaTensor)
     {
       float3 impulseContact;
@@ -440,6 +482,10 @@ namespace lite
       return impulseContact;
     }
 
+    // Calculates the impulse needed to resolve this contact, given that the contact
+    //  has no friction. A pair of inertia tensors - one for each contact object - 
+    //  is specified to save calculation time; the calling function has access to 
+    //  these anyway.
     float3 CalculateFrictionlessImpulse(float4x4* inverseInertiaTensor)
     {
       float3 impulseContact;
@@ -479,6 +525,7 @@ namespace lite
       return impulseContact;
     }
 
+    // Calculates and returns the velocity of the contact point on the given body.
     Vector CalculateLocalVelocity(size_t bodyIndex, float dt)
     {
       PhysicsRigidBody *thisBody = Body[bodyIndex];
@@ -509,6 +556,9 @@ namespace lite
       return contactVelocity;
     }
 
+    // Reverses the contact. This involves swapping the two rigid bodies and
+    //  reversing the contat normal. The internal values should then be re-
+    //  calculated using CalculateInternals (this is not done automatically).
     void SwapBodies()
     {
       ContactNormal = Vector(ContactNormal) * -1;

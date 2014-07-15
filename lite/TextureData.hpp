@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Console.hpp"
 #include "D3DInfo.hpp"
-#include "Logging.hpp"
 #include "WICTextureLoader.h"
 
 namespace lite

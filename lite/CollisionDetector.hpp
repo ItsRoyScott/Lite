@@ -6,19 +6,22 @@
 
 namespace lite
 {
+  // Singleton capable of colliding any two collision primitives and creating contacts.
   class CollisionDetector : public Singleton < CollisionDetector >
   {
   public: // types
 
+    // C function pointer which collides two primitives.
     typedef size_t(*ContactGenerator)(const CollisionPrimitive&, const CollisionPrimitive&, CollisionData&);
 
   private: // data
 
-    //unordered_map<type_index, unordered_map<type_index, ContactGenerator>> generatorMap;
+    // Two-dimensional array to collide A and B by indexing generatorMap[AType][BType].
     ContactGenerator generatorMap[CollisionType::Count][CollisionType::Count];
 
   public: // methods
 
+    // Sets the generatorMap to null and adds default collision generators.
     CollisionDetector()
     {
       // Initialize function pointers to null.
@@ -57,6 +60,7 @@ namespace lite
       generatorMap[bType][aType] = generator;
     }
 
+    // Collides two arbritrary primitives, possibly generating new contacts.
     size_t Collide(const CollisionPrimitive& a, const CollisionPrimitive& b, CollisionData& data)
     {
       const ContactGenerator& generator = generatorMap[a.Type()][b.Type()];
@@ -67,6 +71,9 @@ namespace lite
       return 0;
     }
 
+  private: // methods
+
+    // Default collision function for colliding sphere/plane.
     static size_t SphereAndPlane(
       const CollisionSphere& sphere,
       const CollisionPlane& plane,
@@ -101,6 +108,7 @@ namespace lite
       return 1;
     }
 
+    // Default collision function for colliding sphere/sphere.
     static size_t SphereAndSphere(
       const CollisionSphere& one,
       const CollisionSphere& two,

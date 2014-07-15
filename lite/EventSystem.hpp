@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Console.hpp"
 #include "EventData.hpp"
-#include "Logging.hpp"
 
 namespace lite // types
 {

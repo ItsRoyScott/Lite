@@ -1,8 +1,8 @@
 #pragma once
 
 #include "BasicIO.hpp"
+#include "Console.hpp"
 #include "D3DInfo.hpp"
-#include "Logging.hpp"
 #include "PathInfo.hpp"
 
 namespace lite
