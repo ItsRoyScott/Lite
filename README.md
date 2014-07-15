@@ -127,7 +127,7 @@ public: // properties
 };
 ```
 
-The problem with this approach to properties or attributes is that the compiler cannot generate a default copy constructor or assignment operator.The reference is effectively a pointer to a field of the same object, so we do not want to copy the pointer to the next object. 
+The problem with this approach to exposing attributes is that the compiler cannot generate a default copy constructor or assignment operator. The reference is effectively a pointer to a field of the same object, so we do not want to copy the pointer to the next object. 
 
 What we want to have happen is for the reference member initialization to be left alone on construction and assignment. 
 
