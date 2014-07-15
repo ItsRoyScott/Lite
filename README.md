@@ -94,7 +94,7 @@ We can add some functions to deal with the variant's data.
 explicit operator bool() const { return bool(data); }
 
 // Whether the variant is invalid (null).
-explicit operator!() const { return !bool(*this); }
+bool operator!() const { return !bool(*this); }
 
 // Whether the type 'T' matches the variant's type.
 template <class T>
