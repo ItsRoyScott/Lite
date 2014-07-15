@@ -54,6 +54,8 @@ namespace lite // types
         fmod::Bank* bank = nullptr;
         FmodCall(system->loadBankFile(file.c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &bank));
 
+        // Add a map entry to the sound bank using the file's name,
+        //  excluding the directory and extension.
         string bankName = PathInfo(file).BaseFilename();
         soundBankMap.emplace(bankName, SoundBank(bank, bankName));
       }
