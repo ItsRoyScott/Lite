@@ -1,6 +1,6 @@
 # Introduction
 
-This library is meant to be an instructive example of a 3D game engine built in C++ with Visual Studio and Direct3D 11. The engine is simple: it is single threaded and the game loop exists in Main.cpp.
+This library is made to be an instructive example of a 3D game engine built in C++ with Visual Studio and Direct3D 11. The engine is simple: it is single threaded and the game loop exists in Main.cpp.
 
 ## Goals
 
