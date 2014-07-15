@@ -49,7 +49,7 @@ private: // types
   
 private: // data
   // Uses 'new' to allocate and copy construct the object.
-  void* (*clone)(void* other) = nullptr;
+  void* (*clone)(const void* other) = nullptr;
   // Stores our data as a void pointer.
   Pointer data = Pointer(nullptr, nullptr);
   // Used to compare the actual type of the variant (to be type-safe at runtime).
@@ -76,7 +76,7 @@ Variant(T&& object) {
   type = typeid(DecayT);
   
   // For clone we have to cast the parameter to the proper type.
-  clone = [](void* other) -> void* { return new DecayT(*reinterpret_cast<DecayT*>(other)); };
+  clone = [](const void* other) -> void* { return new DecayT(*reinterpret_cast<const DecayT*>(other)); };
   
   // For the deleter function we have to make sure we're deleting the proper type.
   auto deleter = [](void* p) { delete reinterpret_cast<DecayT*>(p); };
