@@ -68,7 +68,7 @@ Variant(T&& object) {
 }
 ```
 
-Lambdas provide a convenient method of erasing the types by creating generic functions that only deal with void pointers.
+Lambdas provide a convenient method of erasing the types by creating generic functions that only deal with void pointers. The clone takes in a const void* representing the object to copy. We `reinterpret_cast` that pointer to the correct type in order to construct the new object. We then return the allocated copy as a `void*`. The deleter is casting its `void*` parameter to ensure that `delete` calls the destructor on the object.
 
 Copy the internal object when the variant is copied:
 
