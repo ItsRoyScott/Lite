@@ -32,7 +32,7 @@ This library is made to be an instructive example of a 3D game engine built in C
 
 ## Generic utilities
 
-### Writing a variant class
+### Rolling your own variant class
 
 A `variant`, also known as an `any`, can store any C++ object inside it. Its data members are a void pointer to the object data, a `clone` function pointer which copies the data, a deleter function which destroys the data, and type info used for error checking.
 
