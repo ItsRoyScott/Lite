@@ -65,5 +65,6 @@ namespace lite
     }
   };
 
-  reflect(RigidBody);
+  reflect(RigidBody,
+    "Mass", Getter(&T::Mass), Setter(&T::Mass));
 } // namespace lite

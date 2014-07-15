@@ -122,4 +122,9 @@ namespace lite
           XMLoadFloat3(&positionOffset)));
     }
   };
+
+  reflect(Transform,
+    "LocalPosition", &T::LocalPosition,
+    "LocalRotation", &T::LocalRotation,
+    "LocalScale", &T::LocalScale);
 } // namespace lite

@@ -19,13 +19,7 @@ namespace lite
     virtual unique_ptr<IComponent> Clone() const = 0;
 
     // Returns the type info for this component (using typeid).
-    virtual const type_info& GetType() const = 0;
-
-    // Returns the hash code of the component type name.
-    virtual const size_t& GetTypeHash() const = 0;
-
-    // Returns the name of this component.
-    virtual const string& GetTypeName() const = 0;
+    virtual const TypeInfo& GetType() const = 0;
 
     // Sets whether the component is active and updating.
     virtual void SetActive(bool active) = 0;
@@ -99,23 +93,9 @@ namespace lite
     }
 
     // Returns the type info for this component (using typeid).
-    const type_info& GetType() const override
+    const TypeInfo& GetType() const override
     {
-      return typeid(T);
-    }
-
-    // Returns the hash code of the component type name.
-    const size_t& GetTypeHash() const override
-    {
-      static size_t hash = GetType().hash_code();
-      return hash;
-    }
-
-    // Returns the name of this component.
-    const string& GetTypeName() const override
-    {
-      static string name = GetType().name();
-      return name;
+      return TypeOf<T>();
     }
 
     // Sets whether the component is active and updating.
@@ -137,6 +117,16 @@ namespace lite
       }
 
       isActive = active;
+    }
+
+    friend ostream& operator<<(ostream& os, const Component<T>&)
+    {
+      return os;
+    }
+
+    friend istream& operator>>(istream& is, Component<T>&)
+    {
+      return is;
     }
 
   protected: // methods

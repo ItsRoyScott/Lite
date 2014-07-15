@@ -87,7 +87,9 @@ namespace lite
     void Offset(float f) { primitive->Offset = f; }
   };
 
-  reflect(PlaneCollision);
+  reflect(PlaneCollision,
+    "Direction", Getter(&T::Direction), Setter(&T::Direction),
+    "Offset", Getter(&T::Offset), Setter(&T::Offset));
 
   class SphereCollision : public CollisionComponent < SphereCollision, CollisionSphere >
   {
@@ -110,5 +112,6 @@ namespace lite
     }
   };
 
-  reflect(SphereCollision);
+  reflect(SphereCollision,
+    "Radius", Getter(&T::Radius), Setter(&T::Radius));
 } // namespace lite

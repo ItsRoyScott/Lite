@@ -33,15 +33,21 @@ namespace lite
     FieldInfo() = delete;
 
     FieldInfo(FieldInfo&& b) :
+      getFieldPointer(move(b.getFieldPointer)),
+      getter(move(b.getter)),
       name(move(b.name)),
       ownerType(b.ownerType),
+      setter(move(b.setter)),
       type(b.type)
     {}
 
     FieldInfo& operator=(FieldInfo&& b)
     {
+      getFieldPointer = move(b.getFieldPointer);
+      getter = move(b.getter);
       name = move(b.name);
       ownerType = b.ownerType;
+      setter = move(b.setter);
       type = b.type;
 
       return *this;
@@ -71,6 +77,17 @@ namespace lite
         FieldT& field = (reinterpret_cast<T*>(this_)->*fieldPtr);
         return &field;
       };
+
+      getter = [=](void* this_) -> Variant
+      {
+        return (reinterpret_cast<T*>(this_)->*fieldPtr);
+      };
+
+      setter = [=](void* this_, void* other)
+      {
+        FieldT& field = (reinterpret_cast<T*>(this_)->*fieldPtr);
+        field = *reinterpret_cast<FieldT*>(other);
+      };
     }
 
     // Constructs a field info from a getter / setter pair.
@@ -91,11 +108,17 @@ namespace lite
       static_assert(is_same<T1Value, T2Value>::value, "Class types for getters and setters must match");
       static_assert(is_same<FieldT1Value, FieldT2Value>::value, "Field types for getters and setters must match");
 
+      // Create the generic getter function. Takes the 'this' pointer as a void*
+      //  and casts it to the class type. It calls the getter function and returns
+      //  the result as a variant.
       this->getter = [=](void* this_) -> Variant
       {
         return (reinterpret_cast<T1Value*>(this_)->*getter)();
       };
 
+      // Create the generic setter function. Takes the 'this' pointer as a void*
+      //  and the value as a void* and casts the pointers to their appropriate
+      //  types prior to calling the set function.
       this->setter = [=](void* this_, void* value)
       {
         (reinterpret_cast<T2Value*>(this_)->*setter)(*reinterpret_cast<FieldT2Value*>(value));
@@ -121,6 +144,26 @@ namespace lite
       if (&TypeOf<T>() != ownerType) return nullptr;
       if (&TypeOf<FieldT>() != type) return nullptr;
       return reinterpret_cast<FieldT*>(getFieldPointer(&this_));
+    }
+
+    Variant Get(void* this_ = nullptr) const
+    {
+      if (this == nullptr && ownerType != nullptr)
+      {
+        Warn("'this' pointer required for field " << Name);
+        return {};
+      }
+      return getter(this_);
+    }
+
+    void Set(const Variant& value, void* this_ = nullptr) const
+    {
+      if (this_ == nullptr && ownerType != nullptr)
+      {
+        Warn("'this' pointer required for field " << Name);
+        return;
+      }
+      setter(this_, value.Data());
     }
 
     // Formats the field info into an ostream.

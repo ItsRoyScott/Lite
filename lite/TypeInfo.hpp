@@ -11,11 +11,19 @@ namespace lite
   {
   private: // data
 
+    const type_info*    cppType = nullptr;
+    function<Variant()> create;
+    void              (*deleter)(void*) = nullptr;
     vector<FieldInfo>   fields;
     bool                isReference = false;
     vector<MethodInfo>  methods;
-    string              name;
+    string              name = "NotBoundToReflection";
+    ostream&          (*print)(ostream&, void*) = nullptr;
+    istream&          (*read)(istream&, void*) = nullptr;
+    size_t              size = 0;
     const TypeInfo*     valueType = nullptr;
+
+    friend class Reflection;
 
   public: // properties
 
@@ -31,10 +39,45 @@ namespace lite
     // Name of the type.
     const string& Name = name;
 
+    // Size of the type in bytes.
+    const size_t& Size = size;
+
     // Returns the value-type if this type is a reference.
     const TypeInfo* const& ValueType = valueType;
 
   public: // const methods
+
+    Variant Create() const
+    {
+      // Verify that the default constructor exists.
+      if (Methods.empty() || Methods[0].Name != Name || Methods[0].ArgumentTypes.size() != 0)
+      {
+        Warn("Type " << Name << " does not have a valid default constructor");
+        return {};
+      }
+
+      // Get the constructor as a std::function.
+      auto ctor = Methods[0].AsFunction<Variant()>();
+      if (!ctor)
+      {
+        Warn("Could not retrieve default constructor for " << Name);
+        return {};
+      }
+
+      return ctor();
+    }
+
+    // Finds a field using a predicate function. The signature
+    //  of the predicate is bool(const FieldInfo&).
+    template <class Predicate>
+    const FieldInfo* FindFieldBy(Predicate pred) const
+    {
+      for (const FieldInfo& field : fields)
+      {
+        if (pred(field)) return &field;
+      }
+      return nullptr;
+    }
 
     // Finds a method using a predicate function. The signature
     //  of the predicate is bool(const MethodInfo&).
@@ -46,6 +89,12 @@ namespace lite
         if (pred(method)) return &method;
       }
       return nullptr;
+    }
+
+    // Finds a field by name. (May return null)
+    const FieldInfo* GetField(const string& name) const
+    {
+      return FindFieldBy([&](const FieldInfo& f) { return f.Name == name; });
     }
 
     // Finds a method by name. (May return null)
@@ -87,7 +136,15 @@ namespace lite
     template <class T, class RetT, class... FuncArgs, class... Args>
     void Add(string name, RetT(*ptr)(FuncArgs...), Args&&... args)
     {
-      NotifyPluginOnNewStaticFunction<T>(name, ptr);
+      if (name == this->Name)
+      {
+        NotifyPluginOnNewConstructor<T>(name, ptr);
+      }
+      else
+      {
+        NotifyPluginOnNewStaticFunction<T>(name, ptr);
+      }
+
       methods.emplace_back(move(name), ptr);
       Add<T>(forward<Args>(args)...);
     }
@@ -123,20 +180,24 @@ namespace lite
       Add<T>(forward<Args>(args)...);
     }
 
+    // Calls Add functions recursively to initialize the type.
+    template <class T, class... Args>
+    void Bind(string typeName, Args&&... args)
+    {
+      name = move(typeName);
+      cppType = &typeid(T);
+      print = &Variant::PrintFunction<T>;
+      read = Variant::ReadFunction<T>;
+
+      Add<T>(forward<Args>(args)...);
+    }
+
     // Initializes this type as a reference-type.
     template <class T>
     void InitializeReferenceType()
     {
       isReference = true;
       valueType = &TypeOf<T>();
-    }
-
-    // Calls Add functions recursively to initialize the type.
-    template <class T, class... Args>
-    void Bind(string typeName, Args&&... args)
-    {
-      name = move(typeName);
-      Add<T>(forward<Args>(args)...);
     }
 
     // Formats the type info into an ostream.
@@ -146,6 +207,12 @@ namespace lite
     }
 
   private: // methods
+
+    template <class T, class CtorT>
+    void NotifyPluginOnNewConstructor(const string& name, CtorT ctor)
+    {
+      GetReflectionPluginObjectBuilder<T>().NewConstructor(name, ctor);
+    }
 
     // Notifies the plugin when we have a new member field.
     template <class T, class ValueT>
@@ -180,14 +247,7 @@ namespace lite
     template <class T, class PointerT>
     void NotifyPluginOnNewStaticFunction(const string& name, PointerT func)
     {
-      if (name == TypeOf<T>().Name)
-      {
-        GetReflectionPluginObjectBuilder<T>().NewConstructor(name, func);
-      }
-      else
-      {
-        GetReflectionPluginObjectBuilder<T>().NewStaticFunction(name, func);
-      }
+      GetReflectionPluginObjectBuilder<T>().NewStaticFunction(name, func);
     }
   };
 
@@ -206,6 +266,6 @@ namespace lite
   template <class T>
   const TypeInfo& TypeOf()
   {
-    return detail::TypeOf<typename remove_cv<T>::type>();
+    return detail::TypeOf<typename decay<T>::type>();
   }
 } // namespace lite

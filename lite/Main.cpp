@@ -33,47 +33,24 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   RegisterComponent<SphereCollision>();
   RegisterComponent<Transform>();
 
-  string str = Scripting::Instance().Lua.RunScript("model = Model:new()");
-  if (str != "No errors")
-  {
-    Note(str);
-  }
-
   GameObject scene;
 
-  GameObject& floor = scene.AddChild();
+  scene.LoadFromFile("Scene.txt");
 
-  Transform& transform = floor[Transform_];
-  transform.LocalPosition.y = -2;
-  transform.LocalScale.x = 1000;
-  transform.LocalScale.y = 0.01f;
-  transform.LocalScale.z = 1000;
-
-  Model& model = floor[Model_];
-  model.Color({ 0, .25f, 0, 1.0f });
-  model.Material("SolidColor");
-  model.Mesh("cube.obj");
-
-  RigidBody& body = floor[RigidBody_];
-  body.Mass(0);
-
-  PlaneCollision& collision = floor[PlaneCollision_];
-  collision.Direction({0, 1, 0});
-  collision.Offset(-2);
-
-  auto spongebobPrefab = GameObject(false);
+  auto spongebobPrefab = MakePrefab();
   {
-    spongebobPrefab[Transform_];
-
-    Model& model = spongebobPrefab[Model_];
-    model.Material("Default");
-    model.Mesh("spongebob.obj");
-
-    RigidBody& body = spongebobPrefab[RigidBody_];
-    body.Mass(1);
-
-    SphereCollision& collision = spongebobPrefab[SphereCollision_];
-    collision.Radius(0.5f);
+    spongebobPrefab.LoadFromFile("Spongebob.txt");
+    //spongebobPrefab[Transform_];
+    //
+    //Model& model = spongebobPrefab[Model_];
+    //model.Material("Default");
+    //model.Mesh("spongebob.obj");
+    //
+    //RigidBody& body = spongebobPrefab[RigidBody_];
+    //body.Mass(1);
+    //
+    //SphereCollision& collision = spongebobPrefab[SphereCollision_];
+    //collision.Radius(0.5f);
   }
 
   auto frameTimer = FrameTimer();
@@ -90,6 +67,8 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     if (Input::IsHeld('D')) graphics.Camera.Strafe(0.5f);
     if (Input::IsHeld('Q')) graphics.Camera.Climb(0.5f);
     if (Input::IsHeld('E')) graphics.Camera.Climb(-0.5f);
+    
+    if (Input::IsTriggered(VK_ESCAPE)) window.Destroy();
 
     if (Input::IsTriggered(VK_SPACE))
     {

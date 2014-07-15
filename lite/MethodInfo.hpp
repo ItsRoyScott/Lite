@@ -75,10 +75,10 @@ namespace lite
       typedef FunctionTraits<CallT> Traits;
 
       // Verify the call type is correct.
-      if (typeid(Traits::CFunctionType) != cFunctionType) return{};
+      if (cFunctionType != typeid(Traits::CFunctionType)) return{};
 
       // Reinterpret cast to the requested function type.
-      return TypelessToTypedFunction<CallT>(func);
+      return detail::CastFunction<void(), CallT>(func);
     }
 
     // Formats the MethodInfo into an ostream.
@@ -86,8 +86,8 @@ namespace lite
   };
 
   template <class T, class... Args>
-  void Constructor(void* this_, Args... args)
+  Variant Constructor(Args... args)
   {
-    new (this_) T(forward<Args>(args)...);
+    return T(forward<Args>(args)...);
   }
 } // namespace lite

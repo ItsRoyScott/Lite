@@ -117,6 +117,13 @@ namespace lite // functions
     wcstombs_s(&size, buffer.data(), input.size() + 1, input.c_str(), input.size());
     return string(buffer.data(), size);
   }
+
+  // Default extraction from istream for pointers is empty.
+  template <class T>
+  inline istream& operator>>(istream& is, T*)
+  {
+    return is;
+  }
 } // namespace lite
 
 // A breakpoint you can write in code.
@@ -126,7 +133,7 @@ namespace lite // functions
 #if defined(_DEBUG) && !defined(RELEASE_MODE_DEBUGGING)
   #define DEBUG_ONLY(x) SCOPE(x)
 #else
-  #define DEBUG_ONLY(x)
+  #define DEBUG_ONLY(x) SCOPE()
 #endif
 
 // Macro-ized if condition.

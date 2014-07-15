@@ -38,6 +38,16 @@ namespace lite
     {
       startTime = FrameTimer::CurrentInstance()->TotalTime();
     }
+
+    friend ostream& operator<<(ostream& os, const LogicTimer&)
+    {
+      return os;
+    }
+
+    friend istream& operator>>(istream& is, LogicTimer&)
+    {
+      return is;
+    }
   };
 
   reflect(LogicTimer,

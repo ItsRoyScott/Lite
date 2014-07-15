@@ -1,0 +1,38 @@
+[
+  type = GameObject
+  name = Scene
+  
+  [
+    type = GameObject
+    name = Floor
+    
+    [
+      type = Transform
+      
+      LocalPosition = 0 -2 0
+      LocalScale = 1000 0.01 1000
+    ]
+    
+    [
+      type = Model
+      
+      Color = 0 0.25 0 1
+      Material = SolidColor
+      Mesh = cube.obj
+    ]
+    
+    [
+      type = RigidBody
+      
+      Mass = 0
+    ]
+    
+    [
+      type = PlaneCollision
+      
+      Direction = 0 1 0
+      Offset = -2
+    ]
+    
+  ]
+]

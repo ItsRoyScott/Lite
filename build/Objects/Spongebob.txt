@@ -1,0 +1,19 @@
+[
+  type = GameObject
+  name = Spongebob
+  
+  [ type = Transform ]
+  
+  [ 
+    type = Model
+    Material = Default
+    Mesh = spongebob.obj
+  ]
+  
+  [ type = RigidBody ]
+  
+  [ 
+    type = SphereCollision
+    Radius = 0.5
+  ]
+]

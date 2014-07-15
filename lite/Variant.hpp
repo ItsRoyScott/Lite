@@ -26,6 +26,9 @@ namespace lite
     // Prints the object using the given ostream.
     ostream& (*print)(ostream& os, void* p) = nullptr;
 
+    // Reads the object using the given istream.
+    istream& (*read)(istream& is, void* p) = nullptr;
+
     // Used to compare the actual type of the variant (to be type-safe at runtime).
     type_index type = typeid(InvalidType);
 
@@ -38,22 +41,14 @@ namespace lite
       Assign(b);
     }
 
-    Variant(Variant&& b)
-    {
-      Assign(move(b));
-    }
-
-    template <class T>
-    Variant(T&& object)
-    {
-      Assign(forward<T>(object));
-    }
-
-    ~Variant() = default;
-
     Variant& operator=(const Variant& b)
     {
       return Assign(b);
+    }
+
+    Variant(Variant&& b)
+    {
+      Assign(move(b));
     }
 
     Variant& operator=(Variant&& b)
@@ -62,16 +57,25 @@ namespace lite
     }
 
     template <class T>
+    Variant(T&& object)
+    {
+      Assign(forward<T>(object));
+    }
+
+    template <class T>
     Variant& operator=(T&& object)
     {
       return Assign(forward<T>(object));
     }
+
+    ~Variant() = default;
 
     // Copies a variant.
     Variant& Assign(const Variant& b)
     {
       clone = b.clone;
       print = b.print;
+      read = b.read;
       type = b.type;
       if (b.data)
       {
@@ -87,10 +91,12 @@ namespace lite
       clone = move(b.clone);
       data = move(b.data);
       print = move(b.print);
+      read = move(b.read);
       type = move(b.type);
 
       b.clone = nullptr;
       b.print = nullptr;
+      b.read = nullptr;
       b.type = typeid(InvalidType);
 
       return *this;
@@ -100,38 +106,24 @@ namespace lite
     template <class T>
     Variant& Assign(T&& object = T())
     {
-      // Get the decayed type (no const or reference).
-      typedef decay_t<T> DecayedType;
+      SetType<T>();
 
-      // Verify that the class supports printing using the insertion operator.
-      //  is_same allows us to check that the types of the two template parameters match.
-      //  decltype gets the result of the given expression.
-      //  declval creates a fake value that can be used within the expression. Here I'm
-      //    using declval to pretend we already have a valid ostream&.
-      //  If the type doesn't support the << operator the expression will fail, causing
-      //    an error within the expression and then causing the static_assert 
-      //    message to print.
-      static_assert(
-        is_same<ostream&, decltype(declval<ostream&>() << object)>::value, 
-        "Objects wrapped in a Variant must support ostream printing using the insertion operator <<");
+      typedef decay_t<T> DecayedT;
 
       // Copy the object if the types already match.
       if (data && type == typeid(T))
       {
-        *reinterpret_cast<DecayedType*>(data.get()) = forward<T>(object);
+        DecayedT* ptr = reinterpret_cast<DecayedT*>(data.get());
+        ptr->~DecayedT();
+        new (ptr) DecayedT(forward<T>(object));
         return *this;
       }
 
-      // Get rid of the types for clone and print functions.
-      clone = &CloneFunction<DecayedType>;
-      print = &PrintFunction<DecayedType>;
-
       // Define the deleter using a lambda. Deletes the object as a 'T'
       //  type rather than a 'void'.
-      auto deleter = [](void* p) { delete reinterpret_cast<DecayedType*>(p); };
+      auto deleter = [](void* p) { delete reinterpret_cast<DecayedT*>(p); };
 
-      data = Pointer(new DecayedType(forward<T>(object)), move(deleter));
-      type = typeid(DecayedType);
+      data = Pointer(new DecayedT(forward<T>(object)), move(deleter));
 
       return *this;
     }
@@ -141,6 +133,7 @@ namespace lite
     {
       clone = nullptr;
       data = Pointer(nullptr, nullptr);
+      read = nullptr;
       print = nullptr;
       type = typeid(InvalidType);
     }
@@ -150,6 +143,12 @@ namespace lite
     static void* CloneFunction(void* otherThis)
     {
       return new T(*reinterpret_cast<T*>(otherThis));
+    }
+
+    // Retrieves the internal void pointer.
+    void* Data() const
+    {
+      return data.get();
     }
 
     // Retrieves the object the variant is pointing to. 
@@ -181,11 +180,47 @@ namespace lite
       return os << *reinterpret_cast<T*>(this_);
     }
 
+    template <class T>
+    static istream& ReadFunction(istream& is, void* this_)
+    {
+      return is >> *reinterpret_cast<T*>(this_);
+    }
+
     // Returns a reference to the variant's object.
     template <class T>
     T& Ref() const
     {
       return *Get<T>();
+    }
+
+    template <class T>
+    Variant& SetType()
+    {
+      Clear();
+
+      // Get the decayed type (no const or reference).
+      typedef decay_t<T> DecayedType;
+
+      // Get rid of the types for clone and print functions.
+      clone = &CloneFunction < DecayedType > ;
+      print = &PrintFunction < DecayedType > ;
+      read = &ReadFunction < DecayedType > ;
+
+      type = typeid(DecayedType);
+
+      return *this;
+    }
+
+    // Whether the variant is valid (non-null).
+    explicit operator bool() const
+    {
+      return bool(data);
+    }
+
+    // Whether the variant is invalid (null).
+    bool operator!() const
+    {
+      return !bool(*this);
     }
 
     // Returns a copy of the variant's data by-value.
@@ -202,5 +237,11 @@ namespace lite
       return v.print(os, v.data.get());
     }
 
+    // Reads the variant from an istream object.
+    friend istream& operator>>(istream& is, Variant& v)
+    {
+      if (!v.data) return is;
+      return v.read(is, v.data.get());
+    }
   };
 } // namespace lite

@@ -2,6 +2,7 @@
 
 #include "LuaCppInterfaceInclude.hpp"
 #include "Scripting.hpp"
+#include "Variant.hpp"
 
 namespace lite
 {
@@ -52,7 +53,7 @@ namespace lite
       void EndValueType(const string&)
       {}
 
-      void NewConstructor(const string&, void(*)(void*))
+      void NewConstructor(const string&, Variant(*)())
       {
         // Create a Lua function which wraps the constructor.
         LuaFunction<LuaUserdata<T>()> luaConstructor = 
@@ -63,7 +64,7 @@ namespace lite
       }
 
       template <class Arg1, class... Args>
-      void NewConstructor(const string&, void(*)(void*, Arg1, Args...))
+      void NewConstructor(const string&, Variant(*)(Arg1, Args...))
       {}
 
       template <class FieldPtr>

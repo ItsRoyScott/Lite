@@ -1,8 +1,10 @@
 #pragma once
 
+#include "BasicIO.hpp"
 #include "Essentials.hpp"
 #include "FileTime.hpp"
-#include "BasicIO.hpp"
+#include "Logging.hpp"
+#include "PathInfo.hpp"
 
 #define LUA(call) SCOPE(int top = lua_gettop(L); call; PrintLuaErrors(L, top))
 

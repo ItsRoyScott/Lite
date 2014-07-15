@@ -21,10 +21,24 @@ namespace lite
 
     Reflection()
     {
-      // Bind  void.
-      TypeInfo& voidType = detail::TypeOf<void>();
-      voidType.Bind<void>("void");
-      types.push_back(&voidType);
+      // Register void.
+      RegisterType<void>().name = "void";
+
+      // Register fundamental types.
+      RegisterFundamentalType<bool>();
+      RegisterFundamentalType<char>();
+      RegisterFundamentalType<double>();
+      RegisterFundamentalType<float>();
+      RegisterFundamentalType<int>();
+      RegisterFundamentalType<long>();
+      RegisterFundamentalType<long long>();
+      RegisterFundamentalType<short>();
+      RegisterFundamentalType<signed char>();
+      RegisterFundamentalType<unsigned char>();
+      RegisterFundamentalType<unsigned short>();
+      RegisterFundamentalType<unsigned int>();
+      RegisterFundamentalType<unsigned long>();
+      RegisterFundamentalType<unsigned long long>();
     }
 
     template <class T>
@@ -33,14 +47,36 @@ namespace lite
       static_assert(is_object<T>::value, "Only object types can be bound to Reflection.");
 
       // Bind the value type.
-      TypeInfo& valueType = detail::TypeOf<T>();
+      TypeInfo& valueType = RegisterType<T>();
       Bind < T > { valueType };
-      types.push_back(&valueType);
 
-      // Bind the reference type.
-      TypeInfo& referenceType = detail::TypeOf<T&>();
-      referenceType.InitializeReferenceType<T>();
-      types.push_back(&referenceType);
+      //// Bind the reference type.
+      //TypeInfo& referenceType = RegisterType<T>();
+      //referenceType.InitializeReferenceType<T>();
+    }
+
+  private: // methods
+
+    template <class T>
+    TypeInfo& RegisterFundamentalType()
+    {
+      // Register the type and set its name.
+      TypeInfo& type = RegisterType<T>();
+      type.name = typeid(T).name();
+
+      // Add the default and copy constructor.
+      type.methods.emplace_back(type.name, Constructor<T>);
+      type.methods.emplace_back(type.name, Constructor<T, const T&>);
+
+      return type;
+    }
+
+    template <class T>
+    TypeInfo& RegisterType()
+    {
+      TypeInfo& type = detail::TypeOf<T>();
+      types.push_back(&type);
+      return type;
     }
   };
 
@@ -148,23 +184,7 @@ namespace lite
 
 namespace lite
 {
-  // Reflect fundamental types.
-  //reflect(bool);
-  //reflect(char);
-  //reflect(double);
-  //reflect(float);
-  //reflect(int);
-  //reflect(long);
-  //reflect(long long);
-  //reflect(nullptr_t);
-  //reflect(short);
-  //reflect(signed char);
-  //reflect(unsigned char);
-  //reflect(unsigned short);
-  //reflect(unsigned int);
-  //reflect(unsigned long);
-  //reflect(unsigned long long);
-  //reflect(wchar_t);
+  reflect(string, "string", Constructor<string>);
 } // namespace lite
 
 namespace lite

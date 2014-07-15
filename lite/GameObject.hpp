@@ -61,7 +61,8 @@ namespace lite
   public: // methods
 
     explicit GameObject(bool active = true) :
-      isActive(active)
+      isActive(active),
+      name("GO" + to_string(identifier))
     {
       Instances()[identifier] = this;
     }
@@ -157,6 +158,96 @@ namespace lite
       }
 
       return component;
+    }
+
+    // Deserializes formatted object data using the given input stream.
+    //  The 'level' parameter can be ignored: it is used internally
+    //  for keeping track of the current recursion level.
+    istream& Deserialize(istream& is, size_t level = 0)
+    {
+      string s1, s2, s3;
+
+      if (level == 0)
+      {
+        // Read the object group opening.
+        is >> s1;
+        if (s1 != "[") return is;
+
+        // Read 'type = GameObject'.
+        is >> s1 >> s2 >> s3;
+        if (s1 != "type" || s2 != "=" || s3 != TypeOf<GameObject>().Name) return is;
+      }
+
+      // Read 'name = GOXXX'.
+      is >> s1 >> s2 >> s3;
+      if (s1 != "name" || s2 != "=") return is;
+      name = s3;
+
+      // For each child object or component.
+      for (is >> s1; s1 == "["; is >> s1)
+      {
+        // Read the type.
+        is >> s1 >> s2 >> s3;
+        if (s1 != "type" || s2 != "=") continue;
+        
+        // If the group represents a child object:
+        if (s3 == TypeOf<GameObject>().Name) 
+        {
+          // Add the object and deserialize it.
+          GameObject& object = AddChild();
+          object.Deserialize(is, level + 1);
+          continue;
+        }
+
+        // Add the component using its type name.
+        IComponent& component = AddComponent(s3);
+        const TypeInfo& componentType = component.GetType();
+
+        // Assume we just finished reading the component's fields.
+        //  (This is checked after the while loop below.)
+        s1 = "]";
+
+        // For each of the component's fields:
+        while (true)
+        {
+          // Read the name of the field.
+          is >> s1;
+
+          // Look up the field by name.
+          const FieldInfo* componentField = componentType.GetField(s1);
+          if (!componentField)
+          {
+            if (s1 == "]") break;
+            else continue;
+          }
+
+          // Read the "=".
+          is >> s1;
+          if (s1 != "=")
+          {
+            if (s1 == "]") break;
+            else continue;
+          }
+
+          // Create the field value as a variant. Use the variant's "read"
+          //  capability to read from the istream.
+          Variant fieldValue = componentField->Type->Create();
+          is >> fieldValue;
+          componentField->Set(fieldValue, &component);
+        }
+
+        if (s1 != "]")
+        {
+          // Read the component group closing bracket.
+          is >> s1;
+          if (s1 != "]") break;
+        }
+      }
+      
+      // Read the object group closing bracket.
+      is >> s1;
+
+      return is;
     }
 
     // Destroys this object along with all of its children.
@@ -259,7 +350,7 @@ namespace lite
     {
       IComponent* component =  FindComponentBy([](IComponent& component) 
       { 
-        return component.GetType() == typeid(T); 
+        return &component.GetType() == &TypeOf<T>(); 
       });
       return static_cast<T*>(component);
     }
@@ -269,7 +360,7 @@ namespace lite
     {
       return FindComponentBy([&](IComponent& component) 
       { 
-        return component.GetTypeName() == typeName; 
+        return component.GetType().Name == typeName; 
       });
     }
 
@@ -280,7 +371,7 @@ namespace lite
     {
       IComponent* component = FindComponentUpwardsBy([](IComponent& component) 
       { 
-        return component.GetType() == typeid(T); 
+        return &component.GetType() == &TypeOf<T>(); 
       });
       return static_cast<T*>(component);
     }
@@ -291,7 +382,7 @@ namespace lite
     {
       return FindComponentUpwardsBy([&](IComponent& component)
       {
-        return component.GetTypeName() == typeName;
+        return component.GetType().Name == typeName;
       });
     }
 
@@ -311,6 +402,19 @@ namespace lite
       {
         child->Initialize();
       }
+    }
+
+    // Loads the game object from a file.
+    bool LoadFromFile(const string& filename)
+    {
+      // Open the file.
+      auto file = ifstream(config::Objects + filename);
+      if (!file.is_open()) return false;
+
+      // Deserialize using the ifstream as the input stream.
+      Deserialize(file);
+
+      return true;
     }
 
     // Calls PullFromSystems function on all components recursively.
@@ -357,6 +461,65 @@ namespace lite
       }
     }
 
+    // Serializes this object, all components, and child objects to file.
+    bool SaveToFile(const string& filename)
+    {
+      // Open the file.
+      auto file = ofstream(config::Objects + filename);
+      if (!file.is_open()) return false;
+
+      // Serialize using the ofstream as an output stream.
+      Serialize(file);
+
+      return true;
+    }
+
+    // Serializes the object data to the given output stream.
+    //  The 'level' parameter can be ignored: it is used internally
+    //  for keeping track of tabs to make the output pretty.
+    ostream& Serialize(ostream& os, size_t level = 0)
+    {
+      // Open the object group.
+      os << Tabs(level++) << "[\n";
+
+      // Serialize the type and name of the object.
+      os << Tabs(level) << "type = " << TypeOf<GameObject>().Name << "\n";
+      os << Tabs(level) << "name = " << Name() << "\n\n";
+
+      // For each component:
+      for (auto& component : components)
+      {
+        // Get the reflected type. (see Reflection)
+        const TypeInfo& componentType = component->GetType();
+
+        // Open the component group.
+        os << Tabs(level++) << "[\n";
+        // Write the component type name.
+        os << Tabs(level) << "type = " << componentType.Name << "\n";
+
+        // For each field:
+        for (auto& componentField : componentType.Fields)
+        {
+          // Write the field name followed by its value(s).
+          os << Tabs(level) << componentField.Name << " = " << componentField.Get(component.get()) << "\n";
+        }
+
+        // End the component group.
+        os << Tabs(--level) << "]\n";
+      }
+
+      // For each child object:
+      for (auto& child : children)
+      {
+        // Serialize the child.
+        child->Serialize(os, level);
+        os << "\n";
+      }
+
+      // Close the object group.
+      return os << Tabs(--level) << "]";
+    }
+
     // Updates child objects, then the components of this object.
     void Update()
     {
@@ -395,6 +558,16 @@ namespace lite
         component = &AddComponent<T>();
       }
       return *component;
+    }
+
+    friend ostream& operator<<(ostream& os, const GameObject&)
+    {
+      return os;
+    }
+
+    friend istream& operator>>(istream& is, GameObject&)
+    {
+      return is;
     }
 
   private: // methods
@@ -511,4 +684,13 @@ namespace lite
     }
   };
 
+} // namespace lite
+
+namespace lite
+{
+  // A prefab is simply a deactivated GameObject.
+  inline GameObject MakePrefab()
+  {
+    return GameObject(false);
+  }
 } // namespace lite

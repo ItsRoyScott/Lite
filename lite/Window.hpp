@@ -144,10 +144,10 @@ namespace lite
       return *this;
     }
 
-    // Closes the window.
-    void Close()
+    // Destroys the window.
+    void Destroy()
     {
-      CloseWindow(Handle);
+      DestroyWindow(Handle);
     }
 
     // Returns whether the window is open.
@@ -196,10 +196,10 @@ namespace lite
         cursorPos.y >= windowRect.top &&
         cursorPos.y <= windowRect.bottom)
       {
-        windowRect.left += 6;
-        windowRect.right -= 6;
-        windowRect.top += 6;
-        windowRect.bottom -= 6;
+        windowRect.left += 8;
+        windowRect.right -= 8;
+        windowRect.top += 8;
+        windowRect.bottom -= 8;
 
         // Clip the cursor position within the window.
         POINT newCursorPos = cursorPos;
