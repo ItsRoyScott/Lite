@@ -42,7 +42,7 @@ A `variant`, also known as an `any`, can store any C++ object inside it. Its dat
 
 class Variant {
 private: // types
-  // Type indicating an un-assigned variant.
+  // Type indicating an unassigned variant.
   struct InvalidType {};
   // unique_ptr allows us to store the data and its deleter function.
   typedef unique_ptr<void, void(*)(void*)> Pointer;
