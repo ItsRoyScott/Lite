@@ -63,7 +63,7 @@ Variant(T&& object) {
   // For the deleter function we have to make sure we're deleting the proper type.
   auto deleter = [](void* p) { delete reinterpret_cast<DecayT*>(p); };
   
-  // Forward the given object into the constructor of the new object.
+  // Forward the object argument into the constructor of the new object.
   data = Pointer(new DecayT(forward<T>(object)), move(deleter));
 }
 ```
