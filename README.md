@@ -123,6 +123,7 @@ class high_resolution_timer {
 private: // data
   // Time recorded when start() was last called.
   high_resolution_clock::time_point startTime;
+  
 public: // methods
   // Starts or restarts the timer.
   void start() {
