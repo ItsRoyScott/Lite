@@ -12,9 +12,154 @@ This library is made to be an instructive example of a 3D game engine built in C
 
 # Tutorials
 
+## Audio
+
+### How to Use FMOD Studio for a Game Project
+
+Include the FMOD Studio headers and Visual C++ static library:
+
+```C++
+// Headers from the FMOD Studio API "api/studio/include"
+#include "FMOD/fmod_errors.h"
+#include "FMOD/fmod_studio.hpp"
+
+// Link the library from "api/studio/lib"
+#pragma comment(lib, "FMOD/fmodstudio_vc.lib")
+```
+
+I also add to my FmodInclude.hpp header these things (optional):
+
+```C++
+namespace lite {
+  namespace fmod = FMOD::Studio; // alias for convenience
+}
+
+// Checks the result of an FMOD call for errors.
+#define FmodCall(x, ...) do { \
+    FMOD_RESULT fmodResult; \
+    if ((fmodResult = (x)) != FMOD_OK) \
+    { \
+      Warn("FMOD error: (" << int(fmodResult) << ") " << #x << "\n" << FMOD_ErrorString(fmodResult)); \
+      return __VA_ARGS__; \
+    } \
+  } while(0)
+```
+
+Let's start the Audio system:
+
+```C++
+class Audio {
+private: // data
+  // Maximum number of channels allowed on the system.
+  static const int maxChannels = 512;
+  // Fmod Studio's system interface.
+  fmod::System* system;
+  
+public: // methods
+  Audio();
+};
+```
+
+The constructor creates the `FMOD::Studio::System` object.
+
+```C++
+Studio() {
+  // Create the system.
+  FmodCall(fmod::System::create(&system));
+  // Initialize the system.
+  FmodCall(system->initialize(
+    maxChannels,               // max channels capable of playing audio
+    FMOD_STUDIO_INIT_NORMAL,   // studio-specific flags
+    FMOD_INIT_3D_RIGHTHANDED,  // regular flags
+    nullptr));                 // extra driver data
+}
+```
+
+The `fmod::System::create` call simply fills in the `System*` with a valid object. 
+
+The initialize call tells FMOD Studio how many channels we need (maximum). This is essentially the number of sounds capable of being played at the same time. 512 should be plenty. `FMOD_STUDIO_INIT_NORMAL` does the default FMOD Studio initialization, which works fine for our purposes. `FMOD_INIT_3D_RIGHTHANDED` changes the 3D coordinate system to be compatible with Direct3D. You can use `FMOD_INIT_NORMAL` here if you're using OpenGL.
+
+We have a system successfully initializing, so let's load in some sound banks. Here's the `SoundBank` wrapper class:
+
+```C++
+class SoundBank {
+private: // data
+  fmod::Bank* bank;
+  string      name;
+  
+public: // methods
+  // Assigns private data.
+  SoundBank(fmod::Bank* bank, string name);
+  // Returns an array of all events in the bank.
+  vector<fmod::EventDescription*> GetEventList() const;
+};
+```
+
+The `GetEventList` function gives us an array of all events in the sound bank we can use to play. The implementation looks something like this:
+
+```C++
+vector<fmod::EventDescription*> GetEventList() const {
+  FatalIf(bank == nullptr, "GetEventList: Bank is null");
+
+  // Get the number of events in the sound bank.
+  int eventCount = 0;
+  FmodCall(bank->getEventCount(&eventCount), {});
+  if (eventCount == 0) return {};
+
+  // Get the event list from the FMOD bank.
+  auto result = vector<fmod::EventDescription*>(static_cast<size_t>(eventCount), nullptr);
+  FmodCall(bank->getEventList(result.data(), result.size(), &eventCount), {});
+
+  return move(result);
+}
+```
+
+The event count is retrieved from `bank->getEventCount` which is used to size the array sent to `bank->getEventList`.
+
+In the Audio class we can have a map of SoundBank objects.
+
+```C++
+#include <unordered_map>
+
+class Audio {
+private: // data
+// ...
+  // Map of bank names to sound bank objects.
+  unordered_map<string, SoundBank> soundBankMap;
+// ...
+};
+```
+
+Continuing the constructor implementation, we can load in all available sound banks:
+
+```C++
+Audio() {
+// ...
+  // For each file in the Sounds directory with a *.bank extension:
+  for (string& file : PathInfo(config::Sounds).FilesWithExtension("bank")) {
+    // Load the sound bank from file.
+    fmod::Bank* bank = nullptr;
+    FmodCall(system->loadBankFile(file.c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &bank));
+
+    // Get the path name of the sound bank.
+    auto path = string(512, ' ');
+    int pathLen = 0;
+    FmodCall(bank->getPath(&path[0], static_cast<int>(path.size()), &pathLen));
+    path.resize(static_cast<size_t>(pathLen - 1));
+
+    // Add a map entry to the sound bank using the bank's path name.
+    soundBankMap.emplace(path, SoundBank(bank, path));
+  }
+}
+```
+
+The for loop uses a custom helper class called `PathInfo` to get all files in a directory `config::Sounds`. You can roll your own method of doing this, read from a list of file names, or use Boost's [filesystem](http://www.boost.org/doc/libs/1_55_0/libs/filesystem/doc/index.htm).
+
+The sound bank is loaded using `system->loadBankFile` with default loading. The path name of the bank is retrieved using `bank->getPath`. `soundBankMap.emplace` adds a path and SoundBank pair into the map.
+
 ## Generic Utilities
 
-### Rolling Your Own Variant Class
+### How to Roll Your Own Variant Class
 
 A `variant`, also known as an `any`, can store any C++ object inside it. Its data members are a void pointer to the object data, a `clone` function pointer which copies the data, a deleter function which destroys the data, and type info used for error checking.
 
