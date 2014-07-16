@@ -689,6 +689,8 @@ struct LightSingleton {
 };
 ```
 
+[Back to the table of contents.](#table-of-contents)
+
 
 
 ## Reference Member Initialization
