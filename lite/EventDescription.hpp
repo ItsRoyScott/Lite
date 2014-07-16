@@ -9,8 +9,14 @@ namespace lite
   {
   private: // data
 
+    // Pointer to FMOD's description object.
     fmod::EventDescription* description;
+
+    // Event path name.
     string path;
+
+    // Map to all user properties provided by the event.
+    unordered_map<string, FMOD_STUDIO_USER_PROPERTY> userPropertyMap;
 
   public: // properties
 
@@ -32,6 +38,20 @@ namespace lite
       description(description_),
       path(move(path_))
     {
+      // Get the number of user properties.
+      int userPropertyCount = 0;
+      FmodCall(description->getUserPropertyCount(&userPropertyCount));
+
+      // For each user property:
+      for (int i = 0; i < userPropertyCount; ++i)
+      {
+        // Get a user property by index.
+        FMOD_STUDIO_USER_PROPERTY userProperty;
+        FmodCall(description->getUserPropertyByIndex(i, &userProperty));
+
+        // Save the user property.
+        userPropertyMap[userProperty.name] = userProperty;
+      }
     }
 
     fmod::EventInstance* CreateInstance()
@@ -39,6 +59,15 @@ namespace lite
       fmod::EventInstance* instance = nullptr;
       FmodCall(description->createInstance(&instance), nullptr);
       return instance;
+    }
+
+    // Returns a user property by name. The 'name' field will be null if the
+    //  property wasn't found.
+    FMOD_STUDIO_USER_PROPERTY GetUserProperty(const string& name) const
+    {
+      auto it = userPropertyMap.find(name);
+      if (it == userPropertyMap.end()) return { nullptr, FMOD_STUDIO_USER_PROPERTY_TYPE_FORCEINT };
+      return it->second;
     }
 
     friend ostream& operator<<(ostream& os, const EventDescription& eventDescription)

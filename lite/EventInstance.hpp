@@ -68,7 +68,6 @@ namespace lite
     {
       FMOD_STUDIO_PLAYBACK_STATE state = FMOD_STUDIO_PLAYBACK_STOPPED;
       if (!IsValid()) return state;
-
       FmodCall(instance->getPlaybackState(&state), state);
       return state;
     }

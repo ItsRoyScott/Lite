@@ -89,16 +89,6 @@ namespace lite // functions
     return count ? string(count*tabSize, ' ') : string();
   }
 
-  // Converts an object to its string representation.
-  //  Check out boost::lexical_cast, it's way cooler.
-  template <class T>
-  string ToString(const T& object, unsigned tabs = 0)
-  {
-    stringstream ss;
-    ss << Tabs(tabs) << object;
-    return ss.str();
-  }
-
   // Converts a multi-byte string to a wide string.
   inline wstring MultibyteToWideChar(const string& input)
   {
@@ -130,7 +120,7 @@ namespace lite // functions
 #define BREAKPOINT SCOPE(__debugbreak())
 
 // Enable macros/code only in debug mode.
-#if defined(_DEBUG) && !defined(RELEASE_MODE_DEBUGGING)
+#if defined(_DEBUG)
   #define DEBUG_ONLY(x) SCOPE(x)
 #else
   #define DEBUG_ONLY(x) SCOPE()
