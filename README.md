@@ -1,14 +1,17 @@
 # Table of Contents
 
 
+
 - [Introduction](#introduction)
   - [Goals](#goals)
 - [Tutorials](#tutorials)
+  - [Implementing high_resolution_clock Correctly](#implementing-high_resolution_clock-correctly)
   - [Importing FMOD Studio into a Game Project](#importing-fmod-studio-into-a-game-project)
   - [Rolling Your Own Variant](#rolling-your-own-variant)
 - [Miscellaneous](#miscellaneous)
   - [Ideas for Improvement](#ideas-for-improvement)
   - [Reference Member Initialization](#reference-member-initialization)
+
 
 
 # Introduction
@@ -19,6 +22,7 @@ This project is made to be an instructive and lightweight example of a 3D game e
 The engine is implemented entirely in headers, which allows for quick iteration time, and lets viewers learn about implementation details in-line with the class itself. If you have Visual Studio 2013 handy, I recommend you open up the solution [lite.sln](lite/lite.sln) and step into the various calls in [Main.cpp](lite/Main.cpp) to see what they do.
 
 
+
 ## Goals
 
 
@@ -27,10 +31,148 @@ The engine is implemented entirely in headers, which allows for quick iteration 
 3. To be instructive on a wide range of features typically found in a 3D game engine.
 
 
+
 # Tutorials
 
 
+
+## Implementing high_resolution_clock Correctly
+
+
+
+As of Visual Studio 2013, `std::chrono::high_resolution_clock` is still typedef'd to `system_clock` which is unacceptable to us as game developers. We need true high resolution times for profiling and getting accurate frame times.
+
+```C++
+#include <chrono>
+#include <Windows.h>
+
+class high_resolution_clock {
+public: // types
+  typedef double                                          rep;
+  typedef std::ratio<1, 1>                                period;
+  typedef std::chrono::duration<rep, period>              duration;
+  typedef std::chrono::time_point<high_resolution_clock>  time_point;
+  
+public: // data
+    // Whether the clock is non-decreasing.
+    static const bool is_monotonic = true;
+    // Whether the clock is monotonic and the time between clock ticks is constant.
+    //  (The time between ticks is retrieved using QueryPerformanceFrequency.)
+    static const bool is_steady = true;
+};
+```
+
+We start off by defining some basic members that all clocks have. 
+
+`rep` is the type representing the number of ticks. `period` is the tick period in seconds; `ratio<1,1>` means we'll be using seconds. `duration` is the difference between two times. `time_point` is measurement at a moment in time.
+
+`is_monotonic` indicates whether the clock values are non-decreasing. `is_steady` indicates whether the time between ticks remains constant.
+
+Let's establish a couple helper functions:
+
+```C++
+class high_resolution_clock {
+// ...
+private: // methods
+  // Number of ticks per second.
+  static int64_t frequency() {
+    static int64_t freq = -1;
+    if (freq == -1) QueryPerformanceFrequency((LARGE_INTEGER*)&freq); 
+    return freq;
+  }
+
+  // Counter value at the start of the application.
+  static int64_t start_count() {
+    static int64_t count = 0;
+    if (count == 0) QueryPerformanceCounter((LARGE_INTEGER*)&count);
+    return count;
+  }
+};
+```
+
+`frequency` will call `QueryPerfomanceFrequency` for us to get the number of ticks per second. It'll cache the result so we only have to call `QueryPerformanceFrequency` once. `start_count` gives us the time near the start of the application. This is used in a subtraction from future calls to `QueryPerformanceCounter` to make the time value smaller. The int64_t value used to store time can store very large numbers that a double cannot. This way we can ensure the double is capable of holding the time value.
+
+Now to the `time_point` function:
+
+```C++
+class high_resolution_clock {
+// ...
+public: // methods
+  // Samples the current time.
+  static time_point now() {
+    // Get the current performance counter ticks.
+    int64_t counter = 0;
+    QueryPerformanceCounter((LARGE_INTEGER*)&counter);
+
+    // Subtract the counter from the value at program start so a double can hold it.
+    int64_t idt = counter - start_count();
+    double dt = static_cast<double>(idt);
+
+    return time_point(duration(dt / frequency()));
+  }
+// ...
+};
+```
+
+The current time is retrieved using `QueryPerformanceCounter`. We then subtract `start_count` from that value to get a smaller value for the double. Then all you have to do to get the time in seconds is divide by `frequency`.
+
+With a proper `high_resolution_clock`, we can trivially implement a stopwatch-like `high_resolution_timer`.
+
+```C++
+class high_resolution_timer {
+private: // data
+  // Time recorded when start() was last called.
+  high_resolution_clock::time_point startTime;
+public: // methods
+  // Starts or restarts the timer.
+  void start() {
+    startTime = high_resolution_clock::now();
+  }
+};
+```
+
+`start` simply calls into `high_resolution_clock` to get the current time.
+
+These functions help us get the current elapsed time:
+
+```C++
+class high_resolution_timer {
+// ...
+public: // methods
+  // The current elapsed time as a duration object.
+  high_resolution_clock::duration elapsed_duration() const {
+    high_resolution_clock::time_point endTime = high_resolution_clock::now();
+    return endTime - startTime;
+  }
+  
+  // Microseconds that have elapsed since start() was called.
+  double elapsed_microseconds() const {
+    return duration_cast<duration<double, std::micro>>(elapsed_duration()).count();
+  }
+  
+  // Milliseconds that have elapsed since start() was called.
+  double elapsed_milliseconds() const {
+    return duration_cast<duration<double, std::milli>>(elapsed_duration()).count();
+  }
+  
+  // Seconds that have elapsed since start() was called.
+  double elapsed_seconds() const {
+    return elapsed_duration().count();
+  }
+// ...
+};
+```
+
+This object will make implementing a [frame timer](lite/FrameTimer.hpp) fairly easy as well.
+
+[Code Sample](lite/chrono.hpp)
+
+[Back to the table of contents.](#table-of-contents)
+
+
+
 ## Importing FMOD Studio into a Game Project
+
 
 
 Include the FMOD Studio headers and Visual C++ static library:
@@ -195,7 +337,9 @@ public: // data
 [Back to the table of contents.](#table-of-contents)
 
 
+
 ## Rolling Your Own Variant
+
 
 
 A `variant`, also known as an `any`, can store any C++ object inside it. Its data members are a void pointer to the object data, a `clone` function pointer which copies the data, a deleter function which destroys the data, and type info used for error checking.
@@ -300,6 +444,8 @@ There's more we can do with Variant:
 **[Code Sample](lite/Variant.hpp)**
 
 [Back to the table of contents.](#table-of-contents)
+
+
 
 # Miscellaneous
 
