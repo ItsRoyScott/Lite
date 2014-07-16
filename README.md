@@ -79,53 +79,30 @@ The `fmod::System::create` call simply fills in the `System*` with a valid objec
 
 The initialize call tells FMOD Studio how many channels we need (maximum). This is essentially the number of sounds capable of being played at the same time. 512 should be plenty. `FMOD_STUDIO_INIT_NORMAL` does the default FMOD Studio initialization, which works fine for our purposes. `FMOD_INIT_3D_RIGHTHANDED` changes the 3D coordinate system to be compatible with Direct3D. You can use `FMOD_INIT_NORMAL` here if you're using OpenGL.
 
-We have a system successfully initializing, so let's load in some sound banks. Here's the `SoundBank` wrapper class:
+FMOD Studio allows playing sounds through events. Every event has a path string used to identify the event. The event can have user-defined parameters that we can specify from the engine.
+
+A wrapper class for `FMOD::Studio::EventDescription` will give us easy access to the underlying event description.
 
 ```C++
-class SoundBank {
+class EventDescription {
 private: // data
-  fmod::Bank* bank;
-  string      name;
+  // Pointer to FMOD's event description.
+  fmod::EventDescription* description;
+  // The path string to the description.
+  string path;
   
 public: // methods
-  // Assigns private data.
-  SoundBank(fmod::Bank* bank, string name);
-  // Returns an array of all events in the bank.
-  vector<fmod::EventDescription*> GetEventList() const;
+  EventDescription(fmod::EventDescription* description_, string path_);
 };
 ```
 
-The `GetEventList` function gives us an array of all events in the sound bank we can use to play. The implementation looks something like this:
+We add a map of these to the Audio system:
 
 ```C++
-vector<fmod::EventDescription*> GetEventList() const {
-  FatalIf(bank == nullptr, "GetEventList: Bank is null");
-
-  // Get the number of events in the sound bank.
-  int eventCount = 0;
-  FmodCall(bank->getEventCount(&eventCount), {});
-  if (eventCount == 0) return {};
-
-  // Get the event list from the FMOD bank.
-  auto result = vector<fmod::EventDescription*>(static_cast<size_t>(eventCount), nullptr);
-  FmodCall(bank->getEventList(result.data(), result.size(), &eventCount), {});
-
-  return move(result);
-}
-```
-
-The event count is retrieved from `bank->getEventCount` which is used to size the array sent to `bank->getEventList`.
-
-In the Audio class we can have a map of SoundBank objects.
-
-```C++
-#include <unordered_map>
-
 class Audio {
-private: // data
 // ...
-  // Map of bank names to sound bank objects.
-  unordered_map<string, SoundBank> soundBankMap;
+  // Map of event names to their description objects.
+  unordered_map<string, EventDescription> eventDescriptionMap;
 // ...
 };
 ```
@@ -141,21 +118,54 @@ Audio() {
     fmod::Bank* bank = nullptr;
     FmodCall(system->loadBankFile(file.c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &bank));
 
-    // Get the path name of the sound bank.
-    auto path = string(512, ' ');
-    int pathLen = 0;
-    FmodCall(bank->getPath(&path[0], static_cast<int>(path.size()), &pathLen));
-    path.resize(static_cast<size_t>(pathLen - 1));
+    // Get the number of events in the bank.
+    int eventCount = 0;
+    FmodCall(bank->getEventCount(&eventCount));
 
-    // Add a map entry to the sound bank using the bank's path name.
-    soundBankMap.emplace(path, SoundBank(bank, path));
-  }
-}
+    // Get the list of event descriptions from the bank.
+    auto eventArray = vector<fmod::EventDescription*>(static_cast<size_t>(eventCount), nullptr);
+    FmodCall(bank->getEventList(eventArray.data(), eventArray.size(), nullptr));
 ```
 
 The for loop uses a custom helper class called `PathInfo` to get all files in a directory `config::Sounds`. You can roll your own method of doing this, read from a list of file names, or use Boost's [filesystem](http://www.boost.org/doc/libs/1_55_0/libs/filesystem/doc/index.htm).
 
-The sound bank is loaded using `system->loadBankFile` with default loading. The path name of the bank is retrieved using `bank->getPath`. `soundBankMap.emplace` adds a path and SoundBank pair into the map.
+The sound bank is loaded using `system->loadBankFile` with default loading. We then get the event count and an array of event descriptions to initialize the map of event descriptions:
+
+```C++
+    // For each event description:
+    for (fmod::EventDescription* eventDescription : eventArray) {
+      // Get the path to the event, e.g. "event:/Ambience/Country"
+      auto path = string(512, ' ');
+      int retrieved = 0;
+      FmodCall(eventDescription->getPath(&path[0], path.size(), &retrieved));
+      path.resize(static_cast<size_t>(retrieved - 1)); // - 1 to account for null character
+
+      // Save the event description in the event map.
+      eventDescriptionMap.emplace(path, EventDescription(eventDescription, path));
+    }
+  }
+}
+```
+
+The path to the event is retrieved using `getPath` and we resize the string to account for the actual size of the path. Then we add the event description to the map using `emplace`.
+
+When an event is played it spawns an `EventInstance`. We can create a wrapper class for this too:
+
+```C++
+class EventInstance {
+private: // data
+  // The event description corresponding to this event.
+  EventDescription* description = nullptr;
+  // The FMOD event instance.
+  fmod::EventInstance* instance = nullptr;
+  
+public: // data
+  // 3D attributes
+  FMOD_VECTOR Forward   = FMOD_VECTOR{ 0, 0, -1 };
+  FMOD_VECTOR Position  = FMOD_VECTOR{ 0, 0, 0 };
+  FMOD_VECTOR Up        = FMOD_VECTOR{ 0, 1, 0 };
+  FMOD_VECTOR Velocity  = FMOD_VECTOR{ 0, 0, 0 };
+```
 
 ## Generic Utilities
 
