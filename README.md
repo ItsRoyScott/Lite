@@ -6,8 +6,8 @@
   - [Importing FMOD Studio into a Game Project](#importing-fmod-studio-into-a-game-project)
   - [Rolling Your Own Variant](#rolling-your-own-variant)
 - [Miscellaneous](#miscellaneous)
-  - [Reference Member Initialization](#reference-member-initialization)
   - [Ideas for Improvement](#ideas-for-improvement)
+  - [Reference Member Initialization](#reference-member-initialization)
 
 # Introduction
 
@@ -292,7 +292,28 @@ There's more we can do with Variant:
 
 # Miscellaneous
 
+
+
+## Ideas for Improvement
+
+
+
+- Separate thread for rendering, i.e. "Render Thread".
+- Re-save converted models for faster loading.
+- Better logging mechanism: message box, log-to-file, filename / line, channels, in-game, etc.
+- A performance profiler.
+- A resource manager which handles all resource loading (possibly on a separate thread).
+- Xbox or Wii controller input.
+- Action mappings for input: "Jump" maps to VK_SPACE, etc.
+- Separate thread or threadpool for physics.
+
+[Back to the table of contents.](#table-of-contents)
+
+
+
 ## Reference Member Initialization
+
+
 
 Some objects in Lite use member initialization at the declaration (C++11 feature) to initialize a reference to a private member for public access.
 
@@ -319,16 +340,3 @@ public: // methods
 ```
 
 This leaves a little more work for the programmer if the copy constructor and assignment were not needed. It's up to you if the benefit of saying `typeInfo.Name` outweighs a simple member function `typeInfo.Name()`.
-
-## Ideas for Improvement
-
-- Separate thread for rendering, i.e. "Render Thread".
-- Re-save converted models for faster loading.
-- Better logging mechanism: message box, log-to-file, filename / line, channels, in-game, etc.
-- A performance profiler.
-- A resource manager which handles all resource loading (possibly on a separate thread).
-- Xbox or Wii controller input.
-- Action mappings for input: "Jump" maps to VK_SPACE, etc.
-- Separate thread or threadpool for physics.
-
-[Back to the table of contents.](#table-of-contents)
