@@ -1,5 +1,6 @@
 # Table of Contents
 
+
 - [Introduction](#introduction)
   - [Goals](#goals)
 - [Tutorials](#tutorials)
@@ -9,26 +10,27 @@
   - [Ideas for Improvement](#ideas-for-improvement)
   - [Reference Member Initialization](#reference-member-initialization)
 
+
 # Introduction
+
 
 This project is made to be an instructive and lightweight example of a 3D game engine. The engine is simple: it is single threaded and the game loop exists in [Main.cpp](lite/Main.cpp). 
 
 The engine is implemented entirely in headers, which allows for quick iteration time, and lets viewers learn about implementation details in-line with the class itself. If you have Visual Studio 2013 handy, I recommend you open up the solution [lite.sln](lite/lite.sln) and step into the various calls in [Main.cpp](lite/Main.cpp) to see what they do.
 
+
 ## Goals
 
+
 1. To be simple and minimalistic.
-
 2. To use modern C++ features effectively.
-
 3. To be instructive on a wide range of features typically found in a 3D game engine.
+
 
 # Tutorials
 
 
-
 ## Importing FMOD Studio into a Game Project
-
 
 
 Include the FMOD Studio headers and Visual C++ static library:
@@ -59,6 +61,8 @@ namespace lite {
     } \
   } while(0)
 ```
+
+`Warn` is a macro I have to report text in yellow to the console. You can replace this with a simple assert(), throw an exception, or however you prefer to handle errors.
 
 Let's start the Audio system:
 
@@ -183,14 +187,15 @@ public: // data
   FMOD_VECTOR Velocity  = FMOD_VECTOR{ 0, 0, 0 };
 ```
 
-**[Code Sample](lite/Audio.hpp)**
+**Code Sample**
+  - [Audio](lite/Audio.hpp)
+  - [EventDescription](lite/EventDescription.hpp)
+  - [EventInstance](lite/EventInstance.hpp)
 
 [Back to the table of contents.](#table-of-contents)
 
 
-
 ## Rolling Your Own Variant
-
 
 
 A `variant`, also known as an `any`, can store any C++ object inside it. Its data members are a void pointer to the object data, a `clone` function pointer which copies the data, a deleter function which destroys the data, and type info used for error checking.
