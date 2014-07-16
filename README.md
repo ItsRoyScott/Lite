@@ -6,7 +6,7 @@
   - [Goals](#goals)
 - [Tutorials](#tutorials)
   - [Implementing high_resolution_clock Correctly](#implementing-high_resolution_clock-correctly)
-  - [Importing FMOD Studio into a Game Project](#importing-fmod-studio-into-a-game-project)
+  - [Integrating FMOD Studio into a Game Project](#integrating-fmod-studio-into-a-game-project)
   - [Rolling Your Own Variant](#rolling-your-own-variant)
 - [Miscellaneous](#miscellaneous)
   - [Ideas for Improvement](#ideas-for-improvement)
@@ -174,7 +174,7 @@ This object will make implementing a [frame timer](lite/FrameTimer.hpp) fairly e
 
 
 
-## Importing FMOD Studio into a Game Project
+## Integrating FMOD Studio into a Game Project
 
 
 
