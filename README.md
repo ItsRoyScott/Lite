@@ -334,3 +334,5 @@ This leaves a little more work for the programmer if the copy constructor and as
 - Action mappings for input: "Jump" maps to VK_SPACE, etc.
 
 - Separate thread or threadpool for physics.
+
+[Back to the table of contents.](#table-of-contents)
