@@ -10,14 +10,18 @@ namespace lite
   private: // data
 
     fmod::EventDescription* description;
-    bool isOneshot;
     string path;
 
   public: // properties
 
     // Whether the sound will naturally terminate and
     //  can be used as a fire-and-forget sort of sound.
-    bool IsOneshot() const { return isOneshot; }
+    bool IsOneshot() const
+    {
+      bool b;
+      FmodCall(description->isOneshot(&b), false);
+      return b;
+    }
 
     // The event's path name.
     const string& Path() const { return path; }
@@ -28,7 +32,6 @@ namespace lite
       description(description_),
       path(move(path_))
     {
-      FmodCall(description->isOneshot(&isOneshot));
     }
 
     fmod::EventInstance* CreateInstance()
