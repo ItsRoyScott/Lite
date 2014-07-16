@@ -16,6 +16,7 @@
   - [Singleton](#singleton)
 - [Miscellaneous](#miscellaneous)
   - [Ideas for Improvement](#ideas-for-improvement)
+  - [Tutorial Goals](#tutorial-goals)
 
 
 
