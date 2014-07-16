@@ -39,7 +39,7 @@ The engine is implemented entirely in headers, which allows for quick iteration 
 ## Global Event System
 
 
-What is an event? Sometimes it's useful for systems to interact each other without having direct access to each other. Consider keyboard input which requires messages from the window with WM_KEYDOWN messages. The input class could listen for an event invoked by the window when it receives a new message.
+What is an event? Sometimes it's useful for systems to interact  with each other without having to directly access another. Consider keyboard input which requires messages from the window with WM_KEYDOWN messages. The input class could listen for an event invoked by the window when it receives a new message.
 
 Usually it's useful to have an event *payload* so events can pass data around. Here is an example of an event payload which depends on [variants](#rolling-your-own-variant):
 
