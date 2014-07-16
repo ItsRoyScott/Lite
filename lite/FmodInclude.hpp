@@ -11,20 +11,15 @@
 namespace lite
 {
   namespace fmod = FMOD::Studio;
-
-  inline FMOD_RESULT& FmodResult()
-  {
-    static FMOD_RESULT result;
-    return result;
-  }
 } // namepace lite
 
 // Wraps all FMOD calls which return an FMOD_RESULT.
 //  Prints a warning to the console when something bad happens.
 //  Returns the second parameter out of the function.
 #define FmodCall(x, ...) SCOPE( \
-  if ((FmodResult() = (x)) != FMOD_OK) \
+  FMOD_RESULT fmodResult;  \
+  if ((fmodResult = (x)) != FMOD_OK) \
   { \
-    Warn("FMOD error: (" << int(FmodResult()) << ") " << #x << "\n" << FMOD_ErrorString(FmodResult())); \
+    Warn("FMOD error: (" << int(fmodResult) << ") " << #x << "\n" << FMOD_ErrorString(fmodResult)); \
     return __VA_ARGS__; \
   })

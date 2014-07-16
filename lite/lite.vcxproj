@@ -147,7 +147,6 @@
     <ClInclude Include="Scripting.hpp" />
     <ClInclude Include="ShaderData.hpp" />
     <ClInclude Include="ShaderManager.hpp" />
-    <ClInclude Include="SoundBank.hpp" />
     <ClInclude Include="CollisionComponents.hpp" />
     <ClInclude Include="TextureData.hpp" />
     <ClInclude Include="Transform.hpp" />

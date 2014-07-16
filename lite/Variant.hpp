@@ -190,6 +190,7 @@ namespace lite
     template <class T>
     T& Ref() const
     {
+      FatalIf(!IsType<T>(), "Attempting to reference variant type " << type.name() << " as " << typeid(T).name());
       return *Get<T>();
     }
 
@@ -227,7 +228,7 @@ namespace lite
     template <class T>
     explicit operator T() const
     {
-      return *Get<T>();
+      return Ref<T>();
     }
 
     // Prints the variant to an ostream object.

@@ -6,7 +6,6 @@
 #include "FmodInclude.hpp"
 #include "ListenerDescription.hpp"
 #include "PathInfo.hpp"
-#include "SoundBank.hpp" 
 
 namespace lite // types
 {
@@ -21,9 +20,6 @@ namespace lite // types
 
     // Map of event names to their description objects.
     unordered_map<string, EventDescription> eventDescriptionMap;
-
-    // Map of bank names to sound bank objects.
-    unordered_map<string, SoundBank> soundBankMap;
 
     // Fmod Studio's system interface.
     fmod::System* system;
@@ -41,37 +37,38 @@ namespace lite // types
     {
       // Create the FMOD Studio system.
       FmodCall(fmod::System::create(&system));
+      // Initialize the system.
       FmodCall(system->initialize(
         maxChannels,               // max channels capable of playing audio
         FMOD_STUDIO_INIT_NORMAL,   // studio-specific flags
         FMOD_INIT_3D_RIGHTHANDED,  // regular flags
         nullptr));                 // extra driver data
 
-      // For each file in the "sounds" directory with a ".bank" extension:
+      // For each file in the Sounds directory with a *.bank extension:
       for (string& file : PathInfo(config::Sounds).FilesWithExtension("bank"))
       {
         // Load the sound bank from file.
         fmod::Bank* bank = nullptr;
         FmodCall(system->loadBankFile(file.c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &bank));
 
-        // Add a map entry to the sound bank using the file's name,
-        //  excluding the directory and extension.
-        string bankName = PathInfo(file).BaseFilename();
-        soundBankMap.emplace(bankName, SoundBank(bank, bankName));
-      }
+        // Get the number of events in the bank.
+        int eventCount = 0;
+        FmodCall(bank->getEventCount(&eventCount));
 
-      // For each sound bank:
-      for (auto& bankPair : soundBankMap)
-      {
-        // For each event in the bank:
-        for (fmod::EventDescription* eventDescription : bankPair.second.GetEventList())
+        // Get the list of event descriptions from the bank.
+        auto eventArray = vector<fmod::EventDescription*>(static_cast<size_t>(eventCount), nullptr);
+        FmodCall(bank->getEventList(eventArray.data(), eventArray.size(), nullptr));
+
+        // For each event description:
+        for (fmod::EventDescription* eventDescription : eventArray)
         {
           // Get the path to the event, e.g. "event:/Ambience/Country"
-          char pathBuffer[1024];
+          auto path = string(512, ' ');
           int retrieved = 0;
-          FmodCall(eventDescription->getPath(pathBuffer, sizeof(pathBuffer), &retrieved));
+          FmodCall(eventDescription->getPath(&path[0], path.size(), &retrieved));
+          path.resize(static_cast<size_t>(retrieved - 1)); // - 1 to account for null character
 
-          auto path = string(pathBuffer, static_cast<size_t>(retrieved-1));
+          // Save the event description in the event map.
           eventDescriptionMap.emplace(path, EventDescription(eventDescription, path));
         }
       }
@@ -126,8 +123,7 @@ namespace lite // types
     friend ostream& operator<<(ostream& os, const Audio& a)
     {
       os << "Audio:\n";
-      Format(os, a.eventDescriptionMap) << "\n";
-      Format(os, a.soundBankMap);
+      Format(os, a.eventDescriptionMap);
       return os;
     }
 
@@ -153,17 +149,6 @@ namespace lite // types
       for (auto& eventPair : eventDescriptionMap)
       {
         os << "\n" << Tabs(1) << eventPair.second;
-      }
-      return os;
-    }
-
-    // Formatted output for the sound bank map.
-    static ostream& Format(ostream& os, const unordered_map<string, SoundBank>& soundBankMap)
-    {
-      os << Tabs(1) << "Sound banks:";
-      for (auto& bankPair : soundBankMap)
-      {
-        os << "\n" << Tabs(1) << bankPair.second;
       }
       return os;
     }

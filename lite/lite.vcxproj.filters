@@ -40,9 +40,6 @@
     <Filter Include="Audio\Listener">
       <UniqueIdentifier>{88ecf04d-15eb-463f-8504-1c627fbb248e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Audio\Sound Bank">
-      <UniqueIdentifier>{a2d4a931-eb0d-4197-ba20-7633d8b7f31c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Core\Components">
       <UniqueIdentifier>{9254eb49-f14b-4e0c-9687-ac53f1a1d280}</UniqueIdentifier>
     </Filter>
@@ -128,9 +125,6 @@
     </ClInclude>
     <ClInclude Include="ListenerDescription.hpp">
       <Filter>Audio\Listener</Filter>
-    </ClInclude>
-    <ClInclude Include="SoundBank.hpp">
-      <Filter>Audio\Sound Bank</Filter>
     </ClInclude>
     <ClInclude Include="GameObject.hpp">
       <Filter>Core</Filter>
