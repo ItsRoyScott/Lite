@@ -24,3 +24,5 @@
 *.opensdf
 *.ipch
 *.idb
+build/lite-d.lib
+build/lite.lib
