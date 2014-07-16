@@ -67,9 +67,6 @@
     <Filter Include="Reflection\Meta Info">
       <UniqueIdentifier>{000df082-b0d5-4f06-bb10-449f31b23f35}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Graphics\Direct3D\WIC Texture Loader">
-      <UniqueIdentifier>{cf09c4b8-0790-4530-b725-81e6ed97ab9d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Math">
       <UniqueIdentifier>{05a92c31-c74e-4b21-a721-c0ec48122bb2}</UniqueIdentifier>
     </Filter>
@@ -96,9 +93,6 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Precompiled.cpp">
       <Filter>Precompiled</Filter>
-    </ClCompile>
-    <ClCompile Include="WICTextureLoader.cpp">
-      <Filter>Graphics\Direct3D\WIC Texture Loader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -234,9 +228,6 @@
     <ClInclude Include="Physics.hpp">
       <Filter>Physics</Filter>
     </ClInclude>
-    <ClInclude Include="WICTextureLoader.h">
-      <Filter>Graphics\Direct3D\WIC Texture Loader</Filter>
-    </ClInclude>
     <ClInclude Include="FieldInfo.hpp">
       <Filter>Reflection\Meta Info</Filter>
     </ClInclude>
@@ -296,6 +287,9 @@
     </ClInclude>
     <ClInclude Include="aligned_allocator.hpp">
       <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="WICTextureLoader.h">
+      <Filter>Graphics\Direct3D</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

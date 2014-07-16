@@ -15,6 +15,12 @@
 #pragma comment(lib, "D3D/D3D11.lib")
 #pragma comment(lib, "D3D/D3DCompiler.lib")
 
+#ifdef _DEBUG
+#pragma comment(lib, "D3D/WICTextureLoader-d.lib")
+#else
+#pragma comment(lib, "D3D/WICTextureLoader.lib")
+#endif
+
 namespace lite 
 {
   typedef XMFLOAT2 float2;
