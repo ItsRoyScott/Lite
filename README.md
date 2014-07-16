@@ -5,6 +5,9 @@
 - [Tutorials](#tutorials)
   - [Importing FMOD Studio into a Game Project](#importing-fmod-studio-into-a-game-project)
   - [Rolling Your Own Variant](#rolling-your-own-variant)
+- [Miscellaneous](#miscellaneous)
+  - [Reference Member Initialization](#reference-member-initialization)
+  - [Ideas for Improvement](#ideas-for-improvement)
 
 # Introduction
 
