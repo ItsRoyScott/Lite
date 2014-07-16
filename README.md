@@ -12,6 +12,7 @@
 - [Miscellaneous](#miscellaneous)
   - [Ideas for Improvement](#ideas-for-improvement)
   - [Reference Member Initialization](#reference-member-initialization)
+  - [Singleton](#singleton)
 
 
 
@@ -696,3 +697,20 @@ public: // methods
 This leaves a little more work for the programmer if the copy constructor and assignment were not needed. It's up to you if the benefit of saying `typeInfo.Name` outweighs a simple member function `typeInfo.Name()`.
 
 [Back to the table of contents.](#table-of-contents)
+
+
+
+## Singleton
+
+The singleton design pattern can be implemented using the [curiously recurring template pattern](http://en.wikipedia.org/wiki/Curiously_recurring_template_pattern).
+
+```C++
+template <class T>
+struct Singleton {
+  static T& Instance() {
+    static T instance;
+    return instance;
+  }
+};
+```
+
