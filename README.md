@@ -142,9 +142,7 @@ public: // methods
   }
 ```
 
-`Singleton<T>` looks like [this](#singleton).
-
-A handler identifier is stored so we can find which handler to remove when the object handling the event is destroyed. A lambda is sent into `find_if` to find the handler with the matching id. 
+`Singleton<T>` looks like [this](#singleton). A handler identifier is stored so we can find which handler to remove when the object handling the event is destroyed. A lambda is sent into `find_if` to find the handler with the matching id. 
 
 Invoking the event:
 
