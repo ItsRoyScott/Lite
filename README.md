@@ -10,6 +10,7 @@
   - [Integrating FMOD Studio into a Game Project](#integrating-fmod-studio-into-a-game-project)
   - [Rolling Your Own Variant](#rolling-your-own-variant)
 - [Miscellaneous](#miscellaneous)
+  - [Lightweight Singleton](#lightweight-singleton)
   - [Ideas for Improvement](#ideas-for-improvement)
   - [Reference Member Initialization](#reference-member-initialization)
   - [Singleton](#singleton)
@@ -663,6 +664,30 @@ There's more we can do with Variant:
 - Separate thread or threadpool for physics.
 
 [Back to the table of contents.](#table-of-contents)
+
+
+
+# Lightweight Singleton
+
+
+
+Sometimes you want access to an object globally, but you know that another object will create it, so the usual Singleton implementation won't do.
+
+
+```C++
+// A lightweight singleton which uses the most recently created instance as the singleton.
+template <class T>
+struct LightSingleton {
+  LightSingleton() { CurrentInstance() = static_cast<T*>(this); }
+  ~LightSingleton() { CurrentInstance() = nullptr; }
+
+  // Returns a pointer to the most recently created instance.
+  static T*& CurrentInstance() {
+    static T* instance = nullptr;
+    return instance;
+  }
+};
+```
 
 
 
