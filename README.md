@@ -9,7 +9,6 @@
   - [Implementing high_resolution_clock Correctly](#implementing-high_resolution_clock-correctly)
   - [Integrating FMOD Studio into a Game Project](#integrating-fmod-studio-into-a-game-project)
   - [Logging to the Windows Console in Color](#logging-to-the-windows-console-in-color)
-    - [Logging Macros](#logging-macros)
   - [Rolling Your Own Variant](#rolling-your-own-variant)
 - [Patterns](#patterns)
   - [Lightweight Singleton](#lightweight-singleton)
