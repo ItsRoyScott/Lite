@@ -241,9 +241,9 @@ Variant(const Variant& b) {
 }
 ```
 
-If the variant we're copying from stores an object we'll call the clone function to copy construct a new object.  The deleter is also passed along to the new `unique_ptr`.
+If the variant we're copying from stores an object, we'll call the clone function to copy construct a new object.  The deleter is also passed along to the new `unique_ptr`.
 
-We can add some functions to deal with the variant's data.
+We can add some functions to deal with the variant's internal data:
 
 ```C++
 // Whether the variant is valid (non-null).
