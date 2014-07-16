@@ -12,24 +12,20 @@ namespace lite // types
   class EventSystem : public Singleton<EventSystem>
   {
   private: // data
-
+    
+    // Stores a handler function and its id.
     typedef pair<size_t, EventHandlerFunction> IdHandlerPair;
 
     // Stores all event handlers mapped by name.
     unordered_map<string, vector<IdHandlerPair>> eventHandlerMap;
 
-    friend class EventHandler;
-
   public: // methods
 
     // Adds a handler given its event name, handler function, and an optional unique id.
-    void AddHandler(const string& eventName, EventHandlerFunction fn, size_t id = size_t(-1))
+    size_t AddHandler(const string& eventName, EventHandlerFunction fn, size_t id = GenerateHandlerId())
     {
-      if (id == size_t(-1))
-      {
-        id = GenerateHandlerId();
-      }
       eventHandlerMap[eventName].push_back(make_pair(id, move(fn)));
+      return id;
     }
 
     // Returns whether the event exists in the system.
@@ -83,13 +79,10 @@ namespace lite // types
       auto it = find_if(
         handlerPairs.begin(),
         handlerPairs.end(),
-        [&](IdHandlerPair& pair)
-        {
-          return pair.first == id;
-        });
+        [&](IdHandlerPair& pair) { return pair.first == id; });
+      if (it == handlerPairs.end()) return;
 
       // Erase the handler from the array.
-      if (it == handlerPairs.end()) return;
       handlerPairs.erase(it);
     }
   };

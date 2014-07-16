@@ -23,7 +23,9 @@ namespace lite
     //  object after the copy.
     EventHandler() = delete;
     EventHandler(const EventHandler&) = delete;
+    EventHandler& operator=(const EventHandler&) = delete;
     EventHandler(EventHandler&&) = delete;
+    EventHandler& operator=(EventHandler&&) = delete;
 
     // Constructs the handler from an event name and function object.
     EventHandler(string eventName_, function<void(EventData&)> fn) :
@@ -46,12 +48,6 @@ namespace lite
     {
       Clear();
     }
-
-    // Cannot copy or move event handler because a previously 
-    //  captured 'this' pointer may be pointing to an invalid
-    //  object after the copy.
-    EventHandler& operator=(const EventHandler&) = delete;
-    EventHandler& operator=(EventHandler&&) = delete;
 
     // Unregisters the event handler from the global event system.
     void Clear()
