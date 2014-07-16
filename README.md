@@ -3,7 +3,7 @@
 - [Introduction](#introduction)
   - [Goals](#goals)
 - [Tutorials](#tutorials)
-  - [Importing FMOD Studio into a Game Project](#importing-fmod-studio-for-a-game-project)
+  - [Importing FMOD Studio into a Game Project](#importing-fmod-studio-into-a-game-project)
   - [Rolling Your Own Variant](#rolling-your-own-variant)
 
 # Introduction
@@ -22,7 +22,7 @@ This library is made to be an instructive example of a 3D game engine built in C
 
 
 
-## Importing FMOD Studio for a Game Project
+## Importing FMOD Studio into a Game Project
 
 
 
