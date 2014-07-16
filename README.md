@@ -178,6 +178,8 @@ public: // data
   FMOD_VECTOR Velocity  = FMOD_VECTOR{ 0, 0, 0 };
 ```
 
+[Back to the table of contents.](#table-of-contents)
+
 ## Generic Utilities
 
 ### Rolling Your Own Variant
@@ -280,6 +282,8 @@ There's more we can do with Variant:
 - Interact with reflection to let the user explore fields and methods on the object.
 - Support implicit casts (like `short` -> `int`).
 - Treat references and pointers specially so the user can get the underlying type.
+
+[Back to the table of contents.](#table-of-contents)
 
 # Miscellaneous
 
