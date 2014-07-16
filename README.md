@@ -3,10 +3,8 @@
 - [Introduction](#introduction)
   - [Goals](#goals)
 - [Tutorials](#tutorials)
-  - [Audio](#audio)
-    - [Importing FMOD Studio for a Game Project](#importing-fmod-studio-for-a-game-project)
-  - [Generic Utilities](#generic-utilities)
-    - [Rolling Your Own Variant](#rolling-your-own-variant)
+  - [Importing FMOD Studio into a Game Project](#importing-fmod-studio-for-a-game-project)
+  - [Rolling Your Own Variant](#rolling-your-own-variant)
 
 # Introduction
 
@@ -22,9 +20,11 @@ This library is made to be an instructive example of a 3D game engine built in C
 
 # Tutorials
 
-## Audio
 
-### Importing FMOD Studio for a Game Project
+
+## Importing FMOD Studio for a Game Project
+
+
 
 Include the FMOD Studio headers and Visual C++ static library:
 
@@ -180,9 +180,11 @@ public: // data
 
 [Back to the table of contents.](#table-of-contents)
 
-## Generic Utilities
 
-### Rolling Your Own Variant
+
+## Rolling Your Own Variant
+
+
 
 A `variant`, also known as an `any`, can store any C++ object inside it. Its data members are a void pointer to the object data, a `clone` function pointer which copies the data, a deleter function which destroys the data, and type info used for error checking.
 
