@@ -20,7 +20,7 @@ namespace lite
     EventDescription* Description() const { return description; }
 
     // 3D attributes
-    FMOD_VECTOR Forward   = FMOD_VECTOR{ 0, 0, -1 };
+    FMOD_VECTOR Forward   = FMOD_VECTOR{ 0, 0, 1 };
     FMOD_VECTOR Position  = FMOD_VECTOR{ 0, 0, 0 };
     FMOD_VECTOR Up        = FMOD_VECTOR{ 0, 1, 0 };
     FMOD_VECTOR Velocity  = FMOD_VECTOR{ 0, 0, 0 };
@@ -28,8 +28,7 @@ namespace lite
   public: // methods
 
     EventInstance()
-    {
-    }
+    {}
 
     EventInstance(EventInstance&& b) :
       description(b.description),
