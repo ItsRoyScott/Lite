@@ -702,6 +702,8 @@ This leaves a little more work for the programmer if the copy constructor and as
 
 ## Singleton
 
+
+
 The singleton design pattern can be implemented using the [curiously recurring template pattern](http://en.wikipedia.org/wiki/Curiously_recurring_template_pattern).
 
 ```C++
@@ -714,3 +716,4 @@ struct Singleton {
 };
 ```
 
+[Back to the table of contents.](#table-of-contents)
