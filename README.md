@@ -487,7 +487,7 @@ Audio() {
     FmodCall(bank->getEventList(eventArray.data(), eventArray.size(), nullptr));
 ```
 
-The for loop uses a custom helper class called `PathInfo` to get all files in a directory `config::Sounds`. You can roll your own method of doing this, read from a list of file names, or use Boost's [filesystem](http://www.boost.org/doc/libs/1_55_0/libs/filesystem/doc/index.htm).
+The for loop uses a custom helper class called `PathInfo` to get all files in a directory `config::Sounds`. You can simply read from a list of file names, roll your own method of doing this, or use Boost's [filesystem](http://www.boost.org/doc/libs/1_55_0/libs/filesystem/doc/index.htm).
 
 The sound bank is loaded using `system->loadBankFile` with default loading. We then get the event count and an array of event descriptions to initialize our map of `EventDescription` objects:
 
