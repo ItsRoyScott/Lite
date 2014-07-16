@@ -585,7 +585,7 @@ private: // methods
   friend Singleton<Console>;
 ```
 
-Here is [Singleton<T>](#singleton). The `Color` enum matches the colors provided by the Win32 API. The constructor creates the console, and moves it to the top left of the screen (optional). `freopen_s` (the safe version of `freopen`) lets us redirect `cout` and `cerr` to our newly created console. The destructor then destroys the console.
+[Singleton<T>](#singleton) is an implementation of the titular design pattern. The `Color` enum matches the colors provided by the Win32 API. The constructor creates the console, and moves it to the top left of the screen (optional). `freopen_s` (the safe version of `freopen`) lets us redirect `cout` and `cerr` to our newly created console. The destructor then destroys the console.
 
 ```C++
 public: // methods
