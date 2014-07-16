@@ -79,7 +79,7 @@ The `fmod::System::create` call simply fills in the `System*` with a valid objec
 
 The `initialize` call tells FMOD Studio how many channels we need (maximum). This is essentially the number of sounds capable of being played at the same time. 512 should be plenty. `FMOD_STUDIO_INIT_NORMAL` does the default FMOD Studio initialization, which works fine for our purposes. `FMOD_INIT_3D_RIGHTHANDED` changes the 3D coordinate system to be compatible with Direct3D. You can use `FMOD_INIT_NORMAL` here if you're using OpenGL.
 
-FMOD Studio allows playing sounds through events. Every event has a path string used to identify the event. The event can have user-defined parameters that the sound engineer specifies in FMOD Studio. This could be a place for the sound engineer to tell designers when and how to play the sound.
+FMOD Studio allows playing sounds through events. Every event has a path string used to identify the event. The event can have user-defined parameters that the sound engineer specifies in FMOD Studio, where he or she can tell designers when and how to play the sound.
 
 A wrapper class for `FMOD::Studio::EventDescription` will give us easy access to the underlying event description.
 
