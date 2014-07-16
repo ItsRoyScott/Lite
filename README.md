@@ -323,19 +323,12 @@ This leaves a little more work for the programmer if the copy constructor and as
 ## Ideas for Improvement
 
 - Separate thread for rendering, i.e. "Render Thread".
-
 - Re-save converted models for faster loading.
-
 - Better logging mechanism: message box, log-to-file, filename / line, channels, in-game, etc.
-
 - A performance profiler.
-
 - A resource manager which handles all resource loading (possibly on a separate thread).
-
 - Xbox or Wii controller input.
-
 - Action mappings for input: "Jump" maps to VK_SPACE, etc.
-
 - Separate thread or threadpool for physics.
 
 [Back to the table of contents.](#table-of-contents)
