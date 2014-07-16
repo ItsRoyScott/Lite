@@ -207,7 +207,7 @@ namespace lite {
   } while(0)
 ```
 
-`Warn` is a macro I have to report text in yellow to the console. You can replace this with a simple assert(), throw an exception, or however you prefer to handle errors.
+`Warn` is a macro I have to report text in yellow to the console. You can replace this with a simple `assert()`, an exception, or any way you prefer to handle errors.
 
 Let's start the Audio system:
 
