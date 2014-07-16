@@ -16,6 +16,7 @@ namespace lite
 
     // 16-byte aligned vector of four floats used for SSE computations.
     XMVECTOR* xm = align<XMVECTOR>(16, buffer);
+    XMVECTOR xm2;
 
   public: // methods
 

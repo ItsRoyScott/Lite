@@ -72,13 +72,6 @@ namespace lite
       }
       return count;
     }
-      
-    // Number of ticks per second.
-    static double tick_duration()
-    {
-      double dur = 1.0 / double(frequency());
-      return dur;
-    }
   };
 
   // Stopwatch-like object which keeps track of elapsed time.

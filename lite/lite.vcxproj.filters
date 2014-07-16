@@ -294,5 +294,8 @@
     <ClInclude Include="ComponentManager.hpp">
       <Filter>Core\Components</Filter>
     </ClInclude>
+    <ClInclude Include="aligned_allocator.hpp">
+      <Filter>Platform</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
