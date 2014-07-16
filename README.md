@@ -902,3 +902,5 @@ struct Singleton {
 1. No fucking around. The text is there to detail all important points--maybe inspire some curiosity--but nothing more.
 2. Most of the content is based in compact, working code samples.
 3. Every tutorial comes with a working code sample and/or demo.
+
+[Back to the table of contents.](#table-of-contents)
