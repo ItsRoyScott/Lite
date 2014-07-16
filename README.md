@@ -11,9 +11,9 @@
 
 # Introduction
 
-This project is made to be an instructive and lightweight example of a 3D game engine. The engine is simple: it is single threaded and the game loop exists in Main.cpp. 
+This project is made to be an instructive and lightweight example of a 3D game engine. The engine is simple: it is single threaded and the game loop exists in [Main.cpp](lite/Main.cpp). 
 
-The engine is implemented entirely in headers, which allows for quick iteration time, and lets viewers learn about implementation details in-line with the class itself. If you have Visual Studio 2013 handy, I recommend you open up the solution `Lite-Repo/lite/lite.sln` and step into the various calls in `Main.cpp` to see what they do.
+The engine is implemented entirely in headers, which allows for quick iteration time, and lets viewers learn about implementation details in-line with the class itself. If you have Visual Studio 2013 handy, I recommend you open up the solution [lite.sln](lite/lite.sln) and step into the various calls in [Main.cpp](lite/Main.cpp) to see what they do.
 
 ## Goals
 
@@ -183,6 +183,8 @@ public: // data
   FMOD_VECTOR Velocity  = FMOD_VECTOR{ 0, 0, 0 };
 ```
 
+**[Code Sample](lite/Audio.hpp)**
+
 [Back to the table of contents.](#table-of-contents)
 
 
@@ -289,6 +291,8 @@ There's more we can do with Variant:
 - Interact with reflection to let the user explore fields and methods on the object.
 - Support implicit casts (like `short` -> `int`).
 - Treat references and pointers specially so the user can get the underlying type.
+
+**[Code Sample](lite/Variant.hpp)**
 
 [Back to the table of contents.](#table-of-contents)
 
