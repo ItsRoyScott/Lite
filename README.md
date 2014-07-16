@@ -148,12 +148,12 @@ public: // methods
   
   // Microseconds that have elapsed since start() was called.
   double elapsed_microseconds() const {
-    return duration_cast<duration<double, std::micro>>(elapsed_duration()).count();
+    return std::chrono::duration_cast<duration<double, std::micro>>(elapsed_duration()).count();
   }
   
   // Milliseconds that have elapsed since start() was called.
   double elapsed_milliseconds() const {
-    return duration_cast<duration<double, std::milli>>(elapsed_duration()).count();
+    return std::chrono::duration_cast<duration<double, std::milli>>(elapsed_duration()).count();
   }
   
   // Seconds that have elapsed since start() was called.
@@ -163,6 +163,8 @@ public: // methods
 // ...
 };
 ```
+
+`duration_cast` is capable of converting from seconds to milliseconds or any other time measurement.
 
 This object will make implementing a [frame timer](lite/FrameTimer.hpp) fairly easy as well.
 
