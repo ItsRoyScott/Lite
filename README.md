@@ -222,7 +222,7 @@ private: // methods
 };
 ```
 
-**Code Sample**
+**Code Samples**
 - [EventData](lite/EventData.hpp)
 - [EventSystem](lite/EventSystem.hpp)
 - [EventHandler](lite/EventHandler.hpp)
@@ -527,7 +527,7 @@ public: // data
   FMOD_VECTOR Velocity  = FMOD_VECTOR{ 0, 0, 0 };
 ```
 
-**Code Sample**
+**Code Samples**
   - [Audio](lite/Audio.hpp)
   - [EventDescription](lite/EventDescription.hpp)
   - [EventInstance](lite/EventInstance.hpp)
