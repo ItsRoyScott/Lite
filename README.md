@@ -5,6 +5,7 @@
 - [Introduction](#introduction)
   - [Goals](#goals)
 - [Tutorials](#tutorials)
+  - [A Generic Global Event System](#a-generic-global-event-system)
   - [Implementing high_resolution_clock Correctly](#implementing-high_resolution_clock-correctly)
   - [Integrating FMOD Studio into a Game Project](#integrating-fmod-studio-into-a-game-project)
   - [Rolling Your Own Variant](#rolling-your-own-variant)
@@ -33,6 +34,199 @@ The engine is implemented entirely in headers, which allows for quick iteration 
 
 
 # Tutorials
+
+
+## A Generic Global Event System
+
+
+What is an event? Sometimes it's useful for systems to interact each other without having direct access to each other. Consider keyboard input which requires messages from the window with WM_KEYDOWN messages. The input class could listen for an event invoked by the window when it receives a new message.
+
+Usually it's useful to have an event *payload* so events can pass data around. Here is an example of an event payload which depends on [variants](#rolling-your-own-variant):
+
+```C++
+#include <string>
+#include <unordered_map>
+#include "Variant.hpp"
+
+class EventData {
+private: // data
+  // Name of the event; useful for functions handling multiple events.
+  string eventName;
+  // Stores all possible data as a single hash-map.
+  unordered_map<string, Variant> payload;
+  // Friend EventSystem so it may set the eventName field.
+  friend class EventSystem;
+
+public: // methods
+  // Allow the user to implement their own EventData.
+  virtual ~EventData() {}
+
+  // Returns whether the named data exists.
+  bool Exists(const string& name) const { return payload.find(name) != payload.end(); }
+
+  // Returns the data associated by name and type 'T'. The types must match exactly.
+  template <class T>
+  T& Get(const string& name) {
+    Variant& variant = payload[name];
+    FatalIf(!variant.IsValid(), "EventData::Get called with invalid name");
+
+    // Assign a new type if the given type 'T' doesn't match the variant's type.
+    if (!variant.IsType<T>()) variant.Assign<T>();
+
+    return variant.Ref<T>();
+  }
+
+  // Returns the name of the event being called.
+  const string& GetEventName() const { return eventName; }
+
+  // Accesses the named data.
+  Variant& operator[](const string& name) { return payload[name]; }
+};
+```
+
+The variants allow the user to store any kind of data as payload. An alternative, more limited, approach would be to implement a union of various possible types.
+
+A function capable of handling an event looks like this:
+
+```C++
+typedef std::function<void(EventData&)> EventHandlerFunction;
+```
+
+We store these functions in the `EventSystem` class:
+
+```C++
+#include <algorithm>
+#include <utility>
+
+class EventSystem : public Singleton<EventSystem> {
+private: // data
+  // Stores a handler function and its id.
+  typedef pair<size_t, EventHandlerFunction> IdHandlerPair;
+  // Stores all event handlers mapped by name.
+  unordered_map<string, vector<IdHandlerPair>> eventHandlerMap;
+
+public: // methods
+  // Adds a handler given its event name, handler function, and an optional unique id.
+  size_t AddHandler(const string& eventName, EventHandlerFunction fn, size_t id = GenerateHandlerId()) {
+    eventHandlerMap[eventName].push_back(make_pair(id, move(fn)));
+    return id;
+  }
+
+  // Returns whether the event exists in the system.
+  bool Exists(const string& name) const { return eventHandlerMap.find(name) != eventHandlerMap.end(); }
+
+  // Returns a unique id for event handlers.
+  static size_t GenerateHandlerId() {
+    static size_t id = 0;
+    return id++;
+  }
+  
+  // Removes an event handler given the event name and id.
+  void RemoveHandler(const string& eventName, size_t id) {
+    vector<IdHandlerPair>& handlerPairs = eventHandlerMap[eventName];
+
+    // Find the handler matching the given id.
+    auto it = find_if(
+      handlerPairs.begin(),
+      handlerPairs.end(),
+      [&](IdHandlerPair& pair) { return pair.first == id; });
+    if (it == handlerPairs.end()) return;
+
+    // Erase the handler from the array.
+    handlerPairs.erase(it);
+  }
+```
+
+`Singleton<T>` looks like [this](#singleton).
+
+A handler identifier is stored so we can find which handler to remove when the object handling the event is destroyed. A lambda is sent into `find_if` to find the handler with the matching id. 
+
+Invoking the event:
+
+```C++
+// Call an event with data.
+size_t Invoke(string name, EventData& data) {
+  if (!Exists(name)) return 0;
+
+  // Get the map of event handlers, /then/ move 'name' into the EventData structure.
+  auto& handlers = eventHandlerMap[name];
+  data.eventName = move(name);
+
+  // Call all handlers registered for this event. Called in reverse order so on-destruction events will clean up in the correct order.
+  for (auto it = handlers.rbegin(); it != handlers.rend(); ++it) it->second(data); 
+
+  return handlers.size();
+}
+
+// Call an event with no data.
+size_t Invoke(string name) {
+  EventData data;
+  return Invoke(move(name), data);
+}
+```
+
+We early-out if the event hasn't been registered. The handlers are called in reverse order to ensure that on-destruction messages are received in reverse order. The second `Invoke` is a convenience function in case no data is necessary.
+
+That's essentially it--we have a global EventSystem which we can register event handlers with and invoke with a customized payload. There's one more cool thing we can do though. The user currently needs to call `AddHandler` on creation and `RemoveHandler` on destruction of their object in order to register and unregister their handler(s). We can create a wrapper object so the user doesn't need to call either.
+
+```C++
+class EventHandler {
+private: // data
+  // Name of the event being listened for.
+  string eventName;
+  // Unique id of this handler.
+  size_t id = (size_t) -1;
+
+public: // methods
+
+  // Constructs the handler from an event name and function object.
+  EventHandler(string eventName_, function<void(EventData&)> fn) 
+    : eventName(move(eventName_)), id(EventSystem::GenerateHandlerId()) {
+    EventSystem::Instance().AddHandler(eventName, move(fn), id);
+  }
+
+  // Constructs the handler from an event name, a 'this' pointer, and a pointer to the member function handling the event.
+  template <class ThisType, class MemberFunctionPointer>
+  EventHandler(string eventName_, ThisType* this_, MemberFunctionPointer memfn) :
+    EventHandler(move(eventName_), [=](EventData& data) { (this_->*memfn)(data); }) {}
+
+  // Cannot copy or move event handler because a previously captured 'this' pointer may be pointing to an invalid object after the copy.
+  EventHandler() = delete;
+  EventHandler(const EventHandler&) = delete;
+  EventHandler& operator=(const EventHandler&) = delete;
+  EventHandler(EventHandler&&) = delete;
+  EventHandler& operator=(EventHandler&&) = delete;
+
+  // Unregisters the event handler from the global event system.
+  ~EventHandler() { Clear(); }
+
+  // Unregisters the event handler from the global event system.
+  void Clear() { EventSystem::Instance().RemoveHandler(eventName, id); }
+};
+```
+
+The object registers the event handler with the global event system. The second constructor uses a lambda to store the `this` pointer and member function pointer in a closure. When the resulting `EventHandlerFunction` is called, the member function will be called. Copy constructor and assignment must be deleted because we don't want to copy the `this` pointer across objects; it must be reset every time.
+
+This makes registering for a "WindowMessage" event easy:
+
+```C++
+class KeyboardBuffer {
+private: // data
+  // Automatically registers the OnWindowMessage member function with the "WindowMessage" event.
+  EventHandler onWindowMessage = { "WindowMessage", this, &KeyboardBuffer::OnWindowMessage };
+  
+private: // methods
+  // Handles the "WindowMessage" event.
+  void OnWindowMessage(EventData&) {}
+};
+```
+
+**Code Sample**
+- [EventData](lite/EventData.hpp)
+- [EventSystem](lite/EventSystem.hpp)
+- [EventHandler](lite/EventHandler.hpp)
+
+[Back to the table of contents.](#table-of-contents)
 
 
 
@@ -148,12 +342,12 @@ public: // methods
   
   // Microseconds that have elapsed since start() was called.
   double elapsed_microseconds() const {
-    return std::chrono::duration_cast<std::chrono::duration<double, std::micro>>(elapsed_duration()).count();
+    return duration_cast<duration<double, std::micro>>(elapsed_duration()).count();
   }
   
   // Milliseconds that have elapsed since start() was called.
   double elapsed_milliseconds() const {
-    return std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(elapsed_duration()).count();
+    return duration_cast<duration<double, std::milli>>(elapsed_duration()).count();
   }
   
   // Seconds that have elapsed since start() was called.
