@@ -5,7 +5,7 @@
 - [Introduction](#introduction)
   - [Goals](#goals)
 - [Tutorials](#tutorials)
-  - [A Global Event System](#a-generic-global-event-system)
+  - [Global Event System](#global-event-system)
   - [Implementing high_resolution_clock Correctly](#implementing-high_resolution_clock-correctly)
   - [Integrating FMOD Studio into a Game Project](#integrating-fmod-studio-into-a-game-project)
   - [Rolling Your Own Variant](#rolling-your-own-variant)
@@ -36,7 +36,7 @@ The engine is implemented entirely in headers, which allows for quick iteration 
 # Tutorials
 
 
-## A Generic Global Event System
+## Global Event System
 
 
 What is an event? Sometimes it's useful for systems to interact each other without having direct access to each other. Consider keyboard input which requires messages from the window with WM_KEYDOWN messages. The input class could listen for an event invoked by the window when it receives a new message.
