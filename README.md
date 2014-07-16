@@ -166,7 +166,7 @@ public: // methods
 
 This object will make implementing a [frame timer](lite/FrameTimer.hpp) fairly easy as well.
 
-[Code Sample](lite/chrono.hpp)
+**[Code Sample](lite/chrono.hpp)**
 
 [Back to the table of contents.](#table-of-contents)
 
