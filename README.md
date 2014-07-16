@@ -629,6 +629,7 @@ Here we check the back of the string for a newline or carriage return. If either
     Print(ss.str());
     return *this;
   }
+};
 ```
 
 `SetTextColor` simply calls `SetConsoleTextAttibute` to set the color of console output. The templatized `operator<<` function will use `stringstream` to format the string before sending it into `Print`.
