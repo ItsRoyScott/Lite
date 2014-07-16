@@ -9,11 +9,12 @@
   - [Implementing high_resolution_clock Correctly](#implementing-high_resolution_clock-correctly)
   - [Integrating FMOD Studio into a Game Project](#integrating-fmod-studio-into-a-game-project)
   - [Rolling Your Own Variant](#rolling-your-own-variant)
-- [Miscellaneous](#miscellaneous)
+- [Patterns](#patterns)
   - [Lightweight Singleton](#lightweight-singleton)
-  - [Ideas for Improvement](#ideas-for-improvement)
   - [Reference Member Initialization](#reference-member-initialization)
   - [Singleton](#singleton)
+- [Miscellaneous](#miscellaneous)
+  - [Ideas for Improvement](#ideas-for-improvement)
 
 
 
@@ -646,28 +647,11 @@ There's more we can do with Variant:
 
 
 
-# Miscellaneous
+# Patterns
 
 
 
-## Ideas for Improvement
-
-
-
-- Separate thread for rendering, i.e. "Render Thread".
-- Re-save converted models for faster loading.
-- Better logging mechanism: message box, log-to-file, filename / line, channels, in-game, etc.
-- A performance profiler.
-- A resource manager which handles all resource loading (possibly on a separate thread).
-- Xbox or Wii controller input.
-- Action mappings for input: "Jump" maps to VK_SPACE, etc.
-- Separate thread or threadpool for physics.
-
-[Back to the table of contents.](#table-of-contents)
-
-
-
-# Lightweight Singleton
+## Lightweight Singleton
 
 
 
@@ -742,5 +726,26 @@ struct Singleton {
   }
 };
 ```
+
+[Back to the table of contents.](#table-of-contents)
+
+
+
+# Miscellaneous
+
+
+
+## Ideas for Improvement
+
+
+
+- Separate thread for rendering, i.e. "Render Thread".
+- Re-save converted models for faster loading.
+- Better logging mechanism: message box, log-to-file, filename / line, channels, in-game, etc.
+- A performance profiler.
+- A resource manager which handles all resource loading (possibly on a separate thread).
+- Xbox or Wii controller input.
+- Action mappings for input: "Jump" maps to VK_SPACE, etc.
+- Separate thread or threadpool for physics.
 
 [Back to the table of contents.](#table-of-contents)
