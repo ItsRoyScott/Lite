@@ -148,12 +148,12 @@ public: // methods
   
   // Microseconds that have elapsed since start() was called.
   double elapsed_microseconds() const {
-    return std::chrono::duration_cast<duration<double, std::micro>>(elapsed_duration()).count();
+    return std::chrono::duration_cast<std::chrono::duration<double, std::micro>>(elapsed_duration()).count();
   }
   
   // Milliseconds that have elapsed since start() was called.
   double elapsed_milliseconds() const {
-    return std::chrono::duration_cast<duration<double, std::milli>>(elapsed_duration()).count();
+    return std::chrono::duration_cast<std::chrono::duration<double, std::milli>>(elapsed_duration()).count();
   }
   
   // Seconds that have elapsed since start() was called.
