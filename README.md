@@ -8,6 +8,8 @@
   - [Implementing a Global Event System](#implementing-a-global-event-system)
   - [Implementing high_resolution_clock Correctly](#implementing-high_resolution_clock-correctly)
   - [Integrating FMOD Studio into a Game Project](#integrating-fmod-studio-into-a-game-project)
+  - [Logging to the Windows Console in Color](#logging-to-the-windows-console-in-color)
+    - [Logging Macros](#logging-macros)
   - [Rolling Your Own Variant](#rolling-your-own-variant)
 - [Patterns](#patterns)
   - [Lightweight Singleton](#lightweight-singleton)
@@ -404,7 +406,7 @@ namespace lite {
   } while(0)
 ```
 
-`Warn` is a macro I have to report text in yellow to the console. You can replace this with a simple `assert()`, an exception, or any way you prefer to handle errors.
+[Warn](#logging-macros) is a macro to report text in yellow to the console. You can replace this with a simple `assert()`, an exception, or any way you prefer to handle errors.
 
 Let's start the Audio system:
 
@@ -533,6 +535,147 @@ public: // data
   - [Audio](lite/Audio.hpp)
   - [EventDescription](lite/EventDescription.hpp)
   - [EventInstance](lite/EventInstance.hpp)
+
+[Back to the table of contents.](#table-of-contents)
+
+
+
+## Logging to the Windows Console in Color
+
+If we have a class that buffers console output and prints in color, we can make our logging faster and easier to read.
+
+```C++
+class Console : public Singleton<Console> {
+private: // data
+  // Buffers output until a newline is encountered.
+  string buffer;
+  
+public: // types
+  // Color of the text being written to the console.
+  enum Color {
+    Black = 0,
+    Blue = 0x1,
+    Green = 0x2,
+    Red = 0x4,
+    White = Blue | Green | Red,
+    Intensity = 0x8,
+    Yellow = Red | Green,
+    BrightRed = Red | Intensity,
+    BrightYellow = Yellow | Intensity,
+    BrightWhite = Red | Green | Blue | Intensity
+  };
+  
+private: // methods
+  Console() {
+    // Create the console window.
+    AllocConsole();
+    MoveWindow(GetConsoleWindow(), 0, 0, 640, 850, TRUE);
+
+    // Redirect stdout and stderr to the new console.
+    FILE* file;
+    freopen_s(&file, "CONOUT$", "w", stdout);
+    freopen_s(&file, "CONOUT$", "w", stderr);
+  }
+  
+  ~Console() {
+    // Destroy the console window.
+    FreeConsole();
+  }
+  
+  // Let the singleton construct this object.
+  friend Singleton<Console>;
+```
+
+Here is [Singleton<T>](#singleton). The `Color` enum matches the colors provided by the Win32 API. The constructor creates the console, and moves it to the top left of the screen (optional). `freopen_s` (the safe version of `freopen`) lets us redirect `cout` and `cerr` to our newly created console. The destructor then destroys the console.
+
+```C++
+public: // methods
+  // Prints a string to the console.
+  void Print(const string& str) {
+    buffer += str;
+
+    // Flush if the last write ended with a newline or carriage-return.
+    if (buffer.size() && (buffer.back() == '\n' || buffer.back() == '\r')) {
+      buffer.pop_back(); // puts appends newline
+      puts(buffer.c_str());
+      buffer.clear();
+    }
+  }
+```
+
+Here we check the back of the string for a newline or carriage return. If either is found, we flush the buffer to the console.
+
+```C++
+  // Set the text color for writing to the console.
+  void SetTextColor(Color c = BrightWhite) {
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), WORD(c));
+  }
+
+  // Change the text color.
+  Console& operator<<(Color c) {
+    SetTextColor(c);
+    return *this;
+  }
+
+  // Writes a string to the console.
+  Console& operator<<(const string& str) {
+    Print(str);
+    return *this;
+  }
+
+  // Writes any object to the console that supports stringstream insertion.
+  template <class T>
+  Console& operator<<(const T& object) {
+    stringstream ss;
+    ss << object;
+    Print(ss.str());
+    return *this;
+  }
+```
+
+`SetTextColor` simply calls `SetConsoleTextAttibute` to set the color of console output. The templatized `operator<<` function will use `stringstream` to format the string before sending it into `Print`.
+
+
+
+### Logging Macros
+
+
+
+```C++
+// Forms a scope that won't mess with calling code.
+#define SCOPE(...) do { __VA_ARGS__; } while (0);
+
+// Macro-ized if condition.
+#define DO_IF(condition, ...) SCOPE( if (condition) { __VA_ARGS__; } )
+
+// Enable macros/code only in debug mode.
+#if defined(_DEBUG)
+  #define DEBUG_ONLY(x) SCOPE(x)
+#else
+  #define DEBUG_ONLY(x) SCOPE()
+#endif
+
+// All log functions allow ostream-like insertion for formatting the string.
+
+// Log fatal errors in bright red font.
+#define Fatal(...)               DEBUG_ONLY(LogPrint(BrightRed, __VA_ARGS__); BREAKPOINT;)
+#define FatalIf(condition, ...)  DEBUG_ONLY(DO_IF(condition, Fatal(__VA_ARGS__)))
+
+// Print to the log in a specified color (see Console).
+#define LogPrint(color, ...) DEBUG_ONLY(lite::Console::Instance() << lite::Console::color << __VA_ARGS__ << "\n")
+
+// Log notes in white font.
+#define Note(...)              DEBUG_ONLY(LogPrint(White, __VA_ARGS__))
+#define NoteIf(condition, ...) DEBUG_ONLY(DO_IF(condition, Note(__VA_ARGS__)))
+
+// Log warnings in yellow font.
+#define Warn(...)              DEBUG_ONLY(static int _count = 0; if (++_count <= 3) { LogPrint(BrightYellow, __VA_ARGS__); } )
+#define WarnIf(condition, ...) DEBUG_ONLY(DO_IF(condition, Warn(__VA_ARGS__)))
+```
+
+Each of these macros print in a different color to indicate the severity of each message. The `Warn` macros can only print up to 3 times. 
+
+**[Code Sample](lite/Console.hpp)**
 
 [Back to the table of contents.](#table-of-contents)
 
