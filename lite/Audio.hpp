@@ -44,6 +44,8 @@ namespace lite // types
         FMOD_INIT_3D_RIGHTHANDED,  // regular flags
         nullptr));                 // extra driver data
 
+      vector<fmod::Bank*> banks;
+
       // For each file in the Sounds directory with a *.bank extension:
       for (string& file : PathInfo(config::Sounds).FilesWithExtension("bank"))
       {
@@ -51,9 +53,15 @@ namespace lite // types
         fmod::Bank* bank = nullptr;
         FmodCall(system->loadBankFile(file.c_str(), FMOD_STUDIO_LOAD_BANK_NORMAL, &bank));
 
+        banks.push_back(bank);
+      }
+
+      for (fmod::Bank* bank : banks)
+      {
         // Get the number of events in the bank.
         int eventCount = 0;
         FmodCall(bank->getEventCount(&eventCount));
+        if (eventCount == 0) continue;
 
         // Get the list of event descriptions from the bank.
         auto eventArray = vector<fmod::EventDescription*>(static_cast<size_t>(eventCount), nullptr);

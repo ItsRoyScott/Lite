@@ -9,6 +9,7 @@ namespace lite
     static const string Materials       = "Materials/";
     static const string Meshes          = "Meshes/";
     static const string Objects         = "Objects/";
+    static const string Prefabs         = "Prefabs/";
     static const string Scripts         = "Scripts/";
     static const string Shaders         = "Shaders/";
     static const string Sounds          = "Sounds/";

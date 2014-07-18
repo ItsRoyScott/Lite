@@ -1,0 +1,23 @@
+[
+  type = GameObject
+  name = Bee
+  
+  [ 
+    type = Transform 
+    LocalScale = .1 .1 .1
+  ]
+  
+  [ 
+    type = Model
+    Material = Bee
+    Mesh = bee.obj
+  ]
+  
+  [ type = RigidBody 
+    Mass = 0.1 ]
+  
+  [ 
+    type = SphereCollision
+    Radius = 4
+  ]
+]

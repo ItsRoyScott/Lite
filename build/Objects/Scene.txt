@@ -2,37 +2,32 @@
   type = GameObject
   name = Scene
   
-  [
-    type = GameObject
+  [ type = GameObject
     name = Floor
-    
-    [
-      type = Transform
-      
-      LocalPosition = 0 -2 0
-      LocalScale = 1000 0.01 1000
-    ]
-    
-    [
-      type = Model
-      
-      Color = 0 0.25 0 1
-      Material = SolidColor
-      Mesh = cube.obj
-    ]
-    
-    [
-      type = RigidBody
-      
-      Mass = 0
-    ]
-    
-    [
-      type = PlaneCollision
-      
+    [ type = Transform
+      LocalPosition = 0 -2.0 0
+      LocalScale = 1 1 1 ]
+    [ type = Model
+      Material = Terrain
+      Mesh = terrain.obj ]
+    [ type = RigidBody
+      Mass = 0 ]
+    [ type = PlaneCollision
       Direction = 0 1 0
-      Offset = -2
+      Offset = -2 ]
+      
+    [ type = GameObject
+      name = Raptor1
+      [ type = Transform
+        LocalPosition = 0 0 0
+        LocalScale = .015 .015 .015 ]
+      [ type = Model
+        Material = Raptor
+        Mesh = raptor.obj ]
+      [ type = RigidBody 
+        Mass = 100 ]
+      [ type = SphereCollision
+        Radius = 30 ]
     ]
-    
   ]
 ]

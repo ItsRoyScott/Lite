@@ -291,5 +291,8 @@
     <ClInclude Include="WICTextureLoader.h">
       <Filter>Graphics\Direct3D</Filter>
     </ClInclude>
+    <ClInclude Include="PrefabManager.hpp">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

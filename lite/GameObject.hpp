@@ -7,6 +7,8 @@
 
 namespace lite
 {
+  const GameObject* GetPrefab(const string& name);
+
   class GameObject
   {
   private: // data
@@ -181,6 +183,11 @@ namespace lite
 
       // Read 'name = GOXXX'.
       is >> s1 >> s2 >> s3;
+      if (s1 == "prefab" && s2 == "=")
+      {
+        ReplaceWithPrefab(s3);
+        is >> s1 >> s2 >> s3;
+      }
       if (s1 != "name" || s2 != "=") return is;
       name = s3;
 
@@ -406,10 +413,10 @@ namespace lite
     }
 
     // Loads the game object from a file.
-    bool LoadFromFile(const string& filename)
+    bool LoadFromFile(const string& filename, const string& folder = config::Objects)
     {
       // Open the file.
-      auto file = ifstream(config::Objects + filename);
+      auto file = ifstream(folder + filename);
       if (!file.is_open()) return false;
 
       // Deserialize using the ifstream as the input stream.
@@ -462,11 +469,23 @@ namespace lite
       }
     }
 
+    // Replaces the object with data from a prefab object.
+    bool ReplaceWithPrefab(const string& name)
+    {
+      const GameObject* prefab = GetPrefab(name);
+      if (prefab)
+      {
+        *this = *prefab;
+        return true;
+      }
+      return false;
+    }
+
     // Serializes this object, all components, and child objects to file.
-    bool SaveToFile(const string& filename)
+    bool SaveToFile(const string& filename, const string& folder = config::Objects)
     {
       // Open the file.
-      auto file = ofstream(config::Objects + filename);
+      auto file = ofstream(folder + filename);
       if (!file.is_open()) return false;
 
       // Serialize using the ofstream as an output stream.

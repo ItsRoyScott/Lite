@@ -4,6 +4,8 @@
 
 namespace lite
 {
+  // TODO: Determine if this is actually needed:
+
   // An allocator object which allocates the objects on an aligned boundary.
   template <class T, size_t Alignment = 16>
   struct aligned_allocator 

@@ -16,6 +16,7 @@
 #include "Transform.hpp"
 
 #include "LuaCppInterfaceInclude.hpp"
+#include "PrefabManager.hpp"
 
 int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -37,21 +38,7 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   scene.LoadFromFile("Scene.txt");
 
-  auto spongebobPrefab = MakePrefab();
-  {
-    spongebobPrefab.LoadFromFile("Spongebob.txt");
-    //spongebobPrefab[Transform_];
-    //
-    //Model& model = spongebobPrefab[Model_];
-    //model.Material("Default");
-    //model.Mesh("spongebob.obj");
-    //
-    //RigidBody& body = spongebobPrefab[RigidBody_];
-    //body.Mass(1);
-    //
-    //SphereCollision& collision = spongebobPrefab[SphereCollision_];
-    //collision.Radius(0.5f);
-  }
+  auto& spongebobPrefab = *GetPrefab("Bee");
 
   auto frameTimer = FrameTimer();
 
@@ -74,7 +61,7 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
       GameObject& child = scene.AddChild(spongebobPrefab);
       child[Transform_].LocalPosition = graphics.Camera.Position();
-      child[RigidBody_].AddForce(Vector(graphics.Camera.Look()) * 1000);
+      child[RigidBody_].AddForce(Vector(graphics.Camera.Look()) * 400);
     }
 
     graphics.Camera.RotateY((float) Input::GetMouseDeltaX() / 100);
