@@ -148,6 +148,13 @@ namespace lite
     // Adds a new component by name.
     IComponent& AddComponent(const string& name, bool initialize)
     {
+      // Try finding the component first.
+      IComponent* componentPointer = GetComponent(name);
+      if (componentPointer)
+      {
+        return *componentPointer;
+      }
+
       // Call on the component manager to create the component.
       IComponent& component = StoreComponent(ComponentManager::Instance().Create(name));
 
@@ -252,8 +259,11 @@ namespace lite
         }
       }
       
-      // Read the object group closing bracket.
-      is >> s1;
+      if (s1 != "]")
+      {
+        // Read the object group closing bracket.
+        is >> s1;
+      }
 
       return is;
     }
@@ -435,15 +445,15 @@ namespace lite
       }
 
       // Call on all components.
-      for (auto& component : components)
+      for (size_t i = 0; i < components.size(); ++i)
       {
-        component->PullFromSystems();
+        components[i]->PullFromSystems();
       }
 
       // Call on all child objects.
-      for (auto& child : children)
+      for (size_t i = 0; i < children.size(); ++i)
       {
-        child->PullFromSystems();
+        children[i]->PullFromSystems();
       }
     }
 
@@ -457,15 +467,15 @@ namespace lite
       }
 
       // Call on all components.
-      for (auto& component : components)
+      for (size_t i = 0; i < components.size(); ++i)
       {
-        component->PushToSystems();
+        components[i]->PushToSystems();
       }
 
       // Call on all child objects.
-      for (auto& child : children)
+      for (size_t i = 0; i < children.size(); ++i)
       {
-        child->PushToSystems();
+        children[i]->PushToSystems();
       }
     }
 
@@ -553,15 +563,15 @@ namespace lite
       size_t objectsToDestroy = toDestroy.size();
 
       // Update children objects.
-      for (auto& child : children)
+      for (size_t i = 0; i < children.size(); ++i)
       {
-        child->Update();
+        children[i]->Update();
       }
 
       // Update components.
-      for (auto& component : components)
+      for (size_t i = 0; i < components.size(); ++i)
       {
-        component->Update();
+        components[i]->Update();
       }
 
       // Destroy all objects queued for destruction last frame.

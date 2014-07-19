@@ -188,8 +188,8 @@ namespace lite
       };
       XMFLOAT4 lightColors [] =
       {
-        { .5f, .5f, .5f, 1 },
-        { .5f, 0, 0, 1 }
+        { 1, 1, 1, 1 },
+        { 1, 1, 0, 1 }
       };
 
       SceneConstants sceneConstants;

@@ -20,8 +20,11 @@ namespace lite
 
     // Returns a resource by name. Creates the resource
     //  if it doesn't yet exist.
-    T& operator[](const string& name)
+    T& operator[](string name)
     {
+      // Convert the string to lowercase.
+      transform(name.begin(), name.end(), name.begin(), tolower);
+
       // Create the object if it doesn't exist.
       auto it = objects.find(name);
       if (it == objects.end())
@@ -50,13 +53,36 @@ namespace lite
       // Iterate over files in the materials folder.
       for (const string& file : pathInfo.Files())
       {
-        // Add the material to the map if it loads.
-        MaterialDescription material(file);
-        if (material.IsLoaded())
-        {
-          objects.emplace(material.Name(), move(material));
-        }
+        // Emplace the material in the object map.
+        auto fileInfo = PathInfo(file);
+        string lowercaseName = fileInfo.BaseFilename();
+        transform(lowercaseName.begin(), lowercaseName.end(), lowercaseName.begin(), tolower);
+        objects.emplace(lowercaseName, lowercaseName);
       }
+
+      objects.emplace("", string("default"));
+    }
+
+    // Override for Instance.
+    static MaterialManager& Instance()
+    {
+      static MaterialManager instance;
+      return instance;
+    }
+
+    const MaterialDescription& operator[](string name) const
+    {
+      // Convert the string to lowercase.
+      transform(name.begin(), name.end(), name.begin(), tolower);
+
+      // Find the material description.
+      auto it = objects.find(name);
+      if (it == objects.end())
+      {
+        // Return the default.
+        return (*this)[""];
+      }
+      return it->second;
     }
   };
 } // namespace lite

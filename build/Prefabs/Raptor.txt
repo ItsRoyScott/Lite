@@ -1,24 +1,24 @@
 [
   type = GameObject
-  name = Bee
+  name = Raptor
   
   [ 
     type = Transform 
-    LocalScale = .1 .1 .1
+    LocalScale = .015 .015 .015
   ]
   
   [ 
     type = Model
-    Material = Default
-    Mesh = bee.obj
-    Texture = bee.tif
+    Material = Unlit
+    Mesh = raptor.obj
+    Texture = raptor.png
   ]
   
   [ type = RigidBody 
-    Mass = 0.1 ]
+    Mass = 50 ]
   
   [ 
     type = SphereCollision
-    Radius = 5
+    Radius = 50
   ]
 ]

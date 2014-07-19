@@ -22,6 +22,9 @@ namespace lite
     // Name of the mesh.
     string Mesh;
 
+    // Texture name overriding the material's default texture.
+    string Texture;
+
     // Topology to use for rendering the vertex buffer.
     D3D_PRIMITIVE_TOPOLOGY Topology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
@@ -35,14 +38,14 @@ namespace lite
       if (!IsVisible) return;
 
       // Get the material and mesh data.
-      MaterialDescription& material = MaterialManager::Instance()[Material];
+      const MaterialDescription& material = MaterialManager::Instance()[Material];
       MeshData& mesh = MeshManager::Instance()[Mesh];
       if (!material.IsLoaded() || !mesh.IsLoaded()) return;
 
       // Gather the resources specified by the material description.
       ShaderData& vs = ShaderManager::Instance().Get(VertexShader, material.VertexShader());
       ShaderData& ps = ShaderManager::Instance().Get(PixelShader, material.PixelShader());
-      TextureData& texture = TextureManager::Instance()[material.Texture()];
+      TextureData& texture = TextureManager::Instance()[Texture.size() ? Texture : material.Texture()];
       if (!vs.IsLoaded() || !ps.IsLoaded() || !texture.IsLoaded()) return;
 
       // Initialize per-object constants to be sent into the shaders.

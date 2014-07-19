@@ -1,3 +1,0 @@
-vs Default.vs
-ps Default.ps
-tx Duck.tif

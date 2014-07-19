@@ -28,6 +28,10 @@ namespace lite
     const string& Mesh() const { return model->Mesh; }
     void Mesh(string mesh) { model->Mesh = move(mesh); }
 
+    // Texture name overriding the material's default texture.
+    const string& Texture() const { return model->Texture; }
+    void Texture(string texture) { model->Texture = move(texture); }
+
   public: // methods
 
     Model()
@@ -42,6 +46,7 @@ namespace lite
       Color(b.Color());
       Material(b.Material());
       Mesh(b.Mesh());
+      Texture(b.Texture());
     }
 
   private: // methods
@@ -67,5 +72,6 @@ namespace lite
     "Model", Constructor<T>,
     "Color", Getter(&T::Color), Setter(&T::Color),
     "Material", Getter(&T::Material), Setter(&T::Material),
-    "Mesh", Getter(&T::Mesh), Setter(&T::Mesh));
+    "Mesh", Getter(&T::Mesh), Setter(&T::Mesh),
+    "Texture", Getter(&T::Texture), Setter(&T::Texture));
 } // namespace lite

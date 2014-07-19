@@ -24,7 +24,7 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
   // Initialize our systems.
   auto audio    = Audio();
-  auto physics  = Physics();
+  auto physics = Physics(true, {0, -6, 0});
   auto window   = Window("Lite Game Engine", 960, 540);
   auto graphics = Graphics(window);
 
@@ -61,7 +61,7 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
       GameObject& child = scene.AddChild(spongebobPrefab);
       child[Transform_].LocalPosition = graphics.Camera.Position();
-      child[RigidBody_].AddForce(Vector(graphics.Camera.Look()) * 400);
+      child[RigidBody_].AddForce(Vector(graphics.Camera.Look()) * 200);
     }
 
     graphics.Camera.RotateY((float) Input::GetMouseDeltaX() / 100);

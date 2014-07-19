@@ -196,8 +196,8 @@ namespace lite
         cursorPos.y >= windowRect.top &&
         cursorPos.y <= windowRect.bottom)
       {
-        windowRect.left += 8;
-        windowRect.right -= 8;
+        windowRect.left += 20;
+        windowRect.right -= 20;
         windowRect.top += 8;
         windowRect.bottom -= 8;
 
@@ -250,7 +250,7 @@ namespace lite
       }
 
       case WM_SYSKEYDOWN: // handle ALT press
-        if (data.Get<WPARAM>("wParam") == VK_F4)
+        if (data.Get<WPARAM>("wParam") == VK_F4) // ALT + F4
         {
           DestroyWindow(Handle);
         }

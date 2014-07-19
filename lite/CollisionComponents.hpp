@@ -135,6 +135,11 @@ namespace lite
       // Update the primitive's radius using the maximum of transform's scale.
       Transform& tfm = OwnerReference()[Transform_];
       primitive->Radius = max(tfm.LocalScale.x, max(tfm.LocalScale.y, tfm.LocalScale.z)) * radius;
+
+      auto pos = tfm.GetWorldMatrix().r[3];
+      float3 posf;
+      XMStoreFloat3(&posf, pos);
+      DrawSphere(posf, { primitive->Radius*2, primitive->Radius*2, primitive->Radius*2 });
     }
   };
 

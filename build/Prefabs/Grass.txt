@@ -1,0 +1,17 @@
+[
+  type = GameObject
+  name = Grass
+  
+  [ 
+    type = Transform 
+    LocalScale = 1 0.5 1
+    LocalPosition = 0 -1 0
+  ]
+  
+  [ 
+    type = Model
+    Material = Default
+    Mesh = grass.obj
+    Texture = grass.png
+  ]
+]
