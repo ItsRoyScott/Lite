@@ -13,7 +13,7 @@ namespace lite
   public: // types
 
     template <class T>
-    class ObjectBuilder : public LightSingleton<ObjectBuilder<T>>
+    class TypeBuilder : public LightSingleton<TypeBuilder<T>>
     {
     private: // data
 
@@ -25,7 +25,7 @@ namespace lite
 
     public: // methods
 
-      ObjectBuilder(ReflectionPlugin&)
+      TypeBuilder(ReflectionPlugin&)
       {}
 
       // Called when an object type bind is starting:
@@ -98,11 +98,25 @@ namespace lite
         class_->addProperty(name.c_str(), getter);
       }
 
+      // Called when a new static field is bound to the type.
+      template <class ValueT>
+      void NewStaticField(const string& name, ValueT* ptr)
+      {
+        class_->addStaticData(name.c_str(), ptr);
+      }
+
       // Called when a new static function is bound to the type.
       template <class RetT, class... Args>
       void NewStaticFunction(const string& name, RetT(*fn)(Args...))
       {
         class_->addStaticFunction(name.c_str(), fn);
+      }
+
+      // Called when a new static read-only property is bound to the type.
+      template <class RetT>
+      void NewStaticReadOnlyProperty(const string& name, RetT(*getter)())
+      {
+        class_->addStaticProperty(name.c_str(), getter);
       }
     };
   };

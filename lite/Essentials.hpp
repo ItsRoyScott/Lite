@@ -22,20 +22,29 @@ namespace lite // types
   // A lightweight singleton which uses the most recently
   //  created instance as the singleton.
   template <class T>
-  struct LightSingleton
+  class LightSingleton
   {
+  public: // methods
+
     LightSingleton()
     {
-      CurrentInstance() = static_cast<T*>(this);
+      InstancePointer() = static_cast<T*>(this);
     }
 
     ~LightSingleton()
     {
-      CurrentInstance() = nullptr;
+      InstancePointer() = nullptr;
     }
 
     // Returns a pointer to the most recently created instance.
-    static T*& CurrentInstance()
+    static T* CurrentInstance()
+    {
+      return InstancePointer();
+    }
+
+  private: // methods
+
+    static T*& InstancePointer()
     {
       static T* instance = nullptr;
       return instance;

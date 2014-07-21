@@ -123,8 +123,15 @@ namespace lite
     }
   };
 
-  reflect(Transform,
-    "LocalPosition", &T::LocalPosition,
-    "LocalRotation", &T::LocalRotation,
-    "LocalScale", &T::LocalScale);
+  template<>
+  struct Binding<Transform> : BindingBase<Transform>
+  {
+    Binding()
+    {
+      Bind(
+        "LocalPosition", &T::LocalPosition,
+        "LocalRotation", &T::LocalRotation,
+        "LocalScale", &T::LocalScale);
+    }
+  };
 } // namespace lite

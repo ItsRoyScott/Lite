@@ -73,11 +73,18 @@ namespace lite
     }
   };
 
-  reflect(Model,
-    "Model", Constructor<T>,
-    "BackfaceCulling", Getter(&T::BackfaceCulling), Setter(&T::BackfaceCulling),
-    "Color", Getter(&T::Color), Setter(&T::Color),
-    "Material", Getter(&T::Material), Setter(&T::Material),
-    "Mesh", Getter(&T::Mesh), Setter(&T::Mesh),
-    "Texture", Getter(&T::Texture), Setter(&T::Texture));
+  template<>
+  struct Binding<Model> : BindingBase<Model>
+  {
+    Binding()
+    {
+      Bind(
+        Constructor<>,
+        "BackfaceCulling", Const(&T::BackfaceCulling), NonConst(&T::BackfaceCulling),
+        "Color", Const(&T::Color), NonConst(&T::Color),
+        "Material", Const(&T::Material), NonConst(&T::Material),
+        "Mesh", Const(&T::Mesh), NonConst(&T::Mesh),
+        "Texture", Const(&T::Texture), NonConst(&T::Texture));
+    }
+  };
 } // namespace lite

@@ -113,9 +113,16 @@ namespace lite
   };
 
   // Bind PlaneCollision to reflection.
-  reflect(PlaneCollision,
-    "Direction", Getter(&T::Direction), Setter(&T::Direction),
-    "Offset", Getter(&T::Offset), Setter(&T::Offset));
+  template<>
+  struct Binding<PlaneCollision> : BindingBase<PlaneCollision>
+  {
+    Binding()
+    {
+      Bind(
+        "Direction", Const(&T::Direction), NonConst(&T::Direction),
+        "Offset", Const(&T::Offset), NonConst(&T::Offset));
+    }
+  };
 
   // Supports sphere collisions.
   class SphereCollision : public CollisionComponent < SphereCollision, CollisionSphere >
@@ -153,6 +160,13 @@ namespace lite
   };
 
   // Bind SphereCollision to reflection.
-  reflect(SphereCollision,
-    "Radius", Getter(&T::Radius), Setter(&T::Radius));
+  template<>
+  struct Binding<SphereCollision> : BindingBase<SphereCollision>
+  {
+    Binding()
+    {
+      Bind(
+        "Radius", Const(&T::Radius), NonConst(&T::Radius));
+    }
+  };
 } // namespace lite

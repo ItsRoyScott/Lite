@@ -14,3 +14,6 @@
 
 #include "lua52/lua.hpp"
 #include "LuaBridge/LuaBridge.h"
+#include "LuaBridge/LuaBridgeExtras.h"
+#include "LuaBridge/RefCountedObject.h"
+#include "LuaBridge/RefCountedPtr.h"

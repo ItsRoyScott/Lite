@@ -2728,7 +2728,7 @@ namespace Detail
           UserdataPtr (const_cast <void*> (p));
         lua_rawgetp (L, LUA_REGISTRYINDEX, key);
         // If this goes off it means you forgot to register the class!
-        assert (lua_istable (L, -1));
+        assert (lua_istable (L, -1) && "Forgot to register class to Lua");
         lua_setmetatable (L, -2);
       }
       else

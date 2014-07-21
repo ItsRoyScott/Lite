@@ -47,8 +47,8 @@ namespace lite
       static_assert(is_object<T>::value, "Only object types can be bound to Reflection.");
 
       // Bind the type.
-      TypeInfo& valueType = RegisterType<T>();
-      Bind < T > { valueType };
+      RegisterType<T>();
+      Binding<T>{};
     }
 
     friend ostream& operator<<(ostream& os, const Reflection& r)
@@ -78,8 +78,8 @@ namespace lite
       type.name = typeid(T).name();
 
       // Add the default and copy constructor.
-      type.methods.emplace_back(type.name, Constructor<T>);
-      type.methods.emplace_back(type.name, Constructor<T, const T&>);
+      type.methods.emplace_back(type.name, ConstructorFunction<T>);
+      type.methods.emplace_back(type.name, ConstructorFunction<T, const T&>);
 
       return type;
     }
@@ -95,7 +95,7 @@ namespace lite
 
   // Base class for all binding structs.
   template <class Type>
-  class BindBase
+  class BindingBase
   {
   public: // types
 
@@ -118,86 +118,70 @@ namespace lite
 
   public: // methods
 
-    // Calls the ReflectionPlugin's OnTypeBegin.
-    BindBase(const string& name)
-    {
-      NotifyPluginOnBeginType<T>(name);
-    }
-
     // Force a reference to the global object.
-    ~BindBase()
+    ~BindingBase()
     {
       &autoBind;
-      NotifyPluginOnEndType<T>(TypeOf<T>().Name);
     }
 
-  private: // methods
-
-    // Notifies the plugin that we are starting to bind a class type.
-    template <class T>
-    typename enable_if<is_class<T>::value>::type
-      NotifyPluginOnBeginType(const string& name)
+    // Binds all members to the type.
+    template <class... Args>
+    static void Bind(Args&&... args)
     {
-      GetReflectionPluginObjectBuilder<T>().BeginClassType(name);
+      detail::TypeOf<T>().Bind<T>(forward<Args>(args)...);
     }
 
-    // Notifies the plugin that we are starting to bind a value type.
-    template <class T>
-    typename enable_if<!is_class<T>::value>::type
-      NotifyPluginOnBeginType(const string& name)
+    template <class... Args>
+    static Variant Constructor(Args... args)
     {
-      GetReflectionPluginObjectBuilder<T>().BeginValueType(name);
-    }
-
-    // Notifies the plugin that we are finishing a class type.
-    template <class T>
-    typename enable_if<is_class<T>::value>::type
-      NotifyPluginOnEndType(const string& name)
-    {
-      GetReflectionPluginObjectBuilder<T>().EndClassType(name);
-    }
-
-    // Notifies the plugin that we are finishing a value type.
-    template <class T>
-    typename enable_if<!is_class<T>::value>::type
-      NotifyPluginOnEndType(const string& name)
-    {
-      GetReflectionPluginObjectBuilder<T>().EndValueType(name);
+      return lite::ConstructorFunction<T, Args...>(forward<Args>(args)...);
     }
   };
-  template <class Type> typename BindBase<Type>::AutoBind BindBase<Type>::autoBind;
+  template <class Type> typename BindingBase<Type>::AutoBind BindingBase<Type>::autoBind;
 
-  // Generic binding. All other bindings
-  //  specialize this struct.
+  // All bindings to reflection specialize this struct to add in describe all members
+  //  of the object.
   template <class Type>
-  struct Bind :
-    BindBase < Type >
+  struct Binding :
+    BindingBase < Type >
   {
-    Bind(TypeInfo& type) : BindBase(typeid(T).name())
+    Binding(TypeInfo& type) : BindingBase(typeid(T).name())
     {
       type.Bind<T>(typeid(T).name());
     }
   };
-} // namespace lite
 
-// Macro to make the binding process easier.
-#define reflect(class_, ...) \
-  template <> \
-  struct Bind <class_> : BindBase<class_> \
-  { \
-    Bind(TypeInfo& type) : BindBase(#class_) \
-    { \
-      type.Bind<T> \
-      ( \
-        #class_, \
-        __VA_ARGS__  \
-      ); \
-    } \
-  }
+  // Generic binding for all unique_ptr types.
+  template <class T>
+  struct unique_ptrBinding : BindingBase<unique_ptr<T>>
+  {
+    unique_ptrBinding()
+    {
+      Bind(
+        "get", &T::get);
+    }
+  };
 
-namespace lite
-{
-  reflect(string, "string", Constructor<string>);
+  // Generic binding for all vector types.
+  template <class T>
+  struct vectorBinding : BindingBase<vector<T>>
+  {
+    vectorBinding()
+    {
+      Bind(
+        "at", Const(&T::at));
+    }
+  };
+
+  // Bind std::string.
+  template<> struct Binding<string> : BindingBase<string>
+  {
+    Binding()
+    {
+      Bind(
+        Constructor<>);
+    }
+  };
 } // namespace lite
 
 namespace lite

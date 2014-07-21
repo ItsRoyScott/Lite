@@ -245,4 +245,14 @@ namespace lite
       d3d.SwapChain->Present(0, 0);
     }
   };
+
+  template<> struct Binding<Graphics> : BindingBase<Graphics>
+  {
+    Binding()
+    {
+      Bind(
+        "Camera", &Graphics::Camera,
+        "CurrentInstance", &Graphics::CurrentInstance, ReadOnly);
+    }
+  };
 } // namespace lite

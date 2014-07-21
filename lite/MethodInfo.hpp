@@ -86,8 +86,25 @@ namespace lite
   };
 
   template <class T, class... Args>
-  Variant Constructor(Args... args)
+  Variant ConstructorFunction(Args... args)
   {
     return T(forward<Args>(args)...);
   }
+
+  template <class... Args>
+  struct Overloaded
+  {
+    template <class RetT, class ClassT, class FuncPtr = RetT(ClassT::*)(Args...)>
+    static FuncPtr Get(RetT(ClassT::*fn)(Args...))
+    {
+      return fn;
+    }
+
+    template <class RetT, class FuncPtr = RetT(*)(Args...)>
+    static FuncPtr Get(RetT(*fn)(Args...))
+    {
+      return fn;
+    }
+  };
+
 } // namespace lite

@@ -121,8 +121,14 @@ namespace lite
       Instances().erase(identifier);
     }
 
+    // Adds a new blank child object.
+    GameObject& AddChild()
+    {
+      return AddChild(GameObject());
+    }
+
     // Adds a new child object by prefab.
-    GameObject& AddChild(const GameObject& prefab = GameObject(), bool initialize = true)
+    GameObject& AddChild(const GameObject& prefab, bool initialize = true)
     {
       GameObject& object = StoreChild(make_unique<GameObject>(prefab));
       if (initialize)
@@ -652,12 +658,33 @@ namespace lite
     }
   };
 
-  reflect(GameObject,
-    "GameObject", Constructor<GameObject>,
-    "Active", Getter(&GameObject::Active), Setter(&GameObject::Active),
-    "Children", Getter(&GameObject::Children), ReadOnly,
-    "DestroyFlag", Getter(&GameObject::DestroyFlag), ReadOnly,
-    "Name", Getter(&GameObject::Name), Setter(&GameObject::Name));
+  // Bind GameObject to reflection.
+  template <>
+  struct Binding<GameObject> : BindingBase<GameObject>
+  {
+    Binding()
+    {
+      Bind(
+        Constructor<>,
+        // properties
+        "Active", Const(&T::Active), NonConst(&T::Active),
+        "Children", Const(&T::Children), ReadOnly,
+        "DestroyFlag", Const(&T::DestroyFlag), ReadOnly,
+        "Name", Const(&T::Name), NonConst(&T::Name),
+        // methods
+        "AddChild", Overloaded<>::Get(&T::AddChild));
+    }
+  };
+
+  // Bind the array of child game objects to reflection.
+  template<>
+  struct Binding<vector<unique_ptr<GameObject>>> : vectorBinding<unique_ptr<GameObject>>
+  {};
+
+  // Bind the unique_ptr<GameObject> for child objects.
+  template<>
+  struct Binding<unique_ptr<GameObject>> : unique_ptrBinding<GameObject>
+  {};
 
   class GOId
   {

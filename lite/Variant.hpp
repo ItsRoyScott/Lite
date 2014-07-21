@@ -7,6 +7,12 @@ namespace lite
   // Stores an object of any type.
   class Variant
   {
+  public: // types
+
+    typedef void*(*CloneFunction)(const void*);
+    typedef ostream&(*PrintFunction)(ostream&, const void*);
+    typedef istream&(*ReadFunction)(istream&, void*);
+
   private: // types
 
     // Invalid / unassigned type.
@@ -18,16 +24,16 @@ namespace lite
   private: // data
 
     // Allocates a new copy of the object.
-    void* (*clone)(const void* other) = nullptr;
+    CloneFunction clone = nullptr;
 
     // Stores our data as a void pointer.
     Pointer data = Pointer(nullptr, nullptr);
 
     // Prints the object using the given ostream.
-    ostream& (*print)(ostream& os, const void* p) = nullptr;
+    PrintFunction print = nullptr;
 
     // Reads the object using the given istream.
-    istream& (*read)(istream& is, void* p) = nullptr;
+    ReadFunction read = nullptr;
 
     // Used to compare the actual type of the variant (to be type-safe at runtime).
     type_index type = typeid(InvalidType);
@@ -149,7 +155,7 @@ namespace lite
     //  The second template parameter is used to check if the type supports insertion.
     //  If the decltype fails, the other version of this function will be called.
     template <class T, class = decltype(new T(declval<const T&>()))>
-    static auto GenerateCloneFunction() -> void*(*)(const void*)
+    static CloneFunction GenerateCloneFunction()
     {
       return [](const void* other) -> void*
       {
@@ -162,7 +168,7 @@ namespace lite
     //  function have the lowest priority for candidate functions. (The compiler
     //  will prefer any function but this one.)
     template <class T>
-    static auto GenerateCloneFunction(...) -> void*(*)(const void*)
+    static CloneFunction GenerateCloneFunction(...)
     {
       return [](const void*) -> void* { return nullptr; };
     }
@@ -171,7 +177,7 @@ namespace lite
     //  The second template parameter is used to check if the type supports insertion.
     //  If the decltype fails, the other version of this function will be called.
     template <class T, class = decltype(declval<ostream&>() << declval<const T&>())>
-    static auto GeneratePrintFunction() -> ostream&(*)(ostream&, const void*)
+    static PrintFunction GeneratePrintFunction()
     {
       return [](ostream& os, const void* this_) -> ostream& 
       { 
@@ -184,7 +190,7 @@ namespace lite
     //  function have the lowest priority for candidate functions. (The compiler
     //  will prefer any function but this one.)
     template <class T>
-    static auto GeneratePrintFunction(...) -> ostream&(*)(ostream&, const void*)
+    static PrintFunction GeneratePrintFunction(...)
     {
       return [](ostream& os, const void*) -> ostream& { return os; };
     }
@@ -193,7 +199,7 @@ namespace lite
     //  The second template parameter is used to check if the type supports extraction.
     //  If the decltype fails, the other version of this function will be called.
     template <class T, class = decltype(declval<istream&>() >> declval<T&>())>
-    static auto GenerateReadFunction() -> istream&(*)(istream&, void*)
+    static ReadFunction GenerateReadFunction()
     {
       return [](istream& os, void* this_) -> istream&
       {
@@ -206,7 +212,7 @@ namespace lite
     //  function have the lowest priority for candidate functions. (The compiler
     //  will prefer any function but this one.)
     template <class T>
-    static auto GenerateReadFunction(...) -> istream&(*)(istream&, void*)
+    static ReadFunction GenerateReadFunction(...)
     {
       return [](istream& os, void*) -> istream& { return os; };
     }

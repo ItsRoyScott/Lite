@@ -5,7 +5,7 @@
 
 namespace lite // forward declarations
 {
-  template <class T> struct Bind;
+  template <class T> struct Binding;
   class MethodInfo;
   class NamespaceInfo;
   class TypeInfo;
@@ -35,11 +35,11 @@ namespace lite // functions
     return plugin;
   }
 
-  // Returns the global instance of an object builder templatized to the object type.
+  // Returns the global instance of an type builder templatized to the object type.
   template <class T>
-  inline ReflectionPlugin::ObjectBuilder<T>& GetReflectionPluginObjectBuilder()
+  inline ReflectionPlugin::TypeBuilder<T>& GetTypeBuilder()
   {
-    static ReflectionPlugin::ObjectBuilder<T> class_(GetReflectionPlugin());
+    static ReflectionPlugin::TypeBuilder<T> class_(GetReflectionPlugin());
     return class_;
   }
 } // namespace lite

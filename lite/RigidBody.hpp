@@ -65,6 +65,13 @@ namespace lite
     }
   };
 
-  reflect(RigidBody,
-    "Mass", Getter(&T::Mass), Setter(&T::Mass));
+  template<>
+  struct Binding<RigidBody> : BindingBase<RigidBody>
+  {
+    Binding()
+    {
+      Bind(
+        "Mass", Const(&T::Mass), NonConst(&T::Mass));
+    }
+  };
 } // namespace lite

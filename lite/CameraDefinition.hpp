@@ -233,4 +233,14 @@ namespace lite
       viewDirty = false;
     }
   };
+
+  template <>
+  struct Binding<CameraDefinition> : BindingBase<CameraDefinition>
+  {
+    Binding()
+    {
+      Bind(
+        "Walk", &T::Walk);
+    }
+  };
 } // namespace lite

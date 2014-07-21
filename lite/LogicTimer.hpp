@@ -50,8 +50,15 @@ namespace lite
     }
   };
 
-  reflect(LogicTimer,
-    "ElapsedMilliseconds", &T::ElapsedMilliseconds,
-    "ElapsedSeconds", &T::ElapsedSeconds,
-    "Start", &T::Start);
+  template<>
+  struct Binding<LogicTimer> : BindingBase<LogicTimer>
+  {
+    Binding()
+    {
+      Bind(
+        "ElapsedMilliseconds", &T::ElapsedMilliseconds,
+        "ElapsedSeconds", &T::ElapsedSeconds,
+        "Start", &T::Start);
+    }
+  };
 } // namespace lite

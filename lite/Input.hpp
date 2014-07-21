@@ -121,10 +121,17 @@ namespace lite
     friend Singleton < Input > ;
   };
 
-  reflect(Input,
-    "GetMouseDeltaX", &Input::GetMouseDeltaX,
-    "GetMouseDeltaY", &Input::GetMouseDeltaY,
-    "GetMouseWheelDelta", &Input::GetMouseWheelDelta,
-    "GetMouseX", &Input::GetMouseX,
-    "GetMouseY", &Input::GetMouseY);
+  template<>
+  struct Binding<Input> : BindingBase<Input>
+  {
+    Binding()
+    {
+      Bind(
+        "GetMouseDeltaX", &T::GetMouseDeltaX,
+        "GetMouseDeltaY", &T::GetMouseDeltaY,
+        "GetMouseX", &T::GetMouseX,
+        "GetMouseY", &T::GetMouseY,
+        "IsKeyHeld", Overloaded<uint8_t>::Get(&T::IsHeld));
+    }
+  };
 } // namespace lite

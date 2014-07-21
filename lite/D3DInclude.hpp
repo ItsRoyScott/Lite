@@ -45,8 +45,26 @@ namespace lite
     return is >> f.x >> f.y >> f.z >> f.w;
   }
 
-  reflect(float3, "float3", Constructor<float3>);
-  reflect(float4, "float4", Constructor<float4>);
+  // Bind float3 to reflection.
+  template<> 
+  struct Binding<float3> : BindingBase<float3>
+  { 
+    Binding()
+    {
+      Bind(
+        Constructor<>);
+    }
+  };
+
+  template <> 
+  struct Binding<float4> : BindingBase<float4>
+  {
+    Binding()
+    {
+      Bind(
+        Constructor<>);
+    }
+  };
 } // namespace lite
 
 // DirectX call macro which automatically checks the HRESULT for failure.

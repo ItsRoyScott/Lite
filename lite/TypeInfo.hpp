@@ -119,7 +119,7 @@ namespace lite
     template <class T, class ValueT, class... Args>
     void Add(string name, ValueT* ptr, Args&&... args)
     {
-      NotifyPluginOnNewStaticField<T>(name, ptr);
+      GetTypeBuilder<T>().NewStaticField(name, ptr);
       fields.emplace_back(move(name), ptr);
       Add<T>(forward<Args>(args)...);
     }
@@ -127,18 +127,17 @@ namespace lite
     template <class T, class ValueT, class... Args>
     void Add(string name, ValueT T::*fieldPtr, Args&&... args)
     {
-      NotifyPluginOnNewField<T>(name, fieldPtr);
+      GetTypeBuilder<T>().NewField(name, fieldPtr);
       fields.emplace_back(move(name), fieldPtr);
       Add<T>(forward<Args>(args)...);
     }
 
     // Adds a static constructor given its name and pointer.
     template <class T, class... FuncArgs, class... Args>
-    void Add(string name, Variant(*ptr)(FuncArgs...), Args&&... args)
+    void Add(Variant(*ptr)(FuncArgs...), Args&&... args)
     {
-      NotifyPluginOnNewConstructor<T>(name, ptr);
-
-      methods.emplace_back(move(name), ptr);
+      GetTypeBuilder<T>().NewConstructor(Name, ptr);
+      methods.emplace_back(Name, ptr);
       Add<T>(forward<Args>(args)...);
     }
 
@@ -146,8 +145,7 @@ namespace lite
     template <class T, class RetT, class... FuncArgs, class... Args>
     void Add(string name, RetT(*ptr)(FuncArgs...), Args&&... args)
     {
-      NotifyPluginOnNewStaticFunction<T>(name, ptr);
-
+      GetTypeBuilder<T>().NewStaticFunction(name, ptr);
       methods.emplace_back(move(name), ptr);
       Add<T>(forward<Args>(args)...);
     }
@@ -156,16 +154,16 @@ namespace lite
     template <class T, class ClassT, class RetT, class... FuncArgs, class... Args>
     void Add(string name, RetT(ClassT::*ptr)(FuncArgs...), Args&&... args)
     {
-      NotifyPluginOnNewMethod<T>(name, ptr);
+      GetTypeBuilder<T>().NewMethod(name, ptr);
       methods.emplace_back(move(name), ptr);
       Add<T>(forward<Args>(args)...);
     }
 
-    // Adds a member function given its name and pointer.
+    // Adds a const member function given its name and pointer.
     template <class T, class ClassT, class RetT, class... FuncArgs, class... Args>
     void Add(string name, RetT(ClassT::*ptr)(FuncArgs...) const, Args&&... args)
     {
-      NotifyPluginOnNewMethod<T>(name, ptr);
+      GetTypeBuilder<T>().NewMethod(name, ptr);
       methods.emplace_back(move(name), ptr);
       Add<T>(forward<Args>(args)...);
     }
@@ -174,7 +172,7 @@ namespace lite
     void Add(string name, FieldT1(T1::*getter)() const, void(T2::*setter)(FieldT2), Args&&... args)
     {
       // Notify the plugin of the new field.
-      NotifyPluginOnNewProperty<T>(name, getter, setter);
+      GetTypeBuilder<T>().NewProperty(name, getter, setter);
 
       // Create the field.
       fields.emplace_back(move(name), getter, setter);
@@ -183,11 +181,37 @@ namespace lite
       Add<T>(forward<Args>(args)...);
     }
 
-    template <class T, class FieldT1, class T1, class... Args>
-    void Add(string name, FieldT1(T1::*getter)() const, struct ReadOnly_*, Args&&... args)
+    template <class T, class FieldT, class ClassT, class... Args>
+    void Add(string name, FieldT(ClassT::*getter)() const, struct ReadOnly_*, Args&&... args)
     {
       // Notify the plugin of the new field.
-      NotifyPluginOnNewReadOnlyProperty<T>(name, getter);
+      GetTypeBuilder<T>().NewReadOnlyProperty(name, getter);
+
+      // Create the field.
+      fields.emplace_back(move(name), getter);
+
+      // Perfect-forward the rest of the arguments to Add.
+      Add<T>(forward<Args>(args)...);
+    }
+
+    template <class T, class FieldT1, class FieldT2, class... Args>
+    void Add(string name, FieldT1(*getter)(), void(*setter)(FieldT2), Args&&... args)
+    {
+      // Notify the plugin of the new property.
+      GetTypeBuilder<T>().NewStaticProperty(name, getter, setter);
+
+      // Create the field.
+      fields.emplace_back(move(name), getter, setter);
+
+      // Perfect-forward the rest of the arguments to Add.
+      Add<T>(forward<Args>(args)...);
+    }
+
+    template <class T, class FieldT1, class... Args>
+    void Add(string name, FieldT1(*getter)(), struct ReadOnly_*, Args&&... args)
+    {
+      // Notify the plugin of the new property.
+      GetTypeBuilder<T>().NewStaticReadOnlyProperty(name, getter);
 
       // Create the field.
       fields.emplace_back(move(name), getter);
@@ -198,14 +222,18 @@ namespace lite
 
     // Calls Add functions recursively to initialize the type.
     template <class T, class... Args>
-    void Bind(string typeName, Args&&... args)
+    void Bind(Args&&... args)
     {
-      name = move(typeName);
       cppType = &typeid(T);
+      name = GetTypeName(typeid(T));
       print = Variant::GeneratePrintFunction<T>();
       read = Variant::GenerateReadFunction<T>();
 
+      NotifyPluginOnBeginType<T>(name);
+
       Add<T>(forward<Args>(args)...);
+
+      NotifyPluginOnEndType<T>(name);
     }
 
     // Initializes this type as a reference-type.
@@ -224,50 +252,50 @@ namespace lite
 
   private: // methods
 
-    template <class T, class CtorT>
-    void NotifyPluginOnNewConstructor(const string& name, CtorT ctor)
+    static string GetTypeName(const type_info& typeInfo)
     {
-      GetReflectionPluginObjectBuilder<T>().NewConstructor(name, ctor);
+      string name = typeInfo.name();
+
+      // Take everything after the first namespace.
+      auto find = name.find("::");
+      if (find != string::npos)
+      {
+        name = name.substr(find + sizeof("::")-1);
+      }
+
+      return move(name);
     }
 
-    // Notifies the plugin when we have a new member field.
-    template <class T, class ValueT>
-    void NotifyPluginOnNewField(const string& name, ValueT T::*fieldPtr)
+    // Notifies the plugin that we are starting to bind a class type.
+    template <class T>
+    typename enable_if<is_class<T>::value>::type
+      NotifyPluginOnBeginType(const string& name)
     {
-      GetReflectionPluginObjectBuilder<T>().NewField(name, fieldPtr);
+      GetTypeBuilder<T>().BeginClassType(name);
     }
 
-    template <class T, class FuncPtr>
-    void NotifyPluginOnNewMethod(const string& name, FuncPtr methodPtr)
+    // Notifies the plugin that we are starting to bind a value type.
+    template <class T>
+    typename enable_if<!is_class<T>::value>::type
+      NotifyPluginOnBeginType(const string& name)
     {
-      GetReflectionPluginObjectBuilder<T>().NewMethod(name, methodPtr);
+      GetTypeBuilder<T>().BeginValueType(name);
     }
 
-    // Notifies the plugin when we create a field we have a new getter/setter pair.
-    template <class T, class GetterFunc, class SetterFunc>
-    void NotifyPluginOnNewProperty(const string& name, GetterFunc getter, SetterFunc setter)
+    // Notifies the plugin that we are finishing a class type.
+    template <class T>
+    typename enable_if<is_class<T>::value>::type
+      NotifyPluginOnEndType(const string& name)
     {
-      GetReflectionPluginObjectBuilder<T>().NewProperty(name, getter, setter);
+      GetTypeBuilder<T>().EndClassType(name);
     }
 
-    // Notifies the plugin when we create a field we have a new getter for a read-only property.
-    template <class T, class GetterFunc>
-    void NotifyPluginOnNewReadOnlyProperty(const string& name, GetterFunc getter)
+    // Notifies the plugin that we are finishing a value type.
+    template <class T>
+    typename enable_if<!is_class<T>::value>::type
+      NotifyPluginOnEndType(const string& name)
     {
-      GetReflectionPluginObjectBuilder<T>().NewReadOnlyProperty(name, getter);
-    }
-
-    // Notifies the plugin when we have a new static field.
-    template <class T, class ValueT>
-    void NotifyPluginOnNewStaticField(const string& name, ValueT* fieldPointer)
-    {
-      GetReflectionPluginObjectBuilder<T>().NewStaticField(name, fieldPointer);
-    }
-
-    template <class T, class PointerT>
-    void NotifyPluginOnNewStaticFunction(const string& name, PointerT func)
-    {
-      GetReflectionPluginObjectBuilder<T>().NewStaticFunction(name, func);
+      GetTypeBuilder<T>().EndValueType(name);
     }
   };
 

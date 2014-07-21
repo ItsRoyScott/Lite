@@ -191,16 +191,16 @@ namespace lite
     friend ostream& operator<<(ostream& os, const FieldInfo& f);
   };
 
-  template <class GetClassT, class GetRetT>
-  auto Getter(GetRetT(GetClassT::*fn)() const) -> GetRetT(GetClassT::*)() const
+  template <class ClassT, class RetT, class... Args, class FuncPtr = RetT(ClassT::*)(Args...) const>
+  FuncPtr Const(RetT(ClassT::*fn)(Args...) const)
   {
     return fn;
   }
 
   static struct ReadOnly_* ReadOnly = nullptr;
 
-  template <class SetClassT, class SetArgT>
-  auto Setter(void(SetClassT::*fn)(SetArgT)) -> void(SetClassT::*)(SetArgT)
+  template <class ClassT, class RetT, class... Args, class FuncPtr = RetT(ClassT::*)(Args...)>
+  FuncPtr NonConst(RetT(ClassT::*fn)(Args...))
   {
     return fn;
   }

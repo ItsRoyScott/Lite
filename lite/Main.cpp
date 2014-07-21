@@ -38,6 +38,12 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   //Note(errors);
 
   Scripting::Instance().DoString("local deltaX = lite.Input:GetMouseDeltaX() \nprint(\"DeltaX: \" .. deltaX)");
+  Scripting::Instance().DoString(R"___(
+    if (lite.Input.IsKeyHeld(string.byte("W"))) then
+      lite.Graphics.CurrentInstance.Camera:Walk(0.5)
+    end
+  )___");
+
   Note(Reflection::Instance());
 
   GameObject scene;
