@@ -153,6 +153,9 @@ namespace lite
   public: // methods
 
     Scripting()
-    {}
+    {
+      auto print = Lua.CreateFunction<void(string)>([](string str) { Note(str); });
+      Lua.GetGlobalEnvironment().Set("print", print);
+    }
   };
 } // namespace lite

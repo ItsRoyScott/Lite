@@ -132,18 +132,21 @@ namespace lite
       Add<T>(forward<Args>(args)...);
     }
 
+    // Adds a static constructor given its name and pointer.
+    template <class T, class... FuncArgs, class... Args>
+    void Add(string name, Variant(*ptr)(FuncArgs...), Args&&... args)
+    {
+      NotifyPluginOnNewConstructor<T>(name, ptr);
+
+      methods.emplace_back(move(name), ptr);
+      Add<T>(forward<Args>(args)...);
+    }
+
     // Adds a static function given its name and pointer.
     template <class T, class RetT, class... FuncArgs, class... Args>
     void Add(string name, RetT(*ptr)(FuncArgs...), Args&&... args)
     {
-      if (name == this->Name)
-      {
-        NotifyPluginOnNewConstructor<T>(name, ptr);
-      }
-      else
-      {
-        NotifyPluginOnNewStaticFunction<T>(name, ptr);
-      }
+      NotifyPluginOnNewStaticFunction<T>(name, ptr);
 
       methods.emplace_back(move(name), ptr);
       Add<T>(forward<Args>(args)...);

@@ -7,33 +7,26 @@ namespace lite
   // Makes working with XMVECTOR less painful.
   class Vector
   {
-  private: // data
-
-    // Buffer used to align the XMVECTOR.
-    char buffer[sizeof(XMVECTOR) + 12];
-
   public: // data
 
-    // 16-byte aligned vector of four floats used for SSE computations.
-    XMVECTOR* xm = align<XMVECTOR>(16, buffer);
-    XMVECTOR xm2;
+    XMVECTOR xm;
 
   public: // methods
 
     // Initializes with all zeroes.
     Vector()
     {
-      *xm = XMVectorZero();
+      xm = XMVectorZero();
     }
 
     Vector(const Vector& b)
     {
-      *xm = *b.xm;
+      xm = b.xm;
     }
     
     Vector& operator=(const Vector& b)
     {
-      *xm = *b.xm;
+      xm = b.xm;
       return *this;
     }
 
@@ -46,7 +39,7 @@ namespace lite
     // Assign a float3.
     Vector& operator=(const float3& f)
     {
-      *xm = XMLoadFloat3(&f);
+      xm = XMLoadFloat3(&f);
       return *this;
     }
 
@@ -59,7 +52,7 @@ namespace lite
     // Assign a float4.
     Vector& operator=(const float4& f)
     {
-      *xm = XMLoadFloat4(&f);
+      xm = XMLoadFloat4(&f);
       return *this;
     }
 
@@ -84,14 +77,14 @@ namespace lite
     // Assign from an XMVECTOR.
     Vector& operator=(const XMVECTOR& vec)
     {
-      *xm = vec;
+      xm = vec;
       return *this;
     }
 
     // Initialize with x, y, z, w components.
     Vector(float x, float y = 0, float z = 0, float w = 0)
     {
-      *xm = XMVectorSet(x, y, z, w);
+      xm = XMVectorSet(x, y, z, w);
     }
 
     ~Vector() = default;
@@ -106,45 +99,45 @@ namespace lite
     // Returns the result of cross product.
     Vector Cross(const Vector& b) const
     {
-      return XMVector3Cross(*xm, *b.xm);
+      return XMVector3Cross(xm, b.xm);
     }
 
     // Returns the result of dot product.
     float Dot(const Vector& b) const
     {
-      return XMVectorGetX(XMVector3Dot(*xm, *b.xm));
+      return XMVectorGetX(XMVector3Dot(xm, b.xm));
     }
 
     float GetX() const
     {
-      return XMVectorGetX(*xm);
+      return XMVectorGetX(xm);
     }
 
     float GetY() const
     {
-      return XMVectorGetY(*xm);
+      return XMVectorGetY(xm);
     }
 
     float GetZ() const
     {
-      return XMVectorGetZ(*xm);
+      return XMVectorGetZ(xm);
     }
 
     float GetW() const
     {
-      return XMVectorGetW(*xm);
+      return XMVectorGetW(xm);
     }
 
     // Returns the magnitude of the 3-float vector.
     float Length() const
     {
-      return XMVectorGetX(XMVector3Length(*xm));
+      return XMVectorGetX(XMVector3Length(xm));
     }
 
     // Adds the vectors.
     Vector operator+(const Vector& b) const
     {
-      return XMVectorAdd(*xm, *b.xm);
+      return XMVectorAdd(xm, b.xm);
     }
 
     // Add-assigns the vector.
@@ -156,7 +149,7 @@ namespace lite
     // Multiplies the vector by a scalar.
     Vector operator*(float f) const
     {
-      return XMVectorScale(*xm, f);
+      return XMVectorScale(xm, f);
     }
 
     // Multiply-assigns the vector by a scalar.
@@ -168,7 +161,7 @@ namespace lite
     // Subtracts the vectors.
     Vector operator-(const Vector& b) const
     {
-      return XMVectorSubtract(*xm, *b.xm);
+      return XMVectorSubtract(xm, b.xm);
     }
 
     // Subtract-assigns the vectors.
@@ -180,14 +173,14 @@ namespace lite
     // Unary minus.
     Vector operator-() const
     {
-      return XMVectorNegate(*xm);
+      return XMVectorNegate(xm);
     }
 
     // Conversion to float3.
     operator float3() const
     {
       float3 f;
-      XMStoreFloat3(&f, *xm);
+      XMStoreFloat3(&f, xm);
       return f;
     }
 
@@ -195,7 +188,7 @@ namespace lite
     operator float4() const
     {
       float4 f;
-      XMStoreFloat4(&f, *xm);
+      XMStoreFloat4(&f, xm);
       return f;
     }
   };
@@ -203,11 +196,11 @@ namespace lite
   inline float4& AddScaled(float4& f, const float3& vector, float scale)
   {
     Vector q = float4(0, vector.x*scale, vector.y*scale, vector.z*scale);
-    *q.xm = XMQuaternionMultiply(*q.xm, *Vector(f).xm);
-    f.w += XMVectorGetW(*q.xm) * 0.5f;
-    f.x += XMVectorGetX(*q.xm) * 0.5f;
-    f.y += XMVectorGetY(*q.xm) * 0.5f;
-    f.z += XMVectorGetZ(*q.xm) * 0.5f;
+    q.xm = XMQuaternionMultiply(q.xm, Vector(f).xm);
+    f.w += XMVectorGetW(q.xm) * 0.5f;
+    f.x += XMVectorGetX(q.xm) * 0.5f;
+    f.y += XMVectorGetY(q.xm) * 0.5f;
+    f.z += XMVectorGetZ(q.xm) * 0.5f;
     return f;
   }
 } // namespace lite

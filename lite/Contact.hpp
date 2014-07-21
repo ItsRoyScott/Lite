@@ -1,5 +1,6 @@
 #pragma once
 
+#include "aligned_allocator.hpp"
 #include "PhysicsRigidBody.hpp"
 #include "Vector.hpp"
 
@@ -11,7 +12,7 @@ namespace lite
   public: // data
 
     // Array of all contacts.
-    vector<Contact> Contacts;
+    aligned_vector<Contact> Contacts;
 
     float Friction = 0;
     float Restitution = 0;
@@ -217,7 +218,7 @@ namespace lite
     {
       // Get hold of the inverse mass and inverse inertia tensor, both in
       // world coordinates.
-      float4x4 inverseInertiaTensor[2];
+      Matrix inverseInertiaTensor[2];
       inverseInertiaTensor[0] = Body[0]->InverseInertiaTensorWorld();
       if (Body[1])
       {
@@ -404,7 +405,7 @@ namespace lite
     //  has a non-zero coefficient of friction. A pair of inertia tensors - one for
     //  each contact object - is specified to save calculation time; the calling 
     //  function has access to these anyway.
-    float3 CalculateFrictionImpulse(float4x4* inverseInertiaTensor)
+    float3 CalculateFrictionImpulse(Matrix* inverseInertiaTensor)
     {
       float3 impulseContact;
       float inverseMass = Body[0]->InverseMass();
@@ -486,15 +487,15 @@ namespace lite
     //  has no friction. A pair of inertia tensors - one for each contact object - 
     //  is specified to save calculation time; the calling function has access to 
     //  these anyway.
-    float3 CalculateFrictionlessImpulse(float4x4* inverseInertiaTensor)
+    float3 CalculateFrictionlessImpulse(Matrix* inverseInertiaTensor)
     {
       float3 impulseContact;
 
       // Build a vector that shows the change in velocity in
       // world space for a unit impulse in the direction of the contact
       // normal.
-      Vector deltaVelWorld = Vector(RelativeContactPosition[0]).Cross(ContactNormal);
-      deltaVelWorld = Matrix(inverseInertiaTensor[0]).Transform(deltaVelWorld);
+      Vector deltaVelWorld = RelativeContactPosition[0].Cross(ContactNormal);
+      deltaVelWorld = inverseInertiaTensor[0].Transform(deltaVelWorld);
       deltaVelWorld = deltaVelWorld.Cross(RelativeContactPosition[0]);
 
       // Work out the change in velocity in contact coordiantes.
@@ -507,8 +508,8 @@ namespace lite
       if (Body[1])
       {
         // Go through the same transformation sequence again
-        Vector deltaVelWorld = Vector(RelativeContactPosition[1]).Cross(ContactNormal);
-        deltaVelWorld = Matrix(inverseInertiaTensor[1]).Transform(deltaVelWorld);
+        Vector deltaVelWorld = RelativeContactPosition[1].Cross(ContactNormal);
+        deltaVelWorld = inverseInertiaTensor[1].Transform(deltaVelWorld);
         deltaVelWorld = deltaVelWorld.Cross(RelativeContactPosition[1]);
 
         // Add the change in velocity due to rotation
@@ -546,7 +547,7 @@ namespace lite
 
       // We ignore any component of acceleration in the contact normal
       // direction, we are only interested in planar acceleration
-      *accVelocity.xm = XMVectorSetX(*accVelocity.xm, 0);
+      accVelocity.xm = XMVectorSetX(accVelocity.xm, 0);
 
       // Add the planar velocities - if there's enough friction they will
       // be removed during velocity resolution

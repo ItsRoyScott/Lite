@@ -221,11 +221,11 @@ namespace lite
     void CalculateDerivedData()
     {
       Vector orientationQuaternion;
-      orientationQuaternion = XMQuaternionNormalize(*orientationQuaternion.xm);
+      orientationQuaternion = XMQuaternionNormalize(orientationQuaternion.xm);
 
       // Calculate the transform matrix for the body.
-      Matrix rotation = XMMatrixRotationQuaternion(*orientationQuaternion.xm);
-      Matrix translation = XMMatrixTranslationFromVector(*Vector(position).xm);
+      Matrix rotation = XMMatrixRotationQuaternion(orientationQuaternion.xm);
+      Matrix translation = XMMatrixTranslationFromVector(Vector(position).xm);
       transformMatrix = rotation * translation;
 
       // Calculate the inertia tensor in world space.
@@ -299,7 +299,7 @@ namespace lite
 
     void SetOrientation(const Vector& q)
     {
-      orientation = XMQuaternionNormalize(*q.xm);
+      orientation = XMQuaternionNormalize(q.xm);
     }
 
     void SetPosition(const float3& position)

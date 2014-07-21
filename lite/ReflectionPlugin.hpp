@@ -55,26 +55,21 @@ namespace lite
 
       void NewConstructor(const string&, Variant(*)())
       {
+        Lua& lua = Scripting::Instance().Lua;
+
         // Create a Lua function which wraps the constructor.
-        LuaFunction<LuaUserdata<T>()> luaConstructor = 
-          Scripting::Instance().Lua.CreateFunction<LuaUserdata<T>()>(ConstructorFunction);
+        auto luaConstructor = lua.CreateFunction<LuaUserdata<T>()>(ConstructorFunction);
 
         // Set the constructor to Lua's new function for this type.
         typeTable.Set("new", luaConstructor);
       }
 
-      template <class Arg1, class... Args>
-      void NewConstructor(const string&, Variant(*)(Arg1, Args...))
+      template <class RetT, class... Args>
+      void NewConstructor(const string&, RetT(*)(Args...))
       {}
 
       template <class FieldPtr>
       void NewField(const string&, FieldPtr)
-      {}
-
-      // Called when a new static function is bound to the type:
-      //  Does nothing for now.
-      template <class FuncPtr>
-      void NewFunction(const string&, FuncPtr)
       {}
 
       // Called when a new member function is bound to the type:
@@ -92,9 +87,14 @@ namespace lite
       void NewProperty(const string&, GetterPtr, SetterPtr)
       {}
 
-      template <class FuncPtr>
-      void NewStaticFunction(const string&, FuncPtr)
-      {}
+      // Called when a new static function is bound to the type.
+      template <class RetT, class... Args>
+      void NewStaticFunction(const string& name, RetT(*fn)(Args...))
+      {
+        Lua& lua = Scripting::Instance().Lua;
+        auto luaFunction = lua.CreateFunction<RetT(Args...)>(fn);
+        typeTable.Set(name, luaFunction);
+      }
 
     private: // methods
 

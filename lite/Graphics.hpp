@@ -141,6 +141,20 @@ namespace lite
       samplerDesc.MinLOD = 0;
       samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
       DX(d3d.Device->CreateSamplerState(&samplerDesc, d3d.LinearSampler));
+
+      D3D11_RASTERIZER_DESC rasterDesc;
+      ZeroMemory(&rasterDesc, sizeof(rasterDesc));
+      rasterDesc.AntialiasedLineEnable = false;
+      rasterDesc.CullMode = D3D11_CULL_NONE;
+      rasterDesc.DepthBias = 0;
+      rasterDesc.DepthBiasClamp = 0;
+      rasterDesc.DepthClipEnable = true;
+      rasterDesc.FillMode = D3D11_FILL_SOLID;
+      rasterDesc.FrontCounterClockwise = false;
+      rasterDesc.MultisampleEnable = false;
+      rasterDesc.ScissorEnable = false;
+      rasterDesc.SlopeScaledDepthBias = 0;
+      d3d.Device->CreateRasterizerState(&rasterDesc, d3d.NoCullRasterizer);
     }
 
     // Adds a new model instance.

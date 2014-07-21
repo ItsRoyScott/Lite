@@ -16,6 +16,10 @@ namespace lite
 
   public: // properties
 
+    // Whether backfaces are culled.
+    const bool& BackfaceCulling() const { return model->BackfaceCulling; }
+    void BackfaceCulling(bool b) { model->BackfaceCulling = b; }
+
     // Color of the model (ignored unless the shader uses it).
     const float4& Color() const { return model->Color; }
     void Color(const float4& c) { model->Color = c; }
@@ -42,7 +46,8 @@ namespace lite
     Model(const Model& b)
     {
       model = Graphics::CurrentInstance()->AddModel();
-    
+
+      BackfaceCulling(b.BackfaceCulling());
       Color(b.Color());
       Material(b.Material());
       Mesh(b.Mesh());
@@ -70,6 +75,7 @@ namespace lite
 
   reflect(Model,
     "Model", Constructor<T>,
+    "BackfaceCulling", Getter(&T::BackfaceCulling), Setter(&T::BackfaceCulling),
     "Color", Getter(&T::Color), Setter(&T::Color),
     "Material", Getter(&T::Material), Setter(&T::Material),
     "Mesh", Getter(&T::Mesh), Setter(&T::Mesh),

@@ -1,24 +1,24 @@
 [
   type = GameObject
-  name = Bee
+  name = Tree
   
   [ 
     type = Transform 
-    LocalScale = .1 .1 .1
+    LocalScale = 1 1 1
   ]
   
   [ 
     type = Model
     Material = Default
-    Mesh = bee.obj
-    Texture = bee.tif
+    Mesh = bush.obj
+    Texture = bush.jpg
   ]
   
   [ type = RigidBody 
-    Mass = 0.1 ]
+    Mass = 75 ]
   
   [ 
     type = SphereCollision
-    Radius = 3
+    Radius = 2
   ]
 ]

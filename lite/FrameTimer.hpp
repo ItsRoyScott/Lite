@@ -11,9 +11,9 @@ namespace lite
   {
   private: // data
 
-    float actualDeltaTime = 0;
-    float deltaTime = 0;
-    float frameLength = 0;
+    float actualDeltaTime = 1.0f / 60.0f;
+    float deltaTime = 1.0f / 60.0f;
+    float frameLength = 1.0f / 60.0f;
     float idealFramerate = 60;
     bool  lockFramerate = true;
     bool  stepMode = false;

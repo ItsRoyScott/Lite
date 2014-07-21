@@ -196,6 +196,9 @@ namespace lite
         cursorPos.y >= windowRect.top &&
         cursorPos.y <= windowRect.bottom)
       {
+        // Don't clip the cursor if a different window is active.
+        if (GetActiveWindow() != Handle) return;
+
         windowRect.left += 20;
         windowRect.right -= 20;
         windowRect.top += 8;

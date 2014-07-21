@@ -10,6 +10,9 @@ namespace lite
   {
   public: // data
 
+    // Whether backfaces are culled.
+    bool BackfaceCulling = true;
+
     // Color of the model (optional).
     float4 Color = { 1, 1, 1, 1 };
 
@@ -58,6 +61,8 @@ namespace lite
       UINT vertexOffset = 0;
 
       // Draw.
+      if (BackfaceCulling)  d3d.Context->RSSetState(nullptr);
+      else                  d3d.Context->RSSetState(d3d.NoCullRasterizer);
       d3d.Context->UpdateSubresource(mesh.ConstantBuffer(), 0, nullptr, &constants, 0, 0);
       d3d.Context->IASetIndexBuffer(mesh.IndexBuffer(), mesh.IndexFormat, 0);
       d3d.Context->IASetPrimitiveTopology(Topology);

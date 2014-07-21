@@ -9,6 +9,12 @@
 
 namespace lite
 {
+  static bool& DebugDrawCollisions()
+  {
+    static bool enabled = false;
+    return enabled;
+  }
+
   // Base class for all components which provide a collision primitive to the object.
   template <class T, class Primitive>
   class CollisionComponent : public Component<T>
@@ -136,10 +142,13 @@ namespace lite
       Transform& tfm = OwnerReference()[Transform_];
       primitive->Radius = max(tfm.LocalScale.x, max(tfm.LocalScale.y, tfm.LocalScale.z)) * radius;
 
-      auto pos = tfm.GetWorldMatrix().r[3];
-      float3 posf;
-      XMStoreFloat3(&posf, pos);
-      DrawSphere(posf, { primitive->Radius*2, primitive->Radius*2, primitive->Radius*2 });
+      if (DebugDrawCollisions())
+      {
+        auto pos = tfm.GetWorldMatrix().r[3];
+        float3 posf;
+        XMStoreFloat3(&posf, pos);
+        DrawSphere(posf, { primitive->Radius*2, primitive->Radius*2, primitive->Radius*2 });
+      }
     }
   };
 

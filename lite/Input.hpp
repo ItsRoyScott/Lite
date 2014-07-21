@@ -2,6 +2,7 @@
 
 #include "KeyboardBuffer.hpp"
 #include "MouseBuffer.hpp"
+#include "Reflection.hpp"
 
 namespace lite
 {
@@ -103,10 +104,27 @@ namespace lite
       return Instance().Keyboard().IsUp(vkKeyCode);
     }
 
+    friend ostream& operator<<(ostream& os, const Input&)
+    {
+      return os;
+    }
+
+    friend istream& operator>>(istream& is, Input&)
+    {
+      return is;
+    }
+
   private: // methods
 
     Input() = default;
 
     friend Singleton < Input > ;
   };
+
+  reflect(Input,
+    "GetMouseDeltaX", &Input::GetMouseDeltaX,
+    "GetMouseDeltaY", &Input::GetMouseDeltaY,
+    "GetMouseWheelDelta", &Input::GetMouseWheelDelta,
+    "GetMouseX", &Input::GetMouseX,
+    "GetMouseY", &Input::GetMouseY);
 } // namespace lite

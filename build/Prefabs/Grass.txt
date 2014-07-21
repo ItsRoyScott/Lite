@@ -4,12 +4,13 @@
   
   [ 
     type = Transform 
-    LocalScale = 1 0.5 1
+    LocalScale = 1 0.3 1
     LocalPosition = 0 -1 0
   ]
   
   [ 
     type = Model
+    BackfaceCulling = 0
     Material = Default
     Mesh = grass.obj
     Texture = grass.png

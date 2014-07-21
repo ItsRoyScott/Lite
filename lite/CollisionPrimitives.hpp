@@ -23,7 +23,7 @@ namespace lite
 
   private: // data
     
-    float4x4      transform;
+    Matrix        transform;
     PrimitiveType type;
 
   public: // data
@@ -58,11 +58,11 @@ namespace lite
     //  e.g. GetAxis(3) returns the position.
     float4 GetAxis(size_t idx) const
     {
-      return Matrix(transform).GetAxisVector(idx);
+      return transform.GetAxisVector(idx);
     }
 
     // Returns the final transform of the primitive.
-    const float4x4& GetTransform() const
+    const Matrix& GetTransform() const
     {
       return transform;
     }

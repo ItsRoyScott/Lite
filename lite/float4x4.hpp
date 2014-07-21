@@ -64,12 +64,12 @@ namespace lite
     Vector TransformInverse(const Vector& vector) const
     {
       XMVECTOR det;
-      return XMVector3Transform(*vector.xm, XMMatrixInverse(&det, XMLoadFloat4x4(this)));
+      return XMVector3Transform(vector.xm, XMMatrixInverse(&det, XMLoadFloat4x4(this)));
     }
 
     Vector TransformTranspose(const Vector& vector) const
     {
-      return XMVector3Transform(*vector.xm, XMMatrixTranspose(XMLoadFloat4x4(this)));
+      return XMVector3Transform(vector.xm, XMMatrixTranspose(XMLoadFloat4x4(this)));
     }
 
     //float4x4 Transpose() const

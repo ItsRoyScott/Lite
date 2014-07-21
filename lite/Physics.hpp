@@ -40,7 +40,7 @@ namespace lite
 
   public: // methods
 
-    void ResolveContacts(vector<Contact>& contacts, float dt)
+    void ResolveContacts(aligned_vector<Contact>& contacts, float dt)
     {
       // Make sure we have something to do.
       if (contacts.size() == 0) return;
@@ -151,13 +151,12 @@ namespace lite
         // velocities need recomputing.
         for (unsigned i = 0; i < numContacts; i++)
         {
-          // Check each body in the contact
+          // Check each body in the contact:
           for (unsigned b = 0; b < 2; b++)
           {
             if (contacts[i].Body[b])
             {
-              // Check for a match with each body in the newly
-              // resolved contact
+              // Check for a match with each body in the newly resolved contact:
               for (unsigned d = 0; d < 2; d++)
               {
                 if (contacts[i].Body[b] == contacts[index].Body[d])
@@ -213,7 +212,7 @@ namespace lite
     template <class T>
     shared_ptr<T> AddCollisionPrimitive()
     {
-      shared_ptr<T> ptr = make_shared<T>();
+      shared_ptr<T> ptr = { Align<16>::New<T>(), Align<16>::Delete<T> };
 
       // Create the new primitive.
       collisionPrimitives.push_back(ptr);
@@ -224,7 +223,7 @@ namespace lite
     shared_ptr<PhysicsRigidBody> AddRigidBody()
     {
       // Create the new body.
-      bodies.push_back(make_shared<PhysicsRigidBody>());
+      bodies.emplace_back(Align<16>::New<PhysicsRigidBody>(), Align<16>::Delete<PhysicsRigidBody>);
       shared_ptr<PhysicsRigidBody>& body = bodies.back();
       
       // Add default gravity actor if it was requested at startup.

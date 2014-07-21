@@ -62,6 +62,18 @@ namespace lite
       return *this;
     }
 
+    float GetParameter(const string& name) const
+    {
+      // Get the instance.
+      fmod::ParameterInstance* paramInstance = nullptr;
+      FmodCall(instance->getParameter(name.c_str(), &paramInstance), false);
+
+      // Get the value.
+      float value = 0;
+      FmodCall(paramInstance->getValue(&value), 0);
+      return value;
+    }
+
     // Returns whether the playback is playing, idle, 
     //  sustaining, stopped, starting, or stopping. 
     FMOD_STUDIO_PLAYBACK_STATE GetPlaybackState() const
@@ -87,6 +99,17 @@ namespace lite
         FmodCall(instance->release());
         instance = nullptr;
       }
+    }
+
+    bool SetParameter(const string& name, float value)
+    {
+      // Get the instance.
+      fmod::ParameterInstance* paramInstance = nullptr;
+      FmodCall(instance->getParameter(name.c_str(), &paramInstance), false);
+
+      // Set the value.
+      FmodCall(paramInstance->setValue(value), false);
+      return true;
     }
 
     // Starts playing the sound.

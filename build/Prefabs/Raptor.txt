@@ -4,7 +4,7 @@
   
   [ 
     type = Transform 
-    LocalScale = .015 .015 .015
+    LocalScale = .02 .02 .02
   ]
   
   [ 

@@ -22,6 +22,9 @@ namespace lite
     // Default sampler state.
     SamplerStateHandle LinearSampler;
 
+    // Rasterizer state which doesn't cull backfaces.
+    RasterizerStateHandle NoCullRasterizer;
+
     // View of the render target (screen we render to by default).
     RenderTargetViewHandle RenderTarget;
 

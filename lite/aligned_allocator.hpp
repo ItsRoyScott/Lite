@@ -44,6 +44,13 @@ namespace lite
     {
       return (static_cast<std::size_t>(0) - static_cast<std::size_t>(1)) / sizeof(T);
     }
+
+    // Rebinds the aligned_allocator to a different type.
+    template <class U>
+    struct rebind
+    {
+      typedef aligned_allocator<U> other;
+    };
   };
 
   // Whether 'b' can free allocations made by 'a'.
@@ -63,4 +70,24 @@ namespace lite
   // A vector capable of allocating on aligned boundaries.
   template <class T, size_t Alignment = 16>
   using aligned_vector = vector < T, aligned_allocator<T, Alignment> > ;
+
+  template <size_t Alignment = 16>
+  struct Align
+  {
+    template <class T>
+    static void Delete(T* ptr)
+    {
+      if (!ptr) return;
+      ptr->~T();
+      _aligned_free(ptr);
+    }
+
+    template <class T, class... Args>
+    static T* New(Args&&... args)
+    {
+      T* ptr = (T*)_aligned_malloc(sizeof(T), Alignment);
+      new (ptr) T(forward<Args>(args)...);
+      return ptr;
+    }
+  };
 } // namespace lite

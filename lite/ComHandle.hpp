@@ -102,6 +102,7 @@ namespace lite
   typedef ComHandle<ID3D11GeometryShader>      GeometryShaderHandle;
   typedef ComHandle<ID3D11InputLayout>         InputLayoutHandle;
   typedef ComHandle<ID3D11PixelShader>         PixelShaderHandle;
+  typedef ComHandle<ID3D11RasterizerState>     RasterizerStateHandle;
   typedef ComHandle<ID3D11RenderTargetView>    RenderTargetViewHandle;
   typedef ComHandle<ID3D11Resource>            ResourceHandle;
   typedef ComHandle<ID3D11SamplerState>        SamplerStateHandle;

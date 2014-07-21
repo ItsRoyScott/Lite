@@ -34,6 +34,9 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   RegisterComponent<SphereCollision>();
   RegisterComponent<Transform>();
 
+  string errors = Scripting::Instance().Lua.RunScript("local deltaX = Input:GetMouseDeltaX \nprint(\"DeltaX: \" .. deltaX)");
+  Note(errors);
+
   GameObject scene;
 
   scene.LoadFromFile("Scene.txt");
@@ -46,7 +49,7 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   while (window.IsOpen())
   {
     frameTimer.BeginFrame();
-    window.Title(string("Lite - ") + to_string((int)frameTimer.FPS()) + " fps");
+    window.Title(string("Lite - ") + to_string((int) frameTimer.FPS()) + " fps");
 
     if (Input::IsHeld('W')) graphics.Camera.Walk(0.5f);
     if (Input::IsHeld('S')) graphics.Camera.Walk(-0.5f);
@@ -55,13 +58,14 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     if (Input::IsHeld('Q')) graphics.Camera.Climb(0.5f);
     if (Input::IsHeld('E')) graphics.Camera.Climb(-0.5f);
     
-    if (Input::IsTriggered(VK_ESCAPE)) window.Destroy();
+    if (Input::IsTriggered(VK_ESCAPE))  window.Destroy();
+    if (Input::IsTriggered(VK_F1))      DebugDrawCollisions() = !DebugDrawCollisions();
 
     if (Input::IsTriggered(VK_SPACE))
     {
       GameObject& child = scene.AddChild(spongebobPrefab);
       child[Transform_].LocalPosition = graphics.Camera.Position();
-      child[RigidBody_].AddForce(Vector(graphics.Camera.Look()) * 200);
+      child[RigidBody_].AddForce(Vector(graphics.Camera.Look()) * 100);
     }
 
     graphics.Camera.RotateY((float) Input::GetMouseDeltaX() / 100);
