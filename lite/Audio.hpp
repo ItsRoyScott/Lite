@@ -130,8 +130,12 @@ namespace lite // types
     // Formats the sound banks and events available in the audio system.
     friend ostream& operator<<(ostream& os, const Audio& a)
     {
-      os << "Audio:\n";
-      Format(os, a.eventDescriptionMap);
+      os << "Audio\n";
+      os << Tabs(1) << "Event descriptions";
+      for (auto& eventPair : a.eventDescriptionMap)
+      {
+        os << "\n" << Tabs(2) << eventPair.second;
+      }
       return os;
     }
 
@@ -146,19 +150,6 @@ namespace lite // types
 
       // Update the FMOD Studio system.
       FmodCall(system->update());
-    }
-
-  private: // methods
-
-    // Formatted output for the event description map.
-    static ostream& Format(ostream& os, const unordered_map<string, EventDescription>& eventDescriptionMap)
-    {
-      os << Tabs(1) << "Event descriptions:";
-      for (auto& eventPair : eventDescriptionMap)
-      {
-        os << "\n" << Tabs(1) << eventPair.second;
-      }
-      return os;
     }
   };
 } // namespace lite

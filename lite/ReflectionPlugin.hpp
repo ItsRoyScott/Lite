@@ -17,21 +17,25 @@ namespace lite
     {
     private: // data
 
-      vector<function<void(LuaUserdata<T>&)>> bindFunctions;
-      string typeName;
-      LuaTable typeTable;
+      typedef luabridge::Namespace::Class<T> Class;
+      typedef luabridge::Namespace Namespace;
+
+      unique_ptr<Class> class_;
+      unique_ptr<Namespace> namespace_;
 
     public: // methods
 
-      ObjectBuilder(ReflectionPlugin&) :
-        typeTable(Scripting::Instance().Lua.CreateTable())
+      ObjectBuilder(ReflectionPlugin&)
       {}
 
       // Called when an object type bind is starting:
       //  Used to begin the class binding process through LuaBridge.
       void BeginClassType(const string& className)
       {
-        typeName = className;
+        lua_State* L = Scripting::Instance().L;
+
+        namespace_.reset( new Namespace(luabridge::getGlobalNamespace(L).beginNamespace("lite")) );
+        class_.reset( new Class(namespace_->beginClass<T>(className.c_str())) );
       }
 
       // Called when a non-object type (e.g. int, void*) bind is starting:
@@ -44,8 +48,9 @@ namespace lite
       //  Used to end the class binding process through LuaBridge.
       void EndClassType(const string&)
       {
-        // Make the type accessible.
-        Scripting::Instance().Lua.GetGlobalEnvironment().Set(typeName, typeTable);
+        class_->endClass();
+        class_ = nullptr;
+        namespace_ = nullptr;
       }
 
       // Called when a non-object type (e.g. int, void*) bind is ending:
@@ -53,63 +58,51 @@ namespace lite
       void EndValueType(const string&)
       {}
 
+      // Called when a default constructor is added.
       void NewConstructor(const string&, Variant(*)())
       {
-        Lua& lua = Scripting::Instance().Lua;
-
-        // Create a Lua function which wraps the constructor.
-        auto luaConstructor = lua.CreateFunction<LuaUserdata<T>()>(ConstructorFunction);
-
-        // Set the constructor to Lua's new function for this type.
-        typeTable.Set("new", luaConstructor);
+        class_->addConstructor<void(*)()>();
       }
 
+      // Called when a constructor is added (non-variant type).
       template <class RetT, class... Args>
       void NewConstructor(const string&, RetT(*)(Args...))
       {}
 
+      // Called when a member field is added.
       template <class FieldPtr>
-      void NewField(const string&, FieldPtr)
-      {}
+      void NewField(const string& name, FieldPtr field)
+      {
+        class_->addData(name.c_str(), field);
+      }
 
       // Called when a new member function is bound to the type:
       //  This adds the function to the LuaBridge Class object.
       template <class FuncPtr>
-      void NewMethod(const string& methodName, FuncPtr funcPtr)
+      void NewMethod(const string& name, FuncPtr funcPtr)
       {
-        bindFunctions.push_back([=](LuaUserdata<T>& userdata)
-        {
-          userdata.Bind(methodName, funcPtr);
-        });
+        class_->addFunction(name.c_str(), funcPtr);
       }
 
+      // Called when a new get-set pair is bound for a property.
       template <class GetterPtr, class SetterPtr>
-      void NewProperty(const string&, GetterPtr, SetterPtr)
-      {}
+      void NewProperty(const string& name, GetterPtr getter, SetterPtr setter)
+      {
+        class_->addProperty(name.c_str(), getter, setter);
+      }
+
+      // Called when a new getter is bound for a read-only property.
+      template <class GetterPtr>
+      void NewReadOnlyProperty(const string& name, GetterPtr getter)
+      {
+        class_->addProperty(name.c_str(), getter);
+      }
 
       // Called when a new static function is bound to the type.
       template <class RetT, class... Args>
       void NewStaticFunction(const string& name, RetT(*fn)(Args...))
       {
-        Lua& lua = Scripting::Instance().Lua;
-        auto luaFunction = lua.CreateFunction<RetT(Args...)>(fn);
-        typeTable.Set(name, luaFunction);
-      }
-
-    private: // methods
-
-      static LuaUserdata<T> ConstructorFunction()
-      {
-        // Create the userdata instance.
-        LuaUserdata<T> instance = Scripting::Instance().Lua.CreateUserdata<T>(new T);
-
-        // Bind all members to the LuaUserdata.
-        for (auto& bindFunction : CurrentInstance()->bindFunctions)
-        {
-          bindFunction(instance);
-        }
-
-        return move(instance);
+        class_->addStaticFunction(name.c_str(), fn);
       }
     };
   };

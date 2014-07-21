@@ -146,16 +146,82 @@ namespace lite
 
   class Scripting : public Singleton<Scripting>
   {
+  private: // data
+
+    // Pointer to lua_State which automatically cleans up on destruction.
+    unique_ptr<lua_State, void(*)(lua_State*)> luaState = { nullptr, nullptr };
+
   public: // data
 
-    ::Lua Lua;
+    // Idiomatic 'L' variable used to store the lua_State.
+    lua_State* L;
 
   public: // methods
 
     Scripting()
     {
-      auto print = Lua.CreateFunction<void(string)>([](string str) { Note(str); });
-      Lua.GetGlobalEnvironment().Set("print", print);
+      // Create a new Lua state.
+      luaState = unique_ptr<lua_State, void(*)(lua_State*)>(luaL_newstate(), lua_close);
+      L = luaState.get();
+
+      // Import all Lua standard libraries.
+      luaL_openlibs(L);
+    }
+
+    // Executes a Lua file.
+    bool DoFile(const string& fileName)
+    {
+      luaL_dofile(L, fileName.c_str());
+      return CheckLuaResult();
+    }
+
+    // Executes a Lua string.
+    bool DoString(const string& str)
+    {
+      luaL_dostring(L, str.c_str());
+      return CheckLuaResult();
+    }
+
+  private: // methods
+
+    bool CheckLuaResult()
+    {
+      string errors = GetLastLuaError(L);
+      if (errors.size())
+      {
+        Note(errors);
+      }
+
+      return errors.empty();
+    }
+
+    std::string GetLastLuaError(lua_State* state)
+    {
+      std::stringstream ss;
+      for (int level = 1; level <= lua_gettop(state); level++)
+      {
+        const char* errorMessage = lua_tostring(state, level);
+        if (errorMessage)
+        {
+          ss << "Error: " << errorMessage << std::endl;
+        }
+      }
+
+      lua_Debug debugInfo;
+      for (int level = 0; lua_getstack(state, level, &debugInfo); level++)
+      {
+        lua_getinfo(state, "nSlf", &debugInfo);
+        ss << "Line: " << debugInfo.currentline << std::endl;
+        ss << "Source: " << debugInfo.source << std::endl;
+
+        const char* function = lua_tostring(state, -1);
+        if (function)
+        {
+          ss << "Function: " << function << std::endl;
+        }
+      }
+
+      return ss.str();
     }
   };
 } // namespace lite

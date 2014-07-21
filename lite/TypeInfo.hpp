@@ -18,7 +18,7 @@ namespace lite
     bool                isReference = false;
     vector<MethodInfo>  methods;
     string              name = "NotBoundToReflection";
-    ostream&          (*print)(ostream&, void*) = nullptr;
+    ostream&          (*print)(ostream&, const void*) = nullptr;
     istream&          (*read)(istream&, void*) = nullptr;
     size_t              size = 0;
     const TypeInfo*     valueType = nullptr;
@@ -183,14 +183,27 @@ namespace lite
       Add<T>(forward<Args>(args)...);
     }
 
+    template <class T, class FieldT1, class T1, class... Args>
+    void Add(string name, FieldT1(T1::*getter)() const, struct ReadOnly_*, Args&&... args)
+    {
+      // Notify the plugin of the new field.
+      NotifyPluginOnNewReadOnlyProperty<T>(name, getter);
+
+      // Create the field.
+      fields.emplace_back(move(name), getter);
+
+      // Perfect-forward the rest of the arguments to Add.
+      Add<T>(forward<Args>(args)...);
+    }
+
     // Calls Add functions recursively to initialize the type.
     template <class T, class... Args>
     void Bind(string typeName, Args&&... args)
     {
       name = move(typeName);
       cppType = &typeid(T);
-      print = &Variant::PrintFunction<T>;
-      read = Variant::ReadFunction<T>;
+      print = Variant::GeneratePrintFunction<T>();
+      read = Variant::GenerateReadFunction<T>();
 
       Add<T>(forward<Args>(args)...);
     }
@@ -231,13 +244,17 @@ namespace lite
     }
 
     // Notifies the plugin when we create a field we have a new getter/setter pair.
-    template <class T, class GetRetT, class GetClassT, class SetArgT, class SetClassT>
-    void NotifyPluginOnNewProperty(
-      const string& name,
-      GetRetT(GetClassT::*getter)() const,
-      void(SetClassT::*setter)(SetArgT))
+    template <class T, class GetterFunc, class SetterFunc>
+    void NotifyPluginOnNewProperty(const string& name, GetterFunc getter, SetterFunc setter)
     {
       GetReflectionPluginObjectBuilder<T>().NewProperty(name, getter, setter);
+    }
+
+    // Notifies the plugin when we create a field we have a new getter for a read-only property.
+    template <class T, class GetterFunc>
+    void NotifyPluginOnNewReadOnlyProperty(const string& name, GetterFunc getter)
+    {
+      GetReflectionPluginObjectBuilder<T>().NewReadOnlyProperty(name, getter);
     }
 
     // Notifies the plugin when we have a new static field.

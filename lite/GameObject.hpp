@@ -83,20 +83,6 @@ namespace lite
       Instances()[identifier] = this;
     }
 
-    GameObject(const GameObject& b) :
-      name(b.name)
-    {
-      Instances()[identifier] = this;
-      CopyChildren(b.children);
-      CopyComponents(b.components);
-    }
-
-    virtual ~GameObject() 
-    {
-      Clear();
-      Instances().erase(identifier);
-    }
-
     GameObject& operator=(GameObject&& b)
     {
       children = move(b.children);
@@ -110,6 +96,14 @@ namespace lite
       return *this;
     }
 
+    GameObject(const GameObject& b) :
+      name(b.name)
+    {
+      Instances()[identifier] = this;
+      CopyChildren(b.children);
+      CopyComponents(b.components);
+    }
+
     GameObject& operator=(const GameObject& b)
     {
       Clear();
@@ -119,6 +113,12 @@ namespace lite
       CopyComponents(b.components);
 
       return *this;
+    }
+
+    virtual ~GameObject() 
+    {
+      Clear();
+      Instances().erase(identifier);
     }
 
     // Adds a new child object by prefab.
@@ -590,16 +590,6 @@ namespace lite
       return *component;
     }
 
-    friend ostream& operator<<(ostream& os, const GameObject&)
-    {
-      return os;
-    }
-
-    friend istream& operator>>(istream& is, GameObject&)
-    {
-      return is;
-    }
-
   private: // methods
 
     // Destroys all components and children.
@@ -662,7 +652,12 @@ namespace lite
     }
   };
 
-  reflect(GameObject);
+  reflect(GameObject,
+    "GameObject", Constructor<GameObject>,
+    "Active", Getter(&GameObject::Active), Setter(&GameObject::Active),
+    "Children", Getter(&GameObject::Children), ReadOnly,
+    "DestroyFlag", Getter(&GameObject::DestroyFlag), ReadOnly,
+    "Name", Getter(&GameObject::Name), Setter(&GameObject::Name));
 
   class GOId
   {

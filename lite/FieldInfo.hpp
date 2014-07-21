@@ -90,30 +90,51 @@ namespace lite
       };
     }
 
+    // Constructs a field info from a getter.
+    template <class FieldT1, class T1>
+    FieldInfo(string name_, FieldT1(T1::*getter)() const) :
+      name(move(name_)),
+      ownerType(&TypeOf<T1>()),
+      type(&TypeOf<FieldT1>())
+    {
+      // Create the generic getter function. Takes the 'this' pointer as a void*
+      //  and casts it to the class type. It calls the getter function and returns
+      //  the result as a variant.
+      this->getter = [=](void* this_) -> Variant
+      {
+        return (reinterpret_cast<T1*>(this_)->*getter)();
+      };
+    }
+
+    // Constructs a field info from a getter.
+    template <class FieldT1, class T1>
+    FieldInfo(string name_, FieldT1&(T1::*getter)() const) :
+      name(move(name_)),
+      ownerType(&TypeOf<T1>()),
+      type(&TypeOf<FieldT1>())
+    {
+      // Create the generic getter function. Takes the 'this' pointer as a void*
+      //  and casts it to the class type. It calls the getter function and returns
+      //  the result as a variant.
+      this->getter = [=](void* this_) -> Variant
+      {
+        return &(reinterpret_cast<T1*>(this_)->*getter)();
+      };
+    }
+
     // Constructs a field info from a getter / setter pair.
-    //  These are typical getters and setters, the only restriction being
-    //  that the getter must be const.
     template <class FieldT1, class FieldT2, class T1, class T2>
     FieldInfo(string name_, FieldT1(T1::*getter)() const, void(T2::*setter)(FieldT2)) :
       name(move(name_)),
       ownerType(&TypeOf<T1>()),
       type(&TypeOf<FieldT1>())
     {
-      // Get the decayed types. std::decay removes references and const so a const T&
-      //  would be simply T.
-      typedef decay_t<T1> T1Value;
-      typedef decay_t<T2> T2Value;
-      typedef decay_t<FieldT1> FieldT1Value;
-      typedef decay_t<FieldT2> FieldT2Value;
-      static_assert(is_same<T1Value, T2Value>::value, "Class types for getters and setters must match");
-      static_assert(is_same<FieldT1Value, FieldT2Value>::value, "Field types for getters and setters must match");
-
       // Create the generic getter function. Takes the 'this' pointer as a void*
       //  and casts it to the class type. It calls the getter function and returns
       //  the result as a variant.
       this->getter = [=](void* this_) -> Variant
       {
-        return (reinterpret_cast<T1Value*>(this_)->*getter)();
+        return (reinterpret_cast<T1*>(this_)->*getter)();
       };
 
       // Create the generic setter function. Takes the 'this' pointer as a void*
@@ -121,7 +142,7 @@ namespace lite
       //  types prior to calling the set function.
       this->setter = [=](void* this_, void* value)
       {
-        (reinterpret_cast<T2Value*>(this_)->*setter)(*reinterpret_cast<FieldT2Value*>(value));
+        (reinterpret_cast<T2*>(this_)->*setter)(*reinterpret_cast<decay_t<FieldT2>*>(value));
       };
     }
 
@@ -176,9 +197,13 @@ namespace lite
     return fn;
   }
 
+  static struct ReadOnly_* ReadOnly = nullptr;
+
   template <class SetClassT, class SetArgT>
   auto Setter(void(SetClassT::*fn)(SetArgT)) -> void(SetClassT::*)(SetArgT)
   {
     return fn;
   }
+
+  static struct WriteOnly_* WriteOnly = nullptr;
 } // namespace lite

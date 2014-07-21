@@ -34,8 +34,11 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   RegisterComponent<SphereCollision>();
   RegisterComponent<Transform>();
 
-  string errors = Scripting::Instance().Lua.RunScript("local deltaX = Input:GetMouseDeltaX \nprint(\"DeltaX: \" .. deltaX)");
-  Note(errors);
+  //string errors = Scripting::Instance().Lua.RunScript("local deltaX = Input:GetMouseDeltaX \nprint(\"DeltaX: \" .. deltaX)");
+  //Note(errors);
+
+  Scripting::Instance().DoString("local deltaX = lite.Input:GetMouseDeltaX() \nprint(\"DeltaX: \" .. deltaX)");
+  Note(Reflection::Instance());
 
   GameObject scene;
 

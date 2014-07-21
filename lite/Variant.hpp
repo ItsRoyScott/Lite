@@ -18,13 +18,13 @@ namespace lite
   private: // data
 
     // Allocates a new copy of the object.
-    void* (*clone)(void* other) = nullptr;
+    void* (*clone)(const void* other) = nullptr;
 
     // Stores our data as a void pointer.
     Pointer data = Pointer(nullptr, nullptr);
 
     // Prints the object using the given ostream.
-    ostream& (*print)(ostream& os, void* p) = nullptr;
+    ostream& (*print)(ostream& os, const void* p) = nullptr;
 
     // Reads the object using the given istream.
     istream& (*read)(istream& is, void* p) = nullptr;
@@ -79,6 +79,7 @@ namespace lite
       type = b.type;
       if (b.data)
       {
+        // Use clone to create a new object and copy the deleter.
         data = Pointer(clone(b.data.get()), b.data.get_deleter());
       }
 
@@ -104,18 +105,18 @@ namespace lite
 
     // Assigns a new object to the variant.
     template <class T>
-    Variant& Assign(T&& object = T())
+    Variant& Assign(const T& object = T())
     {
       SetType<T>();
 
       typedef decay_t<T> DecayedT;
 
       // Copy the object if the types already match.
-      if (data && type == typeid(T))
+      if (data && type == typeid(DecayedT))
       {
         DecayedT* ptr = reinterpret_cast<DecayedT*>(data.get());
         ptr->~DecayedT();
-        new (ptr) DecayedT(forward<T>(object));
+        new (ptr) DecayedT(object);
         return *this;
       }
 
@@ -123,7 +124,7 @@ namespace lite
       //  type rather than a 'void'.
       auto deleter = [](void* p) { delete reinterpret_cast<DecayedT*>(p); };
 
-      data = Pointer(new DecayedT(forward<T>(object)), move(deleter));
+      data = Pointer(new DecayedT(object), move(deleter));
 
       return *this;
     }
@@ -138,17 +139,76 @@ namespace lite
       type = typeid(InvalidType);
     }
 
-    // A C-style function which generically allocates a copy of a given type.
-    template <class T>
-    static void* CloneFunction(void* otherThis)
-    {
-      return new T(*reinterpret_cast<T*>(otherThis));
-    }
-
     // Retrieves the internal void pointer.
     void* Data() const
     {
       return data.get();
+    }
+
+    // Generates a generic function which inserts the given type into an ostream object.
+    //  The second template parameter is used to check if the type supports insertion.
+    //  If the decltype fails, the other version of this function will be called.
+    template <class T, class = decltype(new T(declval<const T&>()))>
+    static auto GenerateCloneFunction() -> void*(*)(const void*)
+    {
+      return [](const void* other) -> void*
+      {
+        return new T(*reinterpret_cast<const T*>(other));
+      };
+    }
+
+    // Generates a generic function which simply returns ostream for a type lacking
+    //  support for ostream insertion. The ellipses in the function call make this
+    //  function have the lowest priority for candidate functions. (The compiler
+    //  will prefer any function but this one.)
+    template <class T>
+    static auto GenerateCloneFunction(...) -> void*(*)(const void*)
+    {
+      return [](const void*) -> void* { return nullptr; };
+    }
+
+    // Generates a generic function which inserts the given type into an ostream object.
+    //  The second template parameter is used to check if the type supports insertion.
+    //  If the decltype fails, the other version of this function will be called.
+    template <class T, class = decltype(declval<ostream&>() << declval<const T&>())>
+    static auto GeneratePrintFunction() -> ostream&(*)(ostream&, const void*)
+    {
+      return [](ostream& os, const void* this_) -> ostream& 
+      { 
+        return os << *reinterpret_cast<const T*>(this_); 
+      };
+    }
+
+    // Generates a generic function which simply returns ostream for a type lacking
+    //  support for ostream insertion. The ellipses in the function call make this
+    //  function have the lowest priority for candidate functions. (The compiler
+    //  will prefer any function but this one.)
+    template <class T>
+    static auto GeneratePrintFunction(...) -> ostream&(*)(ostream&, const void*)
+    {
+      return [](ostream& os, const void*) -> ostream& { return os; };
+    }
+
+    // Generates a generic function which extracts the given type from an istream object.
+    //  The second template parameter is used to check if the type supports extraction.
+    //  If the decltype fails, the other version of this function will be called.
+    template <class T, class = decltype(declval<istream&>() >> declval<T&>())>
+    static auto GenerateReadFunction() -> istream&(*)(istream&, void*)
+    {
+      return [](istream& os, void* this_) -> istream&
+      {
+        return os >> *reinterpret_cast<T*>(this_);
+      };
+    }
+
+    // Generates a generic function which simply returns istream for a type lacking
+    //  support for istream insertion. The ellipses in the function call make this
+    //  function have the lowest priority for candidate functions. (The compiler
+    //  will prefer any function but this one.)
+    template <class T>
+    static auto GenerateReadFunction(...) -> istream&(*)(istream&, void*)
+    {
+      return [](istream& os, void*) -> istream& { return os; };
     }
 
     // Retrieves the object the variant is pointing to. 
@@ -173,19 +233,6 @@ namespace lite
       return bool(data);
     }
 
-    // A C-style function which is capable of printing a given type to an ostream.
-    template <class T>
-    static ostream& PrintFunction(ostream& os, void* this_)
-    {
-      return os << *reinterpret_cast<T*>(this_);
-    }
-
-    template <class T>
-    static istream& ReadFunction(istream& is, void* this_)
-    {
-      return is >> *reinterpret_cast<T*>(this_);
-    }
-
     // Returns a reference to the variant's object.
     template <class T>
     T& Ref() const
@@ -199,15 +246,12 @@ namespace lite
     {
       Clear();
 
-      // Get the decayed type (no const or reference).
-      typedef decay_t<T> DecayedType;
-
       // Get rid of the types for clone and print functions.
-      clone = &CloneFunction < DecayedType > ;
-      print = &PrintFunction < DecayedType > ;
-      read = &ReadFunction < DecayedType > ;
+      clone = GenerateCloneFunction<decay_t<T>>();
+      print = GeneratePrintFunction<decay_t<T>>();
+      read = GenerateReadFunction<decay_t<T>>();
 
-      type = typeid(DecayedType);
+      type = typeid(decay_t<T>);
 
       return *this;
     }

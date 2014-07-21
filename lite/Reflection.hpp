@@ -51,6 +51,23 @@ namespace lite
       Bind < T > { valueType };
     }
 
+    friend ostream& operator<<(ostream& os, const Reflection& r)
+    {
+      os << "Reflection ";
+      for (auto& type : r.types)
+      {
+        os << "\n" << Tabs(1) << type->Name;
+        os << "\n" << Tabs(2) << "Fields ";
+        for (auto& field : type->Fields)
+          os << "\n" << Tabs(3) << field;
+        os << "\n" << Tabs(2) << "Methods ";
+        for (auto& method: type->Methods)
+          os << "\n" << Tabs(3) << method;
+      }
+
+      return os;
+    }
+
   private: // methods
 
     template <class T>
