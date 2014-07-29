@@ -6,8 +6,8 @@
 namespace lite // forward declarations
 {
   template <class T> struct Binding;
+  class FieldInfo;
   class MethodInfo;
-  class NamespaceInfo;
   class TypeInfo;
   template <class... Args> struct TypeOfN;
 

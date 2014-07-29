@@ -237,20 +237,37 @@ namespace lite
 
     void Update(float dt)
     {
-      for (auto& body : bodies)
+      // Divide the dt in half for two simulations.
+      dt /= 2;
+
+      // Perform the simulation twice to avoid objects falling through
+      //  other objects. Another solution would be to implement
+      //  "continuous" physics.
+      for (int i = 0; i < 2; ++i)
       {
-        body->ApplyActors(dt);
-        body->Integrate(dt);
+        // Integrate all bodies.
+        for (auto& body : bodies)
+        {
+          body->ApplyActors(dt);
+          body->Integrate(dt);
+        }
+
+        // Generate contacts.
+        size_t contacts = GenerateContacts();
+
+        // Resolve contacts.
+        ContactResolver resolver;
+        resolver.PositionIterations = contacts * 2;
+        resolver.VelocityIterations = contacts * 2;
+        resolver.ResolveContacts(collisionData.Contacts, dt);
       }
 
-      // Generate contacts.
-      size_t contacts = GenerateContacts();
-
-      // Resolve contacts.
-      ContactResolver resolver;
-      resolver.PositionIterations = contacts * 2;
-      resolver.VelocityIterations = contacts * 2;
-      resolver.ResolveContacts(collisionData.Contacts, dt);
+      // Clear accumulators for all bodies.
+      for (auto& body : bodies)
+      {
+        // Reset forces applied.
+        body->ClearAccumulators();
+      }
     }
 
   private: // methods

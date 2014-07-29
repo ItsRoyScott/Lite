@@ -270,9 +270,6 @@ namespace lite
       // Normalize the orientation, and update the matrices with the new 
       //  position and orientation.
       CalculateDerivedData();
-
-      // Reset forces applied.
-      ClearAccumulators();
     }
 
     void SetAwake(bool awake)
