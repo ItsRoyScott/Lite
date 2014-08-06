@@ -70,10 +70,14 @@ namespace lite
       {}
 
       // Called when a member field is added.
-      template <class FieldPtr>
-      void NewField(const string& name, FieldPtr field)
+      template <class Class, class Value>
+      void NewField(const string& name, Value Class::*field)
       {
-        class_->addData(name.c_str(), field);
+        Warn(name << " will not be bound to Lua. Use a custom property instead." <<
+          "Fields do not work properly in LuaBridge. Instead of generating the getters and " <<
+          "setters using references, they copy by-value. Therefore the field data will get " <<
+          "a copy and the scripter will not be referring to the actual field's data as part " <<
+          "of the class.");
       }
 
       // Called when a new member function is bound to the type:
@@ -88,14 +92,21 @@ namespace lite
       template <class GetterPtr, class SetterPtr>
       void NewProperty(const string& name, GetterPtr getter, SetterPtr setter)
       {
-        class_->addProperty(name.c_str(), getter, setter);
+        // Add the getter/setter pair as functions because LuaBridge
+        //  treats properties as values that can be copied, even when
+        //  they use references.
+        class_->addFunction(("Get" + name).c_str(), getter);
+        class_->addFunction(("Set" + name).c_str(), setter);
       }
 
-      // Called when a new getter is bound for a read-only property.
-      template <class GetterPtr>
-      void NewReadOnlyProperty(const string& name, GetterPtr getter)
+      // Called when a new non-const getter is bound for a read-only property.
+      template <class Func>
+      void NewReadOnlyProperty(const string& name, Func fn)
       {
-        class_->addProperty(name.c_str(), getter);
+        // Add the getter as a function because LuaBridge treats
+        //  properties as values that can be copied, even when they
+        //  use references.
+        class_->addFunction(("Get" + name).c_str(), fn);
       }
 
       // Called when a new static field is bound to the type.

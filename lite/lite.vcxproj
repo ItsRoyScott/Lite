@@ -106,6 +106,7 @@
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Console.hpp" />
     <ClInclude Include="Contact.hpp" />
+    <ClInclude Include="ContactResolver.hpp" />
     <ClInclude Include="D3DInclude.hpp" />
     <ClInclude Include="D3DInfo.hpp" />
     <ClInclude Include="DebugDrawer.hpp" />

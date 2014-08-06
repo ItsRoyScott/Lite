@@ -37,13 +37,6 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   //string errors = Scripting::Instance().Lua.RunScript("local deltaX = Input:GetMouseDeltaX \nprint(\"DeltaX: \" .. deltaX)");
   //Note(errors);
 
-  Scripting::Instance().DoString("local deltaX = lite.Input:GetMouseDeltaX() \nprint(\"DeltaX: \" .. deltaX)");
-  Scripting::Instance().DoString(R"___(
-    if (lite.Input.IsKeyHeld(string.byte("W"))) then
-      lite.Graphics.CurrentInstance.Camera:Walk(0.5)
-    end
-  )___");
-
   Note(Reflection::Instance());
 
   GameObject scene;
@@ -59,13 +52,20 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   {
     frameTimer.BeginFrame();
     window.Title(string("Lite - ") + to_string((int) frameTimer.FPS()) + " fps");
-
-    if (Input::IsHeld('W')) graphics.Camera.Walk(0.5f);
-    if (Input::IsHeld('S')) graphics.Camera.Walk(-0.5f);
-    if (Input::IsHeld('A')) graphics.Camera.Strafe(-0.5f);
-    if (Input::IsHeld('D')) graphics.Camera.Strafe(0.5f);
-    if (Input::IsHeld('Q')) graphics.Camera.Climb(0.5f);
-    if (Input::IsHeld('E')) graphics.Camera.Climb(-0.5f);
+    
+    Scripting::Instance().DoString(1 + R"_LuaScript_(
+        --local Camera = lite.Graphics.CurrentInstance.Camera
+        local Input = lite.Input
+        local walkAmount = 0.5
+        
+        --for key,value in pairs(lite.Graphics.CurrentInstance.Camera) do print(key,value) end
+        if ( Input.IsKeyHeld(string.byte("W")) ) then lite.Graphics.CurrentInstance:GetCamera():Walk(walkAmount)     end
+        if ( Input.IsKeyHeld(string.byte("S")) ) then lite.Graphics.CurrentInstance:GetCamera():Walk(-walkAmount)    end
+        if ( Input.IsKeyHeld(string.byte("A")) ) then lite.Graphics.CurrentInstance:GetCamera():Strafe(-walkAmount)  end
+        if ( Input.IsKeyHeld(string.byte("D")) ) then lite.Graphics.CurrentInstance:GetCamera():Strafe(walkAmount)   end
+        if ( Input.IsKeyHeld(string.byte("Q")) ) then lite.Graphics.CurrentInstance:GetCamera():Climb(walkAmount)    end
+        if ( Input.IsKeyHeld(string.byte("E")) ) then lite.Graphics.CurrentInstance:GetCamera():Climb(-walkAmount)   end
+      )_LuaScript_");
     
     if (Input::IsTriggered(VK_ESCAPE))  window.Destroy();
     if (Input::IsTriggered(VK_F1))      DebugDrawCollisions() = !DebugDrawCollisions();
@@ -74,7 +74,7 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     {
       GameObject& child = scene.AddChild(spongebobPrefab);
       child[Transform_].LocalPosition = graphics.Camera.Position();
-      child[RigidBody_].AddForce(Vector(graphics.Camera.Look()) * 100);
+      child[RigidBody_].AddForce(Vector(graphics.Camera.Look()) * 300);
     }
 
     graphics.Camera.RotateY((float) Input::GetMouseDeltaX() / 100);

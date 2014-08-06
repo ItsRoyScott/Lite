@@ -103,6 +103,8 @@ namespace lite
 
     bool SetParameter(const string& name, float value)
     {
+      if (!IsValid()) return false;
+
       // Get the instance.
       fmod::ParameterInstance* paramInstance = nullptr;
       FmodCall(instance->getParameter(name.c_str(), &paramInstance), false);
@@ -133,12 +135,14 @@ namespace lite
     //  any lying around. Good-guy game engine :)
     void OnAudioShutdown(EventData&)
     {
+      if (!IsValid()) return;
       Release();
     }
 
     // Updates 3D attributes for this instance.
     void OnAudioUpdate(EventData&)
     {
+      if (!IsValid()) return;
       FMOD_3D_ATTRIBUTES attributes = { Position, Velocity, Forward, Up };
       FmodCall(instance->set3DAttributes(&attributes));
     }

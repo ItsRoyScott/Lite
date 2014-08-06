@@ -294,5 +294,8 @@
     <ClInclude Include="PrefabManager.hpp">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="ContactResolver.hpp">
+      <Filter>Physics\Contacts</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

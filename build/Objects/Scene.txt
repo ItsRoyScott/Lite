@@ -33,13 +33,13 @@
       name = ForwardPlane
       [ type = PlaneCollision
         Direction = 0 0 1
-        Offset = -11 ]
+        Offset = -10.5 ]
     ]
     [ type = GameObject
       name = BackPlane
       [ type = PlaneCollision
         Direction = 0 0 1
-        Offset = 11 ]
+        Offset = 10.5 ]
     ]
       
     [ type = GameObject
@@ -52,7 +52,7 @@
       prefab = Raptor
       name = Raptor2
       [ type = Transform
-        LocalPosition = -8 -1 5 ]
+        LocalPosition = 2 -1 -5 ]
     ]
     
     [ type = GameObject
@@ -121,86 +121,86 @@
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = 0 -1.5 5 ]
+        LocalPosition = 0 -1.5 5.5 ]
     ]
     [ type = GameObject
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = 5 -1.5 5 ]
+        LocalPosition = 5 -1.5 5.5 ]
     ]
     [ type = GameObject
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = 10 -1.5 5 ]
+        LocalPosition = 10 -1.5 5.5 ]
     ]
     [ type = GameObject
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = 15 -1.5 5 ]
+        LocalPosition = 15 -1.5 5.5 ]
     ]
     [ type = GameObject
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = -5 -1.5 5 ]
+        LocalPosition = -5 -1.5 5.5 ]
     ]
     [ type = GameObject
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = -10 -1.5 5 ]
+        LocalPosition = -10 -1.5 5.5 ]
     ]
     [ type = GameObject
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = -15 -1.5 5 ]
+        LocalPosition = -15 -1.5 5.5 ]
     ]
     
     [ type = GameObject
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = 0 -1.5 -5 ]
+        LocalPosition = 0 -1.5 -5.5 ]
     ]
     [ type = GameObject
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = 5 -1.5 -5 ]
+        LocalPosition = 5 -1.5 -5.5 ]
     ]
     [ type = GameObject
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = 10 -1.5 -5 ]
+        LocalPosition = 10 -1.5 -5.5 ]
     ]
     [ type = GameObject
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = 15 -1.5 -5 ]
+        LocalPosition = 15 -1.5 -5.5 ]
     ]
     [ type = GameObject
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = -5 -1.5 -5 ]
+        LocalPosition = -5 -1.5 -5.5 ]
     ]
     [ type = GameObject
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = -10 -1.5 -5 ]
+        LocalPosition = -10 -1.5 -5.5 ]
     ]
     [ type = GameObject
       prefab = Grass
       name = Grass
       [ type = Transform
-        LocalPosition = -15 -1.5 -5 ]
+        LocalPosition = -15 -1.5 -5.5 ]
     ]
   ]
 ]

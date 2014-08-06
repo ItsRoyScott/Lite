@@ -34,6 +34,8 @@ namespace lite
 
     CameraDefinition Camera;
 
+    CameraDefinition& GetCamera() { return Camera; }
+
   public: // methods
 
     Graphics(Window& window)
@@ -251,7 +253,7 @@ namespace lite
     Binding()
     {
       Bind(
-        "Camera", &Graphics::Camera,
+        "Camera", &Graphics::GetCamera, ReadOnly,
         "CurrentInstance", &Graphics::CurrentInstance, ReadOnly);
     }
   };

@@ -182,6 +182,19 @@ namespace lite
     }
 
     template <class T, class FieldT, class ClassT, class... Args>
+    void Add(string name, FieldT(ClassT::*getter)(), struct ReadOnly_*, Args&&... args)
+    {
+      // Notify the plugin of the new field.
+      GetTypeBuilder<T>().NewReadOnlyProperty(name, getter);
+      
+      // Create the field.
+      fields.emplace_back(move(name), getter);
+      
+      // Perfect-forward the rest of the arguments to Add.
+      Add<T>(forward<Args>(args)...);
+    }
+
+    template <class T, class FieldT, class ClassT, class... Args>
     void Add(string name, FieldT(ClassT::*getter)() const, struct ReadOnly_*, Args&&... args)
     {
       // Notify the plugin of the new field.

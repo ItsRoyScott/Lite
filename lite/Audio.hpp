@@ -47,7 +47,7 @@ namespace lite // types
       vector<fmod::Bank*> banks;
 
       // For each file in the Sounds directory with a *.bank extension:
-      for (string& file : PathInfo(config::Sounds).FilesWithExtension("bank"))
+      for (const string& file : PathInfo(config::Sounds).FilesWithExtension("bank"))
       {
         // Load the sound bank from file.
         fmod::Bank* bank = nullptr;
@@ -102,7 +102,11 @@ namespace lite // types
     EventInstance CreateEventInstance(const string& eventPath)
     {
       EventDescription* description = FindEventDescription(eventPath);
-      if (!description) return {};
+      if (!description)
+      {
+        Warn("Event " + eventPath + " not found");
+        return{};
+      }
       return EventInstance(description->CreateInstance(), description);
     }
 

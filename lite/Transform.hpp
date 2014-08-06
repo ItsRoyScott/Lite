@@ -9,7 +9,7 @@ namespace lite
 {
   class Transform : public Component<Transform>
   {
-  public: // properties
+  public: // data
 
     // Position x, y, and z.
     float3 LocalPosition = { 0, 0, 0 };
@@ -19,6 +19,17 @@ namespace lite
 
     // Scale factor.
     float3 LocalScale = { 1, 1, 1 };
+
+  public: // properties
+
+    const float3& GetLocalPosition() const { return LocalPosition; }
+    void SetLocalPosition(const float3& f) { LocalPosition = f; }
+
+    const float4& GetLocalRotation() const { return LocalRotation; }
+    void SetLocalRotation(const float4& f) { LocalRotation = f; }
+
+    const float3& GetLocalScale() const { return LocalScale; }
+    void SetLocalScale(const float3& f) { LocalScale = f; }
 
   public: // methods
 
@@ -129,9 +140,9 @@ namespace lite
     Binding()
     {
       Bind(
-        "LocalPosition", &T::LocalPosition,
-        "LocalRotation", &T::LocalRotation,
-        "LocalScale", &T::LocalScale);
+        "LocalPosition", &T::GetLocalPosition, &T::SetLocalPosition,
+        "LocalRotation", &T::GetLocalRotation, &T::SetLocalRotation,
+        "LocalScale", &T::GetLocalScale, &T::SetLocalScale);
     }
   };
 } // namespace lite

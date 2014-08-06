@@ -90,7 +90,23 @@ namespace lite
       };
     }
 
-    // Constructs a field info from a getter.
+    // Constructs a field info from a non-const getter.
+    template <class FieldT1, class T1>
+    FieldInfo(string name_, FieldT1(T1::*getter)()) :
+      name(move(name_)),
+      ownerType(&TypeOf<T1>()),
+      type(&TypeOf<FieldT1>())
+    {
+      // Create the generic getter function. Takes the 'this' pointer as a void*
+      //  and casts it to the class type. It calls the getter function and returns
+      //  the result as a variant.
+      this->getter = [=](void* this_) -> Variant
+      {
+        return (reinterpret_cast<T1*>(this_)->*getter)();
+      };
+    }
+
+    // Constructs a field info from a const getter.
     template <class FieldT1, class T1>
     FieldInfo(string name_, FieldT1(T1::*getter)() const) :
       name(move(name_)),

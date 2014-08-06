@@ -100,6 +100,11 @@ namespace lite
       Update();
     }
 
+    CameraDefinition(const CameraDefinition&)
+    {
+      Fatal("wtf");
+    }
+
     // Moves the camera up or down by 'distance'.
     void Climb(float distance)
     {
@@ -240,6 +245,30 @@ namespace lite
     Binding()
     {
       Bind(
+        // properties
+        "AspectRatio", &T::AspectRatio, ReadOnly,
+        "FarWindowHeight", &T::FarWindowHeight, ReadOnly,
+        "FarWindowWidth", &T::FarWindowWidth, ReadOnly,
+        "FarZ", &T::FarZ, ReadOnly,
+        "FieldOfViewX", &T::FieldOfViewX, ReadOnly,
+        "FieldOfViewY", &T::FieldOfViewY, ReadOnly,
+        "Look", &T::Look, ReadOnly,
+        "NearWindowHeight", &T::NearWindowHeight, ReadOnly,
+        "NearWindowWidth", &T::NearWindowWidth, ReadOnly,
+        "NearZ", &T::NearZ, ReadOnly,
+        "Position", &T::Position, ReadOnly,
+        "ProjectionMatrix", &T::ProjectionMatrix, ReadOnly,
+        "Right", &T::Right, ReadOnly,
+        "Up", &T::Up, ReadOnly,
+        "ViewMatrix", &T::ViewMatrix, ReadOnly,
+        "ViewProjectionMatrix", &T::ViewProjectionMatrix, ReadOnly,
+
+        // methods
+        "Climb", &T::Climb,
+        "Pitch", &T::Pitch,
+        "RotateY", &T::RotateY,
+        "SetLens", &T::SetLens,
+        "Strafe", &T::Strafe,
         "Walk", &T::Walk);
     }
   };
