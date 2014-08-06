@@ -34,17 +34,11 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
   RegisterComponent<SphereCollision>();
   RegisterComponent<Transform>();
 
-  //string errors = Scripting::Instance().Lua.RunScript("local deltaX = Input:GetMouseDeltaX \nprint(\"DeltaX: \" .. deltaX)");
-  //Note(errors);
-
   Note(Reflection::Instance());
 
-  GameObject scene;
-
-  scene.LoadFromFile("Scene.txt");
+  auto scene = GameObject("Scene.txt");
 
   auto& spongebobPrefab = *GetPrefab("Bee");
-
   auto frameTimer = FrameTimer();
 
   // Game loop:

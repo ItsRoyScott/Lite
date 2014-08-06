@@ -70,6 +70,16 @@ namespace lite
       Instances()[identifier] = this;
     }
 
+    GameObject(const char* filename) : GameObject()
+    {
+      LoadFromFile(filename);
+    }
+
+    GameObject(const std::string& filename) : GameObject()
+    {
+      LoadFromFile(filename);
+    }
+
     GameObject(GameObject&& b) :
       children(move(b.children)),
       components(move(b.components)),
